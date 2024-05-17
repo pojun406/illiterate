@@ -1,0 +1,22 @@
+.logo,
+.logo * {
+    box-sizing: border-box;
+}
+
+.logo {
+    position: relative;
+}
+
+.box {
+    background: #4000ff;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.illiterate {
+    color: #ffffff;
+    text-align: center;
+    font-family: 'Overpass-Regular', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.1em;
+}
