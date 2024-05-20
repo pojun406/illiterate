@@ -37,4 +37,4 @@ out/
 .vscode/
 
 ### 제외 ###
-src/main/front/node_modules
+/node_modules
