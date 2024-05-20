@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 제외 ###
+/node_modules
+/frontend/node_modules
