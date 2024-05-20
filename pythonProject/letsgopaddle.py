@@ -94,6 +94,18 @@ class MyPaddleOCR:
 
         plt_imshow('OCR Results', img, figsize=(16, 12), dpi=dpi)
 
+def run2():
+    '''매개변수로 넣든 뭘 하던 이미지값 필요'''
+    """이미지 파일을 입력받아 OCR 실행하고 결과를 반환하는 함수"""
+    ocr = MyPaddleOCR()
+
+    base_directory = 'D:\Project\illiterate\pythonProject\\test'
+    image_filename = "example.pdf"
+    image_path = os.path.join(base_directory, image_filename)
+    result = ocr.run_ocr(image_path, debug=True)
+
+    return result
+
 # 실행 코드
 if __name__ == '__main__':
     ocr = MyPaddleOCR()
