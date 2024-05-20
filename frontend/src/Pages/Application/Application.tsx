@@ -1,10 +1,12 @@
-import React from "react";
+import React, {useState} from "react";
+import {TbFolderSearch} from "react-icons/tb";
+import ImageUpload from "../../Components/ImageUpload/ImageUpload";
 
-const Application = () =>{
+const Application = () => {
     return (
-        <div>
-            Application
-        </div>
+        <>
+            <ImageUpload/>
+        </>
     );
 };
 
