@@ -4,23 +4,22 @@ import { AiOutlinePhone, AiOutlineLock } from "react-icons/ai";
 
 interface PhoneNumberInputProps {
     onPhoneNumberChange: (phoneNumber: string) => void;
-    onVerificationCodeSend: () => void;
-    isCodeSent: boolean;
+    onVerificationCodeSend: (isCodeSent: boolean) => void;
     onVerificationCodeChange: (verificationCode: string) => void;
-    onSelectCarrier: (carrier: string) => void; // New prop for handling carrier selection
+    onSelectCarrier: (carrier: string) => void;
 }
 
 const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                                                                onPhoneNumberChange,
                                                                onVerificationCodeSend,
-                                                               isCodeSent,
                                                                onVerificationCodeChange,
-                                                               onSelectCarrier, // Destructure onSelectCarrier from props
+                                                               onSelectCarrier,
                                                            }) => {
     const [selectedCarrier, setSelectedCarrier] = useState("통신사를 선택해주세요.");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
+    const [isCodeSent,setIsCodeSent]=useState(false);
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         let input = e.target.value.replace(/\D/g, "");
@@ -47,9 +46,25 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
 
     const handleCarrierChange = (carrier: string): void => {
         setSelectedCarrier(carrier);
-        onSelectCarrier(carrier); // Call onSelectCarrier with the selected carrier
+        onSelectCarrier(carrier);
         setIsDropdownOpen(false);
     };
+
+    const handleCodesend = () =>{
+        if (isCodeSent == false){
+
+
+
+            setIsCodeSent(true);
+            onVerificationCodeSend(isCodeSent);
+        }
+        else setIsCodeSent(false);
+    }
+
+    const handleVerificationCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setVerificationCode(e.target.value);
+        onVerificationCodeChange(e.target.value);
+    }
 
     const toggleDropdown = (): void => {
         setIsDropdownOpen(!isDropdownOpen);
@@ -102,7 +117,8 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                     className="flex-1 px-4 py-2 ml-2 focus:outline-none rounded-r-md"
                 />
                 <button
-                    onClick={onVerificationCodeSend}
+                    type="button"
+                    onClick={handleCodesend}
                     className="px-4 py-2 ml-2 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none"
                 >
                     {isCodeSent ? "재전송" : "인증"}
@@ -115,7 +131,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                         type="text"
                         placeholder="인증코드"
                         value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
+                        onChange={handleVerificationCodeChange}
                         className="block w-full px-4 py-2 ml-2 focus:outline-none"
                     />
                 </div>
