@@ -9,8 +9,7 @@ const LoginForm = () => {
 
     const handleBasicSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // 기본 로그인 처리
-        console.log("기본 로그인 - 사용자명:", username, "비밀번호:", password);
+        console.log("로그인 - 사용자명:", username, "비밀번호:", password);
     };
 
     return (
