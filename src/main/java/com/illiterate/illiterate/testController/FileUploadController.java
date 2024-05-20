@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 public class FileUploadController {
 
-    private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/image_util.py";
+    private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/run.py";
     private static final String SAVE_TEXT_FOLDER = "/pythonProject/savetext/";
 
     @PostMapping("/upload")
