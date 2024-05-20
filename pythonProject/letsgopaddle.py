@@ -1,9 +1,8 @@
 import cv2
-import json
-import os
-import re
-from paddleocr import PaddleOCR
+from paddleocr import PaddleOCR, run_ocr
 from utils.image_util import plt_imshow, put_text
+from paddleocr.paddleocr import MODEL_URLS
+
 
 class MyPaddleOCR:
     def __init__(self, lang: str = "korean", **kwargs):
@@ -12,40 +11,49 @@ class MyPaddleOCR:
         self.img_path = None
         self.ocr_result = {}
 
+    def get_available_langs(self):
+        langs_info = []
+
+        for idx, model_name in enumerate(list(MODEL_URLS['OCR'].keys())):
+            for lang in list(MODEL_URLS['OCR'][model_name]['rec'].keys()):
+                if lang not in langs_info:
+                    langs_info.append(lang)
+
+        print('Available Language : {}'.format(langs_info))
+
+    def get_available_models(self):
+        model_info = {}
+
+        for idx, model_name in enumerate(list(MODEL_URLS['OCR'].keys())):
+            model_info[model_name] = list(MODEL_URLS['OCR'][model_name]['rec'].keys())
+            print('#{} Model Vesion : [{}] - Language : {}'.format(idx + 1, model_name,
+                                                                   list(MODEL_URLS['OCR'][model_name]['rec'].keys())))
+
     def get_ocr_result(self):
         return self.ocr_result
 
-    def clean_text_for_filename(self, text: str) -> str:
-        # 파일 이름에 사용할 수 없는 문자 제거 (윈도우즈 파일 시스템 기준)
-        cleaned_text = re.sub(r'[\\/:*?"<>|]', '', text)
-        return cleaned_text
+    def get_img_path(self):
+        return self.img_path
+
+    def show_img(self):
+        plt_imshow(img=self.img_path)
 
     def run_ocr(self, img_path: str, debug: bool = False):
         self.img_path = img_path
+        ocr_text = []
         result = self._ocr.ocr(img_path, cls=False)
         self.ocr_result = result[0]
+
+        if self.ocr_result:
+            for r in result[0]:
+                ocr_text.append(r[1][0])
+        else:
+            ocr_text = "No text detected."
 
         if debug:
             self.show_img_with_ocr()
 
-        # OCR 결과를 JSON 파일로 저장
-        self.save_ocr_result_to_individual_files('savetext')
-
-    def save_ocr_result_to_individual_files(self, output_directory: str):
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
-        if self.ocr_result:
-            for i, text_result in enumerate(self.ocr_result):
-                text = text_result[1][0]
-                # JSON 파일 제목으로 텍스트 내용 사용
-                cleaned_text = self.clean_text_for_filename(text)
-                output_file_path = os.path.join(output_directory, f'{cleaned_text}.json')
-
-                with open(output_file_path, 'w', encoding='utf-8') as f:
-                    json.dump({"text": text}, f, ensure_ascii=False, indent=4)
-
-                print(f"텍스트가 {output_file_path} 파일에 저장되었습니다.")
+        return ocr_text
 
     def show_img_with_ocr(self):
         img = cv2.imread(self.img_path)
@@ -78,37 +86,3 @@ class MyPaddleOCR:
             print(text)
 
         plt_imshow(["Original", "ROI"], [img, roi_img], figsize=(16, 10))
-
-class OCRWithAnalysis:
-    def __init__(self, ocr_results_directory: str):
-        self.ocr_results_directory = ocr_results_directory
-
-    def analyze_ocr_result(self, target_title: str):
-        for filename in os.listdir(self.ocr_results_directory):
-            if filename.endswith('.json'):
-                with open(os.path.join(self.ocr_results_directory, filename), 'r', encoding='utf-8') as f:
-                    result = json.load(f)
-                    if result['text'] == target_title:
-                        print(f"'{target_title}'로 이루어진 파일을 찾았습니다. : {filename}")
-                        return True
-
-        print(f"'{target_title}'로 이루어진 파일은 없습니다.")
-        return False
-
-# 실행 코드
-ocr = MyPaddleOCR()
-
-
-# 사용자로부터 이미지 파일 경로 입력 받기
-base_directory = 'C:/Users/404ST011/PycharmProjects/pythonProject/photo'
-image_filename = input("이미지 파일 이름을 입력하세요: ")
-image_path = os.path.join(base_directory, image_filename)
-result = ocr.run_ocr(image_path, debug=True)
-
-# OCR 결과를 저장한 JSON 파일들을 분석하여 특정 제목이 있는지 확인
-ocr_analyzer = OCRWithAnalysis('C:\\Users\\404ST011\PycharmProjects\pythonProject\savetext')
-
-# 사용자로부터 특정 제목 입력 받기
-target_title = input("특정 제목을 입력하세요: ")
-
-ocr_analyzer.analyze_ocr_result(target_title)
