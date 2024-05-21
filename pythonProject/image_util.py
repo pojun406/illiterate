@@ -128,7 +128,7 @@ def binarize_image(image, method='global', block_size=11, C=2):
 
 def run1():
     # 이미지 경로 설정
-    image_path = "path/to/your/image.jpg"
+    image_path = "D:\Project\illiterate\pythonProject\photo\hwansan.jpg"
 
     # 이미지 불러오기
     image = cv2.imread(image_path)
