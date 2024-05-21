@@ -33,15 +33,16 @@ public class UserService {
     }
 
     public String authenticate(String uid, String password) {
-        Optional<User> userId = userRepository.findByUid(uid);
-        Optional<User> userPw = userRepository.findByPassword(password);
-        if (userId.isPresent() && userPw.isPresent()){
-            String userid = uid;
-            return generateToken(userid); // 인증 성공
-        } else{
-            return null; // 인증 실패
+        Optional<User> optionalUser = userRepository.findByUid(uid);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                return generateToken(uid); // 인증 성공
+            }
         }
+        return null; // 인증 실패
     }
+
 
     public void userProcess(User user) {
     }
