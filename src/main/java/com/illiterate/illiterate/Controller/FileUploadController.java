@@ -1,8 +1,9 @@
-package com.illiterate.illiterate.testController;
+package com.illiterate.illiterate.Controller;
 
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 public class FileUploadController {
 
     private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/run.py";
