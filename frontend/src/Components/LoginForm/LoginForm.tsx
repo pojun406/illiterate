@@ -1,5 +1,3 @@
-// LoginForm.tsx
-
 import React, { useState } from "react";
 import { AiOutlineUser, AiOutlineLock } from "react-icons/ai";
 
@@ -14,7 +12,7 @@ const LoginForm = () => {
 
     return (
         <div>
-            <div className="border rounded-md overflow-hidden w-[500px]">
+            <div className="border rounded-md overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
                 <div className="px-4 py-6">
                     <div className="text-center font-bold text-blue-300 text-xl mb-4">로그인</div>
                     <form onSubmit={handleBasicSubmit}>
@@ -48,13 +46,13 @@ const LoginForm = () => {
                 </div>
             </div>
             <ul className="flex pb-4 justify-center">
-                <li className="relative inline-block px-4">
+                <li className="relative inline-block px-2 md:px-4">
                     <a href="/find-password" className="text-sm text-gray-400">비밀번호 찾기</a>
                 </li>
-                <li className="relative inline-block">
+                <li className="relative inline-block px-2 md:px-4">
                     <a href="/find-username" className="text-sm text-gray-400">아이디 찾기</a>
                 </li>
-                <li className="relative inline-block px-4">
+                <li className="relative inline-block px-2 md:px-4">
                     <a href="/auth/signup" className="text-sm text-gray-400">회원가입</a>
                 </li>
             </ul>
