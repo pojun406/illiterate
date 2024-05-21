@@ -18,7 +18,7 @@ const SignupForm: React.FC = () => {
         setPhoneNumber(phoneNumber);
     };
 
-    const handleVerificationCodeSend = (isCodeSent:boolean): void => {
+    const handleVerificationCodeSend = (isCodeSent: boolean): void => {
         setIsCodeSent(isCodeSent);
     };
 
@@ -33,7 +33,7 @@ const SignupForm: React.FC = () => {
         setUsername(username);
     };
 
-    const handleUsernameValidation = (isValid: boolean): void => {
+    const handleUseridValidation = (isValid: boolean): void => {
         setIsUsernameValid(isValid);
     };
 
@@ -51,22 +51,15 @@ const SignupForm: React.FC = () => {
         console.log("Selected Carrier:", selectedCarrier);
         console.log("isUsernameValid:", isUsernameValid);
     };
-    const handleTest = () =>{
-        console.log("Userid:", userid);
-    }
 
     return (
         <div>
-            <div className="border rounded-md overflow-hidden w-[500px]">
+            <div className="border rounded-md overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
                 <div className="px-4 py-6">
                     <div className="text-center font-bold text-blue-300 text-xl mb-4">회원가입</div>
                     <form onSubmit={handleSubmit}>
-                        <UserNameInput
-                            onUsernameChange={handleUsernameChange}/>
-                        <UserIdInput
-                            onUseridChange={handleUseridChange}
-                            UseridValid={handleUsernameValidation}
-                        />
+                        <UserNameInput onUsernameChange={handleUsernameChange} />
+                        <UserIdInput onUseridChange={handleUseridChange} UseridValid={handleUseridValidation}/>
                         <PasswordInput setPassword={setPassword} />
                         <PhoneNumberInput
                             onPhoneNumberChange={handlePhoneNumberChange}
@@ -75,8 +68,8 @@ const SignupForm: React.FC = () => {
                             onSelectCarrier={handleSelectCarrier}
                         />
                         <button
+                            type="submit"
                             className="w-full mt-4 px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
-                            onClick={handleTest}
                         >
                             회원가입
                         </button>
