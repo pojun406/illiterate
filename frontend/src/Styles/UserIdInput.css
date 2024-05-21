@@ -1,0 +1,15 @@
+@media (max-width: 640px) {
+    .user-id-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .user-id-container .flex-1 {
+        width: 100%;
+    }
+
+    .user-id-button {
+        margin-top: 8px;
+        width: 100%;
+    }
+}
