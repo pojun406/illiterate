@@ -1,13 +1,29 @@
 import React, { useState } from "react";
 import { AiOutlineUser, AiOutlineLock } from "react-icons/ai";
+import axios from "axios";
 
 const LoginForm = () => {
-    const [username, setUsername] = useState("");
+    const [userid, setUserid] = useState("");
     const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
 
-    const handleBasicSubmit = (e: React.FormEvent) => {
+    const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("로그인 - 사용자명:", username, "비밀번호:", password);
+        try {
+            const response = await axios.post("/api/login", null, {
+                params: {
+                    userid: userid,
+                    password: password
+                }
+            });
+            setMessage("로그인 성공: " + response.data);
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                setMessage("유효하지 않은 자격 증명");
+            } else {
+                setMessage("로그인 중 오류 발생");
+            }
+        }
     };
 
     return (
@@ -15,14 +31,15 @@ const LoginForm = () => {
             <div className="border rounded-md overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
                 <div className="px-4 py-6">
                     <div className="text-center font-bold text-blue-300 text-xl mb-4">로그인</div>
+                    {message && <div className="text-center text-red-500 mb-4">{message}</div>}
                     <form onSubmit={handleBasicSubmit}>
                         <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
                             <AiOutlineUser className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
                             <input
                                 type="text"
                                 placeholder="아이디"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={userid}
+                                onChange={(e) => setUserid(e.target.value)}
                                 className="block w-full px-4 py-2 ml-2 focus:outline-none"
                             />
                         </div>
