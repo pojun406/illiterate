@@ -20,8 +20,8 @@ public class UserController {
         return "ok";
     }
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
-        String token = userService.authenticate(email, password);
+    public ResponseEntity<String> login(@RequestParam String userid, @RequestParam String password) {
+        String token = userService.authenticate(userid, password);
         if (token != null) {
             return ResponseEntity.ok("로그인 성공: " + token);
         } else {
