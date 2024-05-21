@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { FaBroadcastTower } from "react-icons/fa";
 import { AiOutlinePhone, AiOutlineLock } from "react-icons/ai";
+import "../../Styles/PhoneNumberInput.css"; // CSS 파일을 import 합니다.
 
 interface PhoneNumberInputProps {
     onPhoneNumberChange: (phoneNumber: string) => void;
@@ -19,7 +19,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState("");
     const [verificationCode, setVerificationCode] = useState("");
-    const [isCodeSent,setIsCodeSent]=useState(false);
+    const [isCodeSent, setIsCodeSent] = useState(false);
 
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         let input = e.target.value.replace(/\D/g, "");
@@ -44,82 +44,33 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
         }
     };
 
-    const handleCarrierChange = (carrier: string): void => {
-        setSelectedCarrier(carrier);
-        onSelectCarrier(carrier);
-        setIsDropdownOpen(false);
+    const handleCodesend = () => {
+        setIsCodeSent(!isCodeSent);
+        onVerificationCodeSend(!isCodeSent);
     };
-
-    const handleCodesend = () =>{
-        if (isCodeSent == false){
-
-
-
-            setIsCodeSent(true);
-            onVerificationCodeSend(isCodeSent);
-        }
-        else setIsCodeSent(false);
-    }
 
     const handleVerificationCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setVerificationCode(e.target.value);
         onVerificationCodeChange(e.target.value);
-    }
-
-    const toggleDropdown = (): void => {
-        setIsDropdownOpen(!isDropdownOpen);
     };
 
     return (
         <>
-            <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black relative">
-                <FaBroadcastTower className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
-                <div
-                    className={`flex-1 px-4 py-2 ml-2 focus:outline-none rounded-r-md cursor-pointer ${selectedCarrier === "통신사를 선택해주세요." ? "text-gray-400" : ""}`}
-                    onClick={toggleDropdown}
-                >
-                    {selectedCarrier}
+            <div className="phone-number-container flex flex-col sm:flex-row items-center mb-4">
+                <div className="flex items-center flex-1 min-w-0 mb-2 sm:mb-0 sm:mr-2 border rounded-md focus-within:border-black focus-within:text-black">
+                    <AiOutlinePhone className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
+                    <input
+                        type="text"
+                        placeholder="전화번호"
+                        value={phoneNumber}
+                        onChange={handlePhoneNumberChange}
+                        className="flex-1 px-4 py-2 ml-2 focus:outline-none rounded-md sm:rounded-l-md rounded-r-md"
+                    />
                 </div>
-                {isDropdownOpen && (
-                    <ul className="absolute top-full left-0 w-full bg-white border rounded-md mt-1 grid grid-cols-2">
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer" onClick={() => handleCarrierChange("SKT")}>
-                            SKT
-                        </li>
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer"
-                            onClick={() => handleCarrierChange("SKT 알뜰폰")}>
-                            SKT 알뜰폰
-                        </li>
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer" onClick={() => handleCarrierChange("KT")}>
-                            KT
-                        </li>
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer"
-                            onClick={() => handleCarrierChange("KT 알뜰폰")}>
-                            KT 알뜰폰
-                        </li>
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer"
-                            onClick={() => handleCarrierChange("LGU+")}>
-                            LGU+
-                        </li>
-                        <li className="p-1 hover:bg-gray-200 cursor-pointer"
-                            onClick={() => handleCarrierChange("LGU+ 알뜰폰")}>
-                            LGU+ 알뜰폰
-                        </li>
-                    </ul>
-                )}
-            </div>
-            <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
-                <AiOutlinePhone className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
-                <input
-                    type="text"
-                    placeholder="전화번호"
-                    value={phoneNumber}
-                    onChange={handlePhoneNumberChange}
-                    className="flex-1 px-4 py-2 ml-2 focus:outline-none rounded-r-md"
-                />
                 <button
                     type="button"
                     onClick={handleCodesend}
-                    className="px-4 py-2 ml-2 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none"
+                    className="phone-number-button w-full sm:w-auto px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 focus:outline-none"
                 >
                     {isCodeSent ? "재전송" : "인증"}
                 </button>
@@ -132,7 +83,7 @@ const PhoneNumberInput: React.FC<PhoneNumberInputProps> = ({
                         placeholder="인증코드"
                         value={verificationCode}
                         onChange={handleVerificationCodeChange}
-                        className="block w-full px-4 py-2 ml-2 focus:outline-none"
+                        className="block w-full px-4 py-2 ml-2 focus:outline-none rounded-l-md rounded-r-md"
                     />
                 </div>
             )}
