@@ -10,8 +10,8 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class UserDto {
-    private int uid;
-    private String id;
+    private int id;
+    private String userid;
     private String username;
     private String password;
     private String phonenum;
