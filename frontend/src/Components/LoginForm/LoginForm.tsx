@@ -16,6 +16,7 @@ const LoginForm = () => {
                     password: password
                 }
             });
+            console.log("front : " + userid + ", "+ password);
             setMessage("로그인 성공: " + response.data);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {

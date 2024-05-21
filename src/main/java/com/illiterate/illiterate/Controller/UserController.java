@@ -16,15 +16,17 @@ public class UserController {
 
     @PostMapping("/join")
     public String registerUser(@RequestBody User user) {
-        userService.registerUser(user);
+        //userService.registerUser(user);
         return "ok";
     }
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestParam String userid, @RequestParam String password) {
         String token = userService.authenticate(userid, password);
         if (token != null) {
+            System.out.println("back : " + token + ", " + userid + ", " + password);
             return ResponseEntity.ok("로그인 성공: " + token);
         } else {
+            System.out.println("back : " + userid + ", " + password);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 자격 증명");
         }
     }
