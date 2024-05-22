@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JoinService {
+
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -24,19 +25,20 @@ public class JoinService {
         String password = joinDTO.getPassword();
         String phonenum = joinDTO.getPhonenum();
 
-
         Boolean isExist = userRepository.existsByUserid(userid);
 
         if (isExist) {
+
             return;
         }
 
         User data = new User();
 
-        data.setUserid(userid);
         data.setUsername(username);
+        data.setUserid(userid);
         data.setPassword(bCryptPasswordEncoder.encode(password));
         data.setPhonenum(phonenum);
+        data.setRole("ROLE_ADMIN");
 
         userRepository.save(data);
     }
