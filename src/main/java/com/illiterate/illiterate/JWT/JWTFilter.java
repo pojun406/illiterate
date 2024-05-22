@@ -1,7 +1,6 @@
 package com.illiterate.illiterate.JWT;
 
 import com.illiterate.illiterate.DTO.CustomUserDetails;
-import com.illiterate.illiterate.Service.CustomUserDetailsService;
 import com.illiterate.illiterate.Entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
