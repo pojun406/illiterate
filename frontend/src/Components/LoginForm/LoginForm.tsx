@@ -12,7 +12,7 @@ const LoginForm = () => {
         try {
             const response = await axios.post("/api/login", null, {
                 params: {
-                    userid: userid,
+                    username: userid,
                     password: password
                 }
             });
