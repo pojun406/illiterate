@@ -40,7 +40,4 @@ public class UserController {
         joinService.joinProcess(joinDTO);
         return "ok";
     }
-
-    @PostMapping("/login")
-    public void loginUser() {}
 }

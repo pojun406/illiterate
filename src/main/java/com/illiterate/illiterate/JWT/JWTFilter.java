@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -63,6 +64,9 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null);
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        System.out.println("Token valid, user authenticated: " + username);
+
 
         filterChain.doFilter(request, response);
     }
