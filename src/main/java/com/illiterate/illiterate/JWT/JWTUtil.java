@@ -24,10 +24,6 @@ public class JWTUtil {
         return getClaims(token).get("username", String.class);
     }
 
-    public String getRole(String token) {
-        return getClaims(token).get("role", String.class);
-    }
-
     public Boolean isExpired(String token) {
         return getClaims(token).getExpiration().before(new Date());
     }
