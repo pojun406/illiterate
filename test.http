@@ -1,0 +1,17 @@
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+  "id" : "po",
+  "password" : "123a"
+}
+###
+POST http://localhost:8080/api/join
+Content-Type: application/json
+
+{
+  "id" : "po",
+  "password" : "123a",
+  "phonenum": "01029284502",
+  "username": "이병"
+}
