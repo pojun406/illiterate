@@ -41,15 +41,34 @@ const SignupForm: React.FC = () => {
         setSelectedCarrier(carrier);
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        console.log("Userid:", userid);
-        console.log("Username:", username);
-        console.log("Password:", password);
-        console.log("Phone Number:", phoneNumber);
-        console.log("Verification Code:", verificationCode);
-        console.log("Selected Carrier:", selectedCarrier);
-        console.log("isUsernameValid:", isUsernameValid);
+
+        const data = {
+            userid,
+            username,
+            password,
+            phoneNumber
+        };
+
+        try {
+            const response = await fetch('/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Success:', result);
+            } else {
+                console.error('Error:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
 
     return (
