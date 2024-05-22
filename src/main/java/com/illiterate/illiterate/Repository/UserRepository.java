@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPassword(String password);
 
-    Boolean existsByUsername(String username);
+    Boolean existsByUserid(String userid);
 
-    User findByUserid(String username);
+    User findByUserid(String userid);
 }
