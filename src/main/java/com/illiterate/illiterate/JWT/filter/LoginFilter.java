@@ -1,8 +1,14 @@
-package com.illiterate.illiterate.JWT;
+package com.illiterate.illiterate.JWT.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kyungmin.lavanderia.auth.util.JWTUtil;
+import com.kyungmin.lavanderia.auth.util.MakeCookie;
+import com.kyungmin.lavanderia.auth.util.TokenExpirationTime;
+import com.kyungmin.lavanderia.member.data.entity.MemberEntity;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,38 +17,37 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
+@RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-    private Long accessExpiredMs = 1L;
-    private Long refreshExpiredMs = 86400L;
+    private Long accessExpiredMs = TokenExpirationTime.ACCESS_TIME;
+    private Long refreshExpiredMs = TokenExpirationTime.REFRESH_TIME;
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final MakeCookie makeCookie;
 
-
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, MakeCookie makeCookie) {
-
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-        this.makeCookie = makeCookie;
-    }
-
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
-        String userid = obtainUsername(request);
-        String password = obtainPassword(request);
+        try {
+            // json으로 로그인
+            ObjectMapper objectMapper = new ObjectMapper();
+            MemberEntity member = objectMapper.readValue(request.getInputStream(), MemberEntity.class);
 
-        System.out.println("username : " + userid);
-
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userid, password, null);
-        return authenticationManager.authenticate(authToken);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(member.getMemberId(), member.getMemberPwd());
+            // AuthenticationManager를 통해 인증 프로세스 시작
+            return authenticationManager.authenticate(authToken);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse authentication request body", e);
+        }
     }
 
+    //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
 
@@ -63,15 +68,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             ipAddress = request.getRemoteAddr();
         }
 
+        // Refresh 토큰 저장
+        jwtUtil.addRefreshEntity(memberId, refresh, refreshExpiredMs, ipAddress);
+
         //응답 설정
         response.setHeader("access", access);
         response.addCookie(makeCookie.createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
     }
 
+    //로그인 실패시 실행하는 메소드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-
         response.setStatus(401);
     }
 }

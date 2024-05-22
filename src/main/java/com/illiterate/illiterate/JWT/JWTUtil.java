@@ -18,6 +18,7 @@ public class JWTUtil {
 
     private SecretKey secretKey;
 
+
     public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
         // Use HS256 directly with the appropriate method
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -51,8 +52,9 @@ public class JWTUtil {
                 .before(new Date());
     }
 
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String createJwt(String category, String username, String role, Long expiredMs) {
         return Jwts.builder()
+                .claim("category", category)
                 .claim("username", username)
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))

@@ -3,7 +3,7 @@ package com.illiterate.illiterate.config;
 import com.illiterate.illiterate.JWT.JWTFilter;
 import com.illiterate.illiterate.JWT.JWTUtil;
 import com.illiterate.illiterate.JWT.LoginFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.illiterate.illiterate.JWT.MakeCookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,13 +23,15 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-
     private final JWTUtil jwtUtil;
+    private final MakeCookie makeCookie;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, MakeCookie makeCookie) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.makeCookie = makeCookie;
     }
     @Bean
     public CorsFilter corsFilter() {
@@ -58,6 +60,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, makeCookie);
+        loginFilter.setFilterProcessesUrl("/signin"); // 실제 로그인을 처리할 URL을 입력
+
         //csrf disable
         http
                 .csrf((auth) -> auth.disable());
@@ -80,7 +85,7 @@ public class SecurityConfig {
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, makeCookie), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http
