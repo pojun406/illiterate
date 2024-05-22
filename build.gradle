@@ -35,6 +35,7 @@ dependencies {
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	runtimeOnly 'com.mysql:mysql-connector-j:8.0.32' // 버전 정보 추가
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// H2 Database (for development)
 	runtimeOnly 'com.h2database:h2'
