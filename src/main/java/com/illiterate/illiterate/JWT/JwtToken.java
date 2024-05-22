@@ -1,4 +1,4 @@
-package com.illiterate.illiterate.DTO;
+package com.illiterate.illiterate.JWT;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
