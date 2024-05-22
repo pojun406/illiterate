@@ -3,7 +3,6 @@ package com.illiterate.illiterate.config;
 import com.illiterate.illiterate.JWT.JWTFilter;
 import com.illiterate.illiterate.JWT.JWTUtil;
 import com.illiterate.illiterate.JWT.LoginFilter;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,18 +15,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Collections;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
     private final AuthenticationConfiguration authenticationConfiguration;
-
     @Autowired
     private final JWTUtil jwtUtil;
 
@@ -35,6 +30,17 @@ public class SecurityConfig {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+    }
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
     @Bean
@@ -51,26 +57,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http.cors((cors) -> cors
-                .configurationSource(new CorsConfigurationSource() {
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-
-                        CorsConfiguration configuration = new CorsConfiguration();
-
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000")); // 허용할 포트
-                        configuration.setAllowedMethods(Collections.singletonList("*")); // 모든 메소드 허용
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*")); // 헤더 허용
-                        configuration.setMaxAge(3600L);
-
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization")); // 헤더 허용
-
-                        return null;
-                    }
-                }));
 
         //csrf disable
         http
@@ -104,4 +90,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
