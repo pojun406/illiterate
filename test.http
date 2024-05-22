@@ -1,9 +1,9 @@
-POST http://localhost:8080/api/login
+POST http://localhost:8080/login
 Content-Type: application/json
 
 {
   "id" : "po",
-  "password" : "123a"
+  "password" : "examplePasswordHash"
 }
 ###
 POST http://localhost:8080/api/join
