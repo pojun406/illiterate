@@ -16,9 +16,13 @@ const LoginForm = () => {
                     password: password
                 }
              });
+            const authHeader = response.headers['authorization'];
+            if (authHeader) {
+                localStorage.setItem('authToken', authHeader);
+            }
 
             console.log("front : " + userid + ", "+ password);
-            setMessage("로그인 성공: " + response.data);
+            setMessage(`로그인 성공: ${authHeader}`);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 setMessage("유효하지 않은 자격 증명");
