@@ -3,6 +3,7 @@ package com.illiterate.illiterate.config;
 import com.illiterate.illiterate.JWT.JWTFilter;
 import com.illiterate.illiterate.JWT.JWTUtil;
 import com.illiterate.illiterate.JWT.LoginFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,7 +19,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
     private final AuthenticationConfiguration authenticationConfiguration;
+
+    @Autowired
     private final JWTUtil jwtUtil;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
