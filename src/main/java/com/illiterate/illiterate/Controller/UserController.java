@@ -1,8 +1,9 @@
 package com.illiterate.illiterate.Controller;
 
 
+import com.illiterate.illiterate.DTO.JoinDto;
 import com.illiterate.illiterate.Entity.User;
-import com.illiterate.illiterate.Service.UserService;
+import com.illiterate.illiterate.Service.JoinService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +12,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final JoinService joinService;
+
+    public UserController(JoinService joinService) {
+        this.joinService = joinService;
+    }
 
     @PostMapping("/join")
-    public String registerUser(@RequestBody User user) {
-        userService.registerUser(user);
+    public String registerUser(JoinDto joinDTO) {
+        joinService.joinProcess(joinDTO);
         return "ok";
     }
     @PostMapping("/login")

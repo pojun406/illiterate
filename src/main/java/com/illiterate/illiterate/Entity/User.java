@@ -1,27 +1,30 @@
 package com.illiterate.illiterate.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @Table(name = "user")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uuid;
-    private String uid;
-    private String username;
-    private String password;
-    private String phonenum;
 
-    private User(String uid, String password) {
-        this.uid = uid;
-        this.password = password;
-    }
+    private String uid;
+    private String password;
+    private String username;
+    private String phonenum;
 
     public User() {
 
