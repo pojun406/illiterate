@@ -15,7 +15,8 @@ const LoginForm = () => {
                     username: userid,
                     password: password
                 }
-            });
+             });
+
             console.log("front : " + userid + ", "+ password);
             setMessage("로그인 성공: " + response.data);
         } catch (error) {
@@ -24,6 +25,19 @@ const LoginForm = () => {
             } else {
                 setMessage("로그인 중 오류 발생");
             }
+        }
+    };
+    const handleFetchProtectedResource = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get("/api/protected", {
+                headers: {
+                    Authorization: token
+                }
+            });
+            console.log("Protected resource:", response.data);
+        } catch (error) {
+            console.error("Failed to fetch protected resource:", error);
         }
     };
 

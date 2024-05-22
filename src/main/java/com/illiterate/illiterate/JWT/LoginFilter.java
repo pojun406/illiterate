@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.JWT;
 
+import com.illiterate.illiterate.DTO.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,58 +17,47 @@ import java.util.Iterator;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-    private Long accessExpiredMs = 1L;
-    private Long refreshExpiredMs = 86400L;
-
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-    private final MakeCookie makeCookie;
 
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, MakeCookie makeCookie) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
 
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.makeCookie = makeCookie;
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
-        String userid = obtainUsername(request);
+        //클라이언트 요청에서 username, password 추출
+        String username = obtainUsername(request);
         String password = obtainPassword(request);
 
-        System.out.println("username : " + userid);
+        //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userid, password, null);
+        //token에 담은 검증을 위한 AuthenticationManager로 전달
         return authenticationManager.authenticate(authToken);
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        //유저 정보
-        String memberId = authentication.getName();
-
+        String username = customUserDetails.getUsername();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        //토큰 생성
-        String access = jwtUtil.createJwt("access", memberId, role, accessExpiredMs);
-        String refresh = jwtUtil.createJwt("refresh", memberId, role, refreshExpiredMs);
+        String token = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
+        response.setHeader("Authorization", "Bearer " + token);
 
-        String ipAddress = request.getHeader("X-FORWARDED-FOR");
-        if (ipAddress == null) {
-            ipAddress = request.getRemoteAddr();
-        }
-
-        //응답 설정
-        response.setHeader("access", access);
-        response.addCookie(makeCookie.createCookie("refresh", refresh));
-        response.setStatus(HttpStatus.OK.value());
+        // 디버깅 메시지
+        System.out.println("JWT Token generated: " + token);
     }
+
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
