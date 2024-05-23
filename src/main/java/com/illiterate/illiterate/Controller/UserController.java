@@ -34,7 +34,6 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-
     @PostMapping("/join")
     public String registerUser(@RequestBody JoinDto joinDTO) {
         joinService.joinProcess(joinDTO);
