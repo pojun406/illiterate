@@ -2,6 +2,7 @@ package com.illiterate.illiterate.JWT;
 
 import com.illiterate.illiterate.DTO.CustomUserDetails;
 import com.illiterate.illiterate.Entity.User;
+import com.illiterate.illiterate.Service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,13 +13,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
 
-    public JWTFilter(JWTUtil jwtUtil) {
+    public JWTFilter(JWTUtil jwtUtil, CustomUserDetailsService userDetailsService) {
 
         this.jwtUtil = jwtUtil;
     }
