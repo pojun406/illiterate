@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import Logo from "../../../Components/Logo/Logo";
-import LoginForm from "../../../Components/LoginForm/LoginForm";
 import { AiOutlineLock, AiOutlineUser } from "react-icons/ai";
 import axios from "axios";
 
@@ -9,6 +8,7 @@ const Login = () => {
     const [userid, setUserid] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -28,10 +28,10 @@ const Login = () => {
             if (authHeader) {
                 localStorage.setItem('authToken', authHeader);
                 console.log('Token stored:', authHeader);
+                setIsLoggedIn(true);
             } else {
                 console.error('No authorization header found in response.');
             }
-
             setMessage(`로그인 성공: ${authHeader}`);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -41,16 +41,17 @@ const Login = () => {
             }
         }
     };
+    if (isLoggedIn) {
+        navigate("/"); // 로그인 성공 시 리다이렉트
+    }
 
     const handleFetchProtectedResource = async () => {
         try {
             const token = localStorage.getItem("authToken");
             if (!token) {
-                setMessage("인증 토큰이 없습니다"+token);
                 console.error("No auth token found in localStorage.");
                 return;
             }
-            console.log('Retrieved token:', token);
 
             const response = await axios.get("/api/protected", {
                 headers: {
@@ -60,17 +61,8 @@ const Login = () => {
             console.log("Protected resource:", response.data);
             navigate('/');
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                if (error.response?.status === 403) {
-                    setMessage("권한이 없습니다. 로그인 상태를 확인하세요.");
-                } else {
-                    setMessage("보호된 리소스 가져오기에 실패했습니다");
-                }
-                console.error("Failed to fetch protected resource:", error.response || error.message);
-            } else {
-                console.error("Unexpected error:", error);
-                setMessage("예기치 않은 오류가 발생했습니다.");
-            }
+            console.error("Unexpected error:", error);
+            setMessage("예기치 않은 오류가 발생했습니다.");
         }
     };
 
@@ -123,7 +115,7 @@ const Login = () => {
                             <a href="/find-username" className="text-sm text-gray-400">아이디 찾기</a>
                         </li>
                         <li className="relative inline-block px-2 md:px-4">
-                            <a href="/auth/signup" className="text-sm text-gray-400">회원가입</a>
+                            <a href="/auth/Signup/Signup" className="text-sm text-gray-400">회원가입</a>
                         </li>
                     </ul>
                 </div>
