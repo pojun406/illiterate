@@ -16,7 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class FileUploadController {
-
     private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/run.py";
     private static final String SAVE_TEXT_FOLDER = "/pythonProject/savetext/";
 
@@ -51,7 +50,6 @@ public class FileUploadController {
                 System.out.println(line);
             }
         }
-
         process.waitFor();
     }
 

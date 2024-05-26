@@ -5,7 +5,7 @@ import Header from "./Components/Header";
 import ServiceCenter from "./Pages/ServiceCenter/ServiceCenter";
 import Application from "./Pages/Application/Application";
 import Login from "./Pages/auth/Login/Login";
-import Signup from "./Pages/auth/Signup";
+import Signup from "./Pages/auth/Signup/Signup";
 
 function App() {
   return (
