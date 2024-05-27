@@ -23,15 +23,18 @@ const Header = () => {
         localStorage.clear();
     };
 
-    useEffect(()=>{
-        const message = AccessToken();
-        if (message == "토큰이 없습니다."){
-            setIsLoggedIn(false);
-        }
-        else {
-            setIsLoggedIn(true);
-        }
-    });
+    useEffect(() => {
+        const checkToken = async () => {
+            const result = await AccessToken();
+            if (result == '토큰이 없습니다.'){
+                setIsLoggedIn(false);
+            }else {
+                setIsLoggedIn(true);
+            }
+        };
+
+        checkToken();
+    }, []);
 
     return (
         <header>

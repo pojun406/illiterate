@@ -26,7 +26,7 @@ const Signup: React.FC = () => {
         const data = { userid, password, username, email };
 
         try {
-            const response = await fetch("/join", {
+            const response = await fetch("/api/join", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
