@@ -27,26 +27,6 @@ const ImageUpload: React.FC = () => {
         }
     };
 
-    const handleUpload = async () => {
-        if (file) {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            try {
-                const response = await axios.post('http://localhost:8080/api/images/upload', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                if (response.status === 200) {
-                    alert('File uploaded successfully: ' + file.name);
-                }
-            } catch (error) {
-                console.error('Error uploading the file:', error);
-            }
-        }
-    };
-
     const handleRemoveImage = () => {
         setFile(null);
         setFilePath(null);
@@ -55,55 +35,67 @@ const ImageUpload: React.FC = () => {
         }
     };
 
+    const handleOCR = async () => {
+        try {
+            const file = filePath;
+            if (!file) {
+                console.error("No auth token found in localStorage.");
+                return;
+            }
+
+            const response = await axios.post("/api/upload", {
+                file: {
+                    path: `${file}`
+                }
+            });
+            console.log("OCR resource:", response.data);
+        } catch (error) {
+            console.error("OCR error:", error);
+        }
+    };
+
     return (
-        <div>
+        <div className="p-4 flex flex-col justify-center items-center sm:px-12 md:px-24 lg:px-48 xl:px-96">
             {!filePath ? (
-                <>
+                <div className="min-w-[280px] w-full sm:min-w-[360px]">
                     <div
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
-                        style={{ border: '2px dashed #cccccc', padding: '20px', textAlign: 'center', cursor: 'pointer' }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer min-h-[40vh] sm:min-h-[50vh]"
                     >
                         Drag & Drop your image here
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
                     </div>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }}
-                    />
-                    <button onClick={() => fileInputRef.current?.click()}>Browse</button>
-                </>
-            ) : (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <img src={filePath} alt="Selected" style={{ maxWidth: '100%' }} />
-                    <button
-                        onClick={handleRemoveImage}
-                        style={{
-                            position: 'absolute',
-                            top: '10px',
-                            right: '10px',
-                            background: 'red',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '25px',
-                            height: '25px',
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            lineHeight: '25px'
-                        }}
-                    >
-                        &times;
-                    </button>
-                    <p>File Path: {filePath}</p>
                 </div>
-            )}
-            {filePath && (
-                <>
-                    <hr/>
-                    <button onClick={handleUpload}>Upload</button>
-                </>
+            ) : (
+                <div className="p-4 flex flex-col justify-center items-center">
+                    <div className="relative">
+                        <img src={filePath} alt="Selected" className="max-w-xs sm:max-w-md md:max-w-lg lg:max-w-screen-md" />
+                        <button
+                            onClick={handleRemoveImage}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    <div className="mt-4 w-full text-center">
+                        <p className="mt-2">File Path: {filePath}</p>
+                        <div className="mt-4 flex flex-col space-y-2">
+                            <button
+                                onClick={handleOCR}
+                                className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
+                            >
+                                OCR하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
