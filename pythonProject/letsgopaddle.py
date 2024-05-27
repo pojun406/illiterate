@@ -105,13 +105,3 @@ def run2():
     result = ocr.run_ocr(image_path, debug=True)
 
     return result
-
-# 실행 코드
-if __name__ == '__main__':
-    ocr = MyPaddleOCR()
-
-    base_directory = 'C:/Users/404ST011/PycharmProjects/pythonProject/photo'
-    image_filename = input("이미지 파일 이름을 입력하세요: ")
-    image_path = os.path.join(base_directory, image_filename)
-    result = ocr.run_ocr(image_path, debug=True)
-    print(result)
