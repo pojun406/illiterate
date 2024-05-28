@@ -126,6 +126,30 @@ def binarize_image(image, method='global', block_size=11, C=2):
     return binary_image
 
 
+def run1():
+    # 이미지 경로 설정
+    image_path = "D:\Project\illiterate\pythonProject\photo\hwansan.jpg"
+
+    # 이미지 불러오기
+    image = cv2.imread(image_path)
+
+    # 이진화된 이미지
+    binary_image = binarize_image(image, method='adaptive_gaussian')
+
+    # 선명도 향상된 이미지
+    enhanced_image = enhance_image(image)
+
+    # 확대된 이미지
+    resized_image = resize_image(image, scale=2.0)
+
+    # 이미지에 텍스트 추가
+    text_image = put_text(image, "Sample Text", 50, 50)
+
+    # 결과 이미지들 표시
+    plt_imshow(["Original", "Binary", "Enhanced", "Resized", "Text"],
+               [image, binary_image, enhanced_image, resized_image, text_image])
+
+
 # 테스트 코드
 if __name__ == "__main__":
     image_path = "path/to/your/image.jpg"  # 이미지 경로를 입력하세요
