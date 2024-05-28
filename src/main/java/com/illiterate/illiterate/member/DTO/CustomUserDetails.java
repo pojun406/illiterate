@@ -1,6 +1,6 @@
-package com.illiterate.illiterate.DTO;
+package com.illiterate.illiterate.member.DTO;
 
-import com.illiterate.illiterate.Entity.User;
+import com.illiterate.illiterate.member.Entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 
