@@ -1,4 +1,4 @@
-package com.illiterate.illiterate.Service;
+package com.illiterate.illiterate.member.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class PasswordEncoderExample {
