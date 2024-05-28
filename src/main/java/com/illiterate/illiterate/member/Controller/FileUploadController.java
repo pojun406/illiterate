@@ -1,4 +1,4 @@
-package com.illiterate.illiterate.Controller;
+package com.illiterate.illiterate.member.Controller;
 
 
 import org.springframework.http.ResponseEntity;
