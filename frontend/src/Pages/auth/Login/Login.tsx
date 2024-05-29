@@ -13,15 +13,17 @@ const Login = () => {
 
     useEffect(() => {
         handleFetchProtectedResource();
-    }, []);
+    }, []); // 빈 배열을 추가하여 한 번만 실행되도록 설정
 
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post("/login", null, {
-                params: {
-                    username: userid,
-                    password: password
+            const response = await axios.post("/login", {
+                username: userid,
+                password: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
             const authHeader = response.headers['authorization'];
