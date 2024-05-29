@@ -21,7 +21,7 @@ public class User {
     private String userid;
     private String username;
     private String password;
-    private String phonenum;
+    private String email;
 
     private RolesType roles = RolesType.ROLE_USER;        // 권한
 
