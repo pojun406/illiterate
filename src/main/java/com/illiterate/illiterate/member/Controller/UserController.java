@@ -7,21 +7,16 @@ import com.illiterate.illiterate.member.DTO.request.LoginDto;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.Service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-
-    public UserController(UserService userService, AuthenticationManager authenticationManager) {
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-    }
 
     @PostMapping("/join")
     public String registerUser(@RequestBody JoinDto joinDTO) {

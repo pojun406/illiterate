@@ -43,16 +43,16 @@ public class UserService {
     @Transactional
     public int joinUser(JoinDto joinDto) {
         // 아이디 중복 체크
-        if (userRepository.existsByUserId(joinDto.getUserid())) {
+        if (userRepository.existsByUserid(joinDto.getUserid())) {
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
-        } else if (userRepository.existsByPhoneNumber(joinDto.getPhonenum())) {
+        } else if (userRepository.existsByEmail(joinDto.getEmail())) {
             throw new MemberException(DUPLICATED_MEMBER_PHONE_NUMBER);
         }
 
         User member = new User();
         member.setUserid(joinDto.getUserid());
         member.setPassword(passwordEncoder.encode(joinDto.getPassword()));
-        member.setPhonenum(joinDto.getPhonenum());
+        member.setEmail(joinDto.getEmail());
         member.setUsername(joinDto.getUsername());
 
         int id = userRepository.save(member).getId();
