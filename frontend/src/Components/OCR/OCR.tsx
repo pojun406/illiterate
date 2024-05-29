@@ -10,6 +10,7 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const filePath = location.state?.filePath || sessionStorage.getItem('filePath');
+    const [imageData, setImageData] = useState<string | null>(sessionStorage.getItem('imageData'));
 
     useEffect(() => {
         if (!filePath) {
@@ -25,6 +26,13 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
                 if (response.ok) {
                     const data = await response.json();
                     data.filePath = filePath; // 파일 경로를 데이터에 추가
+                    console.log('Fetched data:', data); // 디버깅을 위해 데이터 출력
+                    if (data.image) {
+                        sessionStorage.setItem('imageData', data.image); // 이미지 데이터를 세션 스토리지에 저장
+                        setImageData(data.image);
+                    } else {
+                        console.error('Image data is undefined');
+                    }
                     onDataLoaded(data);
                     setLoading(false);
                 } else {
@@ -36,8 +44,12 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
             }
         };
 
-        fetchData();
-    }, [filePath, navigate, onDataLoaded]);
+        if (!imageData) {
+            fetchData();
+        } else {
+            setLoading(false);
+        }
+    }, [filePath, navigate, onDataLoaded, imageData]);
 
     if (loading) {
         return (
@@ -52,7 +64,11 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
         );
     }
 
-    return null;
+    return (
+        <div>
+            {imageData && <img src={imageData} alt="OCR Result" />}
+        </div>
+    );
 };
 
 export default OCR;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, useBeforeUnload } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import OCR from "../../Components/OCR/OCR";
 import DocumentA from "../../Components/DocumentType/DocumentA/DocumentA";
 import DocumentB from "../../Components/DocumentType/DocumentB/DocumentB";
@@ -29,44 +29,6 @@ const Result = () => {
         }
     };
 
-    useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            event.preventDefault();
-            event.returnValue = '현재 입력되어 있는 값들은 초기화됩니다.';
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            sessionStorage.removeItem('ocrData'); // 세션 스토리지에서 데이터 제거
-            sessionStorage.removeItem('filePath'); // 세션 스토리지에서 파일 경로 제거
-        };
-    }, []);
-
-    useBeforeUnload((event) => {
-        event.preventDefault();
-        event.returnValue = '현재 입력되어 있는 값들은 초기화됩니다.';
-    });
-
-    const handleNavigation = (path: string) => {
-        const confirmNavigation = window.confirm('현재 입력되어 있는 값들은 초기화됩니다. 계속하시겠습니까?');
-        if (confirmNavigation) {
-            navigate(path);
-        }
-    };
-    const useCustomBlocker = (blocker: (tx: any) => void) => {
-        useBlocker((tx: any) => {
-            const confirmNavigation = window.confirm('현재 입력되어 있는 값들은 초기화됩니다. 계속하시겠습니까?');
-            if (confirmNavigation) {
-                blocker(tx);
-            }
-        });
-    };
-
-    useCustomBlocker((tx: any) => {
-        tx.retry();
-    });
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
