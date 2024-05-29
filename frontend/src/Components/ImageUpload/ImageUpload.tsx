@@ -1,6 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import axios from 'axios';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ImageUpload: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -8,6 +7,17 @@ const ImageUpload: React.FC = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const navigate = useNavigate(); // useNavigate hook 사용
+
+    useEffect(() => {
+        const savedFile = sessionStorage.getItem('uploadedFile');
+        if (savedFile) {
+            const { data, type } = JSON.parse(savedFile);
+            const blob = new Blob([new Uint8Array(data)], { type });
+            const url = URL.createObjectURL(blob);
+            setFile(blob as File);
+            setFilePath(url);
+        }
+    }, []);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -38,11 +48,18 @@ const ImageUpload: React.FC = () => {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+        sessionStorage.removeItem('uploadedFile');
     };
 
     const handleConfirm = () => {
-        setShowModal(false);
-        navigate('/Result', { state: { filePath: filePath } });
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setShowModal(false);
+                navigate('/result', { state: { fromImageUpload: true, filePath } });
+            };
+            reader.readAsArrayBuffer(file);
+        }
     };
 
     const handleCancel = () => {
@@ -70,8 +87,6 @@ const ImageUpload: React.FC = () => {
                     </div>
                 </div>
             )}
-
-
             {showModal && (
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
                     <div className="bg-white p-8 rounded-lg shadow-2xl w-3/4">
