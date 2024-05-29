@@ -6,6 +6,9 @@ const Main = () => {
     return(
         <>
             <Header/>
+            <div>
+                Main
+            </div>
         </>
     );
 };

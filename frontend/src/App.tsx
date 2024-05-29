@@ -6,13 +6,15 @@ import ServiceCenter from "./Pages/ServiceCenter/ServiceCenter";
 import Application from "./Pages/Application/Application";
 import Login from "./Pages/auth/Login/Login";
 import Signup from "./Pages/auth/Signup/Signup";
+import Result from './Pages/Result/Result';
 
 function App() {
   return (
     <Routes>
-        <Route element={<Header />}>
+        <Route element={<Header/>}>
             <Route path="application" element={<Application />} />
             <Route path="servicecenter" element={<ServiceCenter />} />
+            <Route path='result' element={<Result/>} />
         </Route>
         <Route path="/" element={<Main/>}/>
 
