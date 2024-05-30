@@ -60,20 +60,27 @@ public class UserService {
         return id;
     }
 
-    public LoginTokenDto login(LoginDto loginDto) {
+    public LoginTokenDto login(LoginDto memberloginDto) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                loginDto.getEmail(),
-                loginDto.getPassword()
+                memberloginDto.getUserid(),
+                memberloginDto.getPassword()
         );
 
+
+        System.out.println("Before authentication: " + authentication);
+
         Authentication authenticated = authenticationManager.authenticate(authentication);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        System.out.println("After authentication: " + authenticated);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
         // accessToken, refreshToken 생성
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
+
+        System.out.println("access : " + accessToken);
+        System.out.println("refresh : " + refreshToken);
 
         LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken);
 
