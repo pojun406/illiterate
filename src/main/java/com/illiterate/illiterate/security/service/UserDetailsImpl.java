@@ -1,6 +1,5 @@
 package com.illiterate.illiterate.security.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.illiterate.illiterate.member.Entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
