@@ -25,6 +25,7 @@ public class UserController {
     }
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
+        System.out.println("logindto : " + loginDto);
         return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
     }
 }

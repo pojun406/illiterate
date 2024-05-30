@@ -1,8 +1,8 @@
 CREATE TABLE User
 (
     id        INT NOT NULL AUTO_INCREMENT,
-    user_id   VARCHAR(50) NOT NULL,
-    user_name VARCHAR(10) NOT NULL,
+    userid   VARCHAR(50) NOT NULL,
+    username VARCHAR(10) NOT NULL,
     password  VARCHAR(225) NOT NULL,
     email  VARCHAR(255) NOT NULL,
     roles      VARCHAR(10) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE OCR_Result
     CONSTRAINT FK_User_TO_OCR_Result FOREIGN KEY (id) REFERENCES User (id)
 ) COMMENT 'OCR결과';
 
-INSERT INTO User (user_id, user_name, password, email, roles)
+INSERT INTO User (userid, username, password, email, roles)
 VALUES ('test', 'JohnDoe', '$2a$10$flj8Cw.17anZaN6l.Wolte0z/J9mfl4WSDVYSyj/NM8OxrcMxJb5S', 'john@example.com', 'admin');
 # 비밀번호 = 1234
 select * from user;

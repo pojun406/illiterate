@@ -23,6 +23,8 @@ public class User {
     private String password;
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(255)")
     private RolesType roles = RolesType.ROLE_USER;        // 권한
 
 }
