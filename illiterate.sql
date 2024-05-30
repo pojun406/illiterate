@@ -3,7 +3,7 @@ CREATE TABLE User
     id        INT NOT NULL AUTO_INCREMENT,
     user_id   VARCHAR(50) NOT NULL,
     user_name VARCHAR(10) NOT NULL,
-    password  VARCHAR(25) NOT NULL,
+    password  VARCHAR(225) NOT NULL,
     email  VARCHAR(255) NOT NULL,
     roles      VARCHAR(10) NOT NULL,
     PRIMARY KEY (id)
