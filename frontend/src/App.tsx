@@ -1,27 +1,36 @@
-import React from 'react';
-import {Route, Routes} from "react-router-dom";
-import Main from "./Pages/Main";
-import Header from "./Components/Header";
-import ServiceCenter from "./Pages/ServiceCenter/ServiceCenter";
-import Application from "./Pages/Application/Application";
-import Login from "./Pages/auth/Login/Login";
-import Signup from "./Pages/auth/Signup/Signup";
+import { useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import Application from './Pages/Application/Application';
+import ServiceCenter from './Pages/ServiceCenter/ServiceCenter';
 import Result from './Pages/Result/Result';
+import Main from './Pages/Main';
+import Login from './Pages/auth/Login/Login';
+import Signup from './Pages/auth/Signup/Signup';
+import Header from './Components/Header';
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === '/') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [location.pathname]);
+
   return (
     <Routes>
-        <Route element={<Header/>}>
-            <Route path="application" element={<Application />} />
-            <Route path="servicecenter" element={<ServiceCenter />} />
-            <Route path='result' element={<Result/>} />
-        </Route>
+      <Route element={<Header/>}>
+        <Route path="application" element={<Application />} />
+        <Route path="servicecenter" element={<ServiceCenter />} />
+        <Route path='result' element={<Result/>} />
         <Route path="/" element={<Main/>}/>
-
-        <Route path="/auth">
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-        </Route>
+      </Route>
+      <Route path="/auth">
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
+      </Route>
     </Routes>
   );
 }

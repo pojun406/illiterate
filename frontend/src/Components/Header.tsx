@@ -1,16 +1,39 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navigation from "./Navigation/Navigation";
 
-
 const Header = () => {
-    // Header 사이트의 제일 위 헤더 입니다.
+    const mainRef = useRef<HTMLDivElement>(null);
+    const [scrollPosition, setScrollPosition] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (mainRef.current) {
+                setScrollPosition(mainRef.current.scrollTop);
+            }
+        };
+
+        const mainElement = mainRef.current;
+        if (mainElement) {
+            mainElement.addEventListener('scroll', handleScroll);
+        }
+
+        return () => {
+            if (mainElement) {
+                mainElement.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, []);
+
     return (
-        <header className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-            <Navigation />
-            <hr/>
-            <Outlet />
-        </header>
+        <div className="flex flex-col h-screen">
+            <header className="fixed top-0 left-0 w-full bg-white z-50 shadow-md lg:px-8">
+                <Navigation />
+            </header>
+            <main ref={mainRef} className="flex-1 overflow-y-scroll mt-20 scrollbar-hide">
+                <Outlet context={{ scrollPosition }} />
+            </main>
+        </div>
     );
 };
 
