@@ -30,19 +30,17 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		System.out.println("auth : " + authentication);
-		String email = authentication.getName();
+		String id = authentication.getName();
 		String password = authentication.getCredentials().toString();
 
 		UserDetailsImpl userDetails;
 
-		userDetails = (UserDetailsImpl)memberUserDetailsService.loadUserByUsername(email);
+		userDetails = (UserDetailsImpl)memberUserDetailsService.loadUserByUsername(id);
 
 		// 비밀번호 확인
 		if(!passwordEncoder.matches(password, userDetails.getPassword())) {
 			throw new CustomSecurityException(CHECK_ID_OR_PASSWORD);
 		}
-
-
 
 		return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
 	}
