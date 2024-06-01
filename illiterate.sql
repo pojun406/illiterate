@@ -33,6 +33,6 @@ CREATE TABLE OCR_Result
 ) COMMENT 'OCR결과';
 
 INSERT INTO User (userid, username, password, email, roles)
-VALUES ('test', 'JohnDoe', '$2a$10$flj8Cw.17anZaN6l.Wolte0z/J9mfl4WSDVYSyj/NM8OxrcMxJb5S', 'john@example.com', 'admin');
+VALUES ('test', 'JohnDoe', '$2a$10$EJ5IFDV.iroLZGpKslDH9.qJ8A9jjuP6ALlhZVf7I2ixgajCzSNe6', 'john@example.com', 'ROLE_ADMIN');
 # 비밀번호 = 1234
 select * from user;
