@@ -3,11 +3,9 @@ package com.illiterate.illiterate.board.Service;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
-import com.illiterate.illiterate.board.common.APIResponseDto;
-import com.illiterate.illiterate.board.common.ResponseUtil;
-import com.illiterate.illiterate.board.exception.RestApiException;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.response.ErrorResponse;
+import com.illiterate.illiterate.member.exception.BoardException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
+import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
 
 @Slf4j
 @Service
@@ -45,7 +45,7 @@ public class BoardService {
         // Id에 해당하는 게시글이 있는지 확인
         Optional<Board> board = boardRepository.findById(id);
         if (board.isEmpty()) { // 해당 게시글이 없다면
-            throw new RestApiException(BoardErrorCode.NOT_FOUND_WRITING);
+            throw new BoardException(NOT_FOUND_WRITING);
         }
 
         // board 를 responseDto 로 변환 후, ResponseEntity body 에 dto 담아 리턴
