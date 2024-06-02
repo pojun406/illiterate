@@ -67,7 +67,10 @@ public class UserService {
                 memberloginDto.getPassword()
         );
 
+        System.out.println("before auth : " + authentication);
         Authentication authenticated = authenticationManager.authenticate(authentication);
+
+        System.out.println("after auth : " + authentication);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
