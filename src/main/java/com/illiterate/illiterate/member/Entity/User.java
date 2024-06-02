@@ -16,7 +16,7 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     private String userid;
     private String username;
@@ -26,5 +26,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
     private RolesType roles = RolesType.ROLE_USER;        // 권한
+
+    public void resetPassword(String password) {
+        this.password = password;
+    }
 
 }

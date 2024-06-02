@@ -3,9 +3,11 @@ package com.illiterate.illiterate.member.Service;
 import com.illiterate.illiterate.common.repository.RedisRepository;
 import com.illiterate.illiterate.member.DTO.request.JoinDto;
 import com.illiterate.illiterate.member.DTO.request.LoginDto;
+import com.illiterate.illiterate.member.DTO.request.UserPasswordResetRequestDto;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.member.Repository.UserRepository;
+import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
@@ -24,8 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-import static com.illiterate.illiterate.common.enums.MemberErrorCode.DUPLICATED_MEMBER_EMAIL;
-import static com.illiterate.illiterate.common.enums.MemberErrorCode.DUPLICATED_MEMBER_PHONE_NUMBER;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.*;
 
 @Slf4j
 @Service
@@ -41,7 +42,7 @@ public class UserService {
      * 회원 등록
      */
     @Transactional
-    public int joinUser(JoinDto joinDto) {
+    public long joinUser(JoinDto joinDto) {
         // 아이디 중복 체크
         if (userRepository.existsByUserid(joinDto.getUserid())) {
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
@@ -55,7 +56,7 @@ public class UserService {
         member.setEmail(joinDto.getEmail());
         member.setUsername(joinDto.getUsername());
 
-        int id = userRepository.save(member).getId();
+        long id = userRepository.save(member).getId();
 
         return id;
     }
@@ -66,12 +67,7 @@ public class UserService {
                 memberloginDto.getPassword()
         );
 
-
-        System.out.println("Before authentication: " + authentication);
-
         Authentication authenticated = authenticationManager.authenticate(authentication);
-
-        System.out.println("After authentication: " + authenticated);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
@@ -79,14 +75,60 @@ public class UserService {
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
-        System.out.println("access : " + accessToken);
-        System.out.println("refresh : " + refreshToken);
-
         LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken);
 
         // redis 토큰 정보 저장
         redisRepository.saveToken(userDetail.getId(), refreshToken);
 
         return loginTokenDto;
+    }
+
+    // 비밀번호 초기화
+    public void resetPassword(UserDetailsImpl userDetails, Long memberId, UserPasswordResetRequestDto resetRequestDto) {
+        // 본인 or 관리자 권한 확인
+        if (!userDetails.getAuthorities().contains(RolesType.ROLE_ADMIN)
+                && !userDetails.getUserid().equals(memberId)) {
+            throw new MemberException(FORBIDDEN_RESET_PASSWORD);
+        }
+
+        // 회원 조회
+        User member = userRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+
+        member.resetPassword(passwordEncoder.encode(resetRequestDto.newPassword()));
+    }
+
+    //refresh토큰 재발급
+    public LoginTokenDto refreshToken(String oldRefreshToken, Long memberId) {
+
+        User member = userRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+
+        // redis 갱신된 refresh token 유효성 검증
+        if (!redisRepository.hasKey(member.getId())) {
+            throw new MemberException(NOT_FOUND_REFRESH_TOKEN);
+        }
+
+        // redis에 저장된 토큰과 비교
+        if (!redisRepository.getRefreshToken(member.getId()).get("refreshToken").equals(oldRefreshToken)) {
+            throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
+        }
+
+        UserDetailsImpl userDetail = (UserDetailsImpl) UserDetailsImpl.from(member);
+
+        // accessToken, refreshToken 생성
+        String accessToken = jwtProvider.createAccessToken(userDetail);
+        String newRefreshToken = jwtProvider.createRefreshToken(userDetail);
+
+        LoginTokenDto loginTokenDto = LoginTokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+
+        // redis 토큰 정보 저장
+        redisRepository.saveToken(userDetail.getId(), newRefreshToken);
+
+        return loginTokenDto;
+
     }
 }
