@@ -1,14 +1,11 @@
 import React from "react";
-import "./Logo.css";
 
 const Logo = () =>{
     return(
         <>
-            <div className="logo">
-                <div className="box">
-                    <div className="illiterate"> ILLITERATE</div>
-                </div>
-            </div>
+            <div className="bg-blue-600 p-1 w-40 h-12 flex justify-center items-center space-x-1">
+                <div className="text-white text-xl tracking-[0.3rem] text-center"> ILLITERATE</div>
+            </div>    
         </>
     );
 };
