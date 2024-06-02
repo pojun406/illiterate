@@ -18,10 +18,12 @@ const Login = () => {
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post("/login", null, {
-                params: {
-                    userid: userid,
-                    password: password
+            const response = await axios.post("/login", {
+                userid: userid,
+                password: password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             });
             const authHeader = response.headers['authorization'];
