@@ -28,7 +28,7 @@ public class BoardService {
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getPosts() {
 
-        List<Board> boardList = boardRepository.findAllByOrderByModifiedAtDesc();
+        List<Board> boardList = boardRepository.findAll();
         List<BoardResponseDto> responseDtoList = new ArrayList<>();
 
         for (Board board : boardList) {
