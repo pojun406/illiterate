@@ -30,7 +30,7 @@ public class RedisRepository {
     /**
      * refresh token 저장
      */
-    public void saveToken(int memberId, String refreshToken) {
+    public void saveToken(Long memberId, String refreshToken) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(refreshExp);
         valueOperations.set(String.valueOf(memberId), Map.of("refreshToken", refreshToken), expireDuration);
