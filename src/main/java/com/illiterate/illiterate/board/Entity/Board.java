@@ -14,24 +14,32 @@ public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long board_id;
+    @Column(name = "board_id")
+    private Long bid;
 
-    @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
-    private User user;
+    @Column(name = "id")
+    private Long uid;
+
+    @Column
     private String writer;
+
+    @Column
     private String title;
+    @Column
     private String content;
+    @Column
     private String request_img;
+    @Column
     private String reg_date;
+    @Column
     private String del_date;
+    @Column
     private String status;
 
     @Builder
-    private Board(BoardRequestDto requestsDto, User user) {
+    private Board(BoardRequestDto requestsDto) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
-        this.user = user;
     }
 
 }
