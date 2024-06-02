@@ -38,10 +38,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation group: 'jakarta.mail', name: 'jakarta.mail-api', version: '2.1.3'
 	implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
-
-
-	// H2 Database (for development)
-	runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
