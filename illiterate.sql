@@ -19,6 +19,7 @@ CREATE TABLE Board
     request_img VARCHAR(255) NOT NULL,
     reg_date    VARCHAR(50)  NOT NULL,
     del_date    VARCHAR(50)  NULL,
+    status VARCHAR(255) NOT NULL,
     PRIMARY KEY (board_id),
     CONSTRAINT FK_User_TO_Board FOREIGN KEY (id) REFERENCES User (id)
 ) COMMENT '요청게시판';
