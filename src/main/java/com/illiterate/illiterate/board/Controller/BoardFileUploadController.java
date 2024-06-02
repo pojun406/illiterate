@@ -23,7 +23,7 @@ public class BoardFileUploadController {
     private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/run.py";
     private static final String SAVE_TEXT_FOLDER = "/pythonProject/savetext/";
 
-    @PostMapping("board/upload")
+    @PostMapping("/board/upload")
     public ResponseEntity<List<String>> handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException, InterruptedException {
         // Save the file to a temporary location
         String tempDir = System.getProperty("java.io.tmpdir");

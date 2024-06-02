@@ -17,7 +17,7 @@ public class BoardResponseDto {
 
     @Builder
     private BoardResponseDto(Board board){
-        this.board_id = board.getBoard_id();
+        this.board_id = board.getBid();
         this.writer = board.getWriter();
         this.title = board.getTitle();
         this.content = board.getContent();
