@@ -17,11 +17,9 @@ public class Board {
     @Column(name = "board_id")
     private Long bid;
 
-    @Column(name = "id")
-    private Long uid;
-
-    @Column
-    private String writer;
+    @ManyToOne
+    @JoinColumn(name = "id", nullable = false)
+    private User user;
 
     @Column
     private String title;
@@ -37,14 +35,15 @@ public class Board {
     private String status;
 
     @Builder
-    private Board(BoardRequestDto requestsDto) {
+    private Board(BoardRequestDto requestsDto, User user) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
+        this.user = user;
     }
-    public static Board of(BoardRequestDto requestsDto, String userid) {
+    public static Board of(BoardRequestDto requestsDto, User user) {
         return Board.builder()
                 .requestsDto(requestsDto)
-                .toString(userid)
+                .user(user)
                 .build();
     }
 
