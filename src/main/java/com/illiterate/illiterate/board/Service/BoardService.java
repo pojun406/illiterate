@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.board.Service;
 
+import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
@@ -52,7 +53,17 @@ public class BoardService {
         return BoardResponseDto.from(board.get());
     }
 
+    // 게시글 작성
+    @Transactional
+    public BoardResponseDto createPost(BoardRequestDto requestsDto, String userid) {
 
+        // 작성 글 저장
+        Board board = boardRepository.save(Board.of(requestsDto, userid));
+
+        // BoardResponseDto 로 변환 후 responseEntity body 에 담아 반환
+        return BoardResponseDto.from(board);
+
+    }
 
 
 }
