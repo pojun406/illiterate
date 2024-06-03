@@ -27,20 +27,25 @@ const Login = () => {
                 }
             });
             console.log("response : " + response.data.accessToken + " " + response.data.refreshToken);
-            const authHeader = response.headers['authorization'];
-            if (authHeader) {
+            const accessToken = response.data.accessToken;
+            const refreshToken = response.data.refreshToken;
+            if (accessToken && refreshToken) {
 
 
+                localStorage.setItem('authToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
 
-                localStorage.setItem('authToken', authHeader);
-                console.log('Token stored:', authHeader);
+                console.log('Token stored:', accessToken);
+                console.log('Token stored:', refreshToken);
                 setIsLoggedIn(true);
             } else {
+
                 console.error('No authorization header found in response.');
             }
-            setMessage(`로그인 성공: ${authHeader}`);
+            setMessage(`로그인 성공: ${accessToken}+", "+ ${refreshToken}`);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
+
                 setMessage("유효하지 않은 자격 증명");
             } else {
                 setMessage("로그인 중 오류 발생");

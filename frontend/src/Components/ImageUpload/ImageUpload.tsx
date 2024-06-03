@@ -54,11 +54,28 @@ const ImageUpload: React.FC = () => {
     const handleConfirm = () => {
         if (file) {
             const reader = new FileReader();
-            reader.onload = () => {
-                setShowModal(false);
-                navigate('/result', { state: { fromImageUpload: true, filePath } });
+            reader.onload = (event) => {
+                if (event.target && event.target.result) {
+                    const arrayBuffer = new Uint8Array(event.target.result as ArrayBuffer);
+                    let binaryString = '';
+                    for (let i = 0; i < arrayBuffer.length; i++) {
+                        binaryString += String.fromCharCode(arrayBuffer[i]);
+                    }
+                    const encodedString = btoa(binaryString);
+                    // 쿠키에 파일 데이터를 저장
+                    document.cookie = `imageData=${encodeURIComponent(encodedString)}; path=/; expires=${new Date(new Date().getTime() + 86400000).toUTCString()};`;
+                    setShowModal(false);
+                    navigate('/result', { state: { fromImageUpload: true, filePath } });
+                } else {
+                    console.error('파일 읽기 실패: 결과 데이터가 없습니다.');
+                }
             };
-            reader.readAsArrayBuffer(file);
+            reader.onerror = (error) => {
+                console.error('파일 읽기 오류:', error);
+            };
+            reader.readAsBinaryString(file);
+        } else {
+            console.error('파일이 선택되지 않았습니다.');
         }
     };
 
