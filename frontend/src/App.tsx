@@ -7,6 +7,7 @@ import Main from './Pages/Main';
 import Login from './Pages/auth/Login/Login';
 import Signup from './Pages/auth/Signup/Signup';
 import Header from './Components/Header';
+import FindAccount from './Pages/auth/FindAccount/FindAccount';
 
 function App() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function App() {
       <Route path="/auth">
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
+        <Route path="find-account" element={<FindAccount />} />
       </Route>
     </Routes>
   );
