@@ -21,7 +21,6 @@ public class UserDetailsImpl implements UserDetails {
     private String userid;
     private String password;
     private List<GrantedAuthority> authorities;
-    private User user;
 
     public static UserDetails from(User member) {
         List<GrantedAuthority> authorities = member.getRoles() != null ?
@@ -31,15 +30,9 @@ public class UserDetailsImpl implements UserDetails {
                 member.getId(),
                 member.getUserid(),
                 member.getPassword(),
-                authorities,
-                member
+                authorities
         );
     }
-
-    public User getUser() {
-        return user;
-    }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
