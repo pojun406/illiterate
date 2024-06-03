@@ -31,6 +31,7 @@ public class UserController {
     public LoginTokenDto login(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("res_enti" + ResponseEntity.ok(new BfResponse<>(userService.login(loginDto))));
         System.out.println("userservice.login : " + userService.login(loginDto));
+        //return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
         return userService.login(loginDto);
     }
     @PatchMapping("/{userId}/password")
@@ -44,10 +45,12 @@ public class UserController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
+    public LoginTokenDto refreshAccessToken(
+    //public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
+        //return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
+        return userService.refreshToken(dto.refreshToken(), userDetails.getId());
     }
 
 }
