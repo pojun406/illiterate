@@ -120,13 +120,13 @@ const Login = () => {
                     </div>
                     <ul className="flex pb-4 justify-center">
                         <li className="relative inline-block px-2 md:px-4">
-                            <a href="/find-password" className="text-sm text-gray-400">비밀번호 찾기</a>
+                            <Link to="/auth/find-account" state={{ tab: "password" }} className="text-sm text-gray-400">비밀번호 찾기</Link>
                         </li>
                         <li className="relative inline-block px-2 md:px-4">
-                            <a href="/find-username" className="text-sm text-gray-400">아이디 찾기</a>
+                            <Link to="/auth/find-account" state={{ tab: "username" }} className="text-sm text-gray-400">아이디 찾기</Link>
                         </li>
                         <li className="relative inline-block px-2 md:px-4">
-                            <a href="/auth/Signup/Signup" className="text-sm text-gray-400">회원가입</a>
+                            <a href="/auth/Signup" className="text-sm text-gray-400">회원가입</a>
                         </li>
                     </ul>
                 </div>
