@@ -1,6 +1,6 @@
 CREATE TABLE User
 (
-    id        INT NOT NULL AUTO_INCREMENT,
+    id        BIGINT NOT NULL AUTO_INCREMENT,
     userid   VARCHAR(50) NOT NULL,
     username VARCHAR(10) NOT NULL,
     password  VARCHAR(225) NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE User
 
 CREATE TABLE Board
 (
-    board_id    INT          NOT NULL AUTO_INCREMENT,
-    id          INT          NOT NULL,
+    board_id    BIGINT          NOT NULL AUTO_INCREMENT,
+    id          BIGINT          NOT NULL,
     writer      VARCHAR(50)  NOT NULL,
     title       VARCHAR(50)  NOT NULL,
     content     TEXT         NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE Board
 
 CREATE TABLE OCR_Result
 (
-    id         INT          NOT NULL AUTO_INCREMENT,
+    id         BIGINT          NOT NULL AUTO_INCREMENT,
     ocr_image  VARCHAR(255) NOT NULL,
     ocr_result VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
@@ -36,4 +36,5 @@ CREATE TABLE OCR_Result
 INSERT INTO User (userid, username, password, email, roles)
 VALUES ('test', 'JohnDoe', '$2a$10$EJ5IFDV.iroLZGpKslDH9.qJ8A9jjuP6ALlhZVf7I2ixgajCzSNe6', 'john@example.com', 'ROLE_ADMIN');
 # 비밀번호 = 1234
+
 select * from user;
