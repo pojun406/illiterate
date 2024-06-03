@@ -28,9 +28,10 @@ public class UserController {
         return "ok";
     }
     @PostMapping("/login")
-    public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
-        System.out.println("logindto : " + loginDto);
-        return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
+    public LoginTokenDto login(@Valid @RequestBody LoginDto loginDto) {
+        System.out.println("res_enti" + ResponseEntity.ok(new BfResponse<>(userService.login(loginDto))));
+        System.out.println("userservice.login : " + userService.login(loginDto));
+        return userService.login(loginDto);
     }
     @PatchMapping("/{userId}/password")
     public ResponseEntity<BfResponse<?>> resetPassword(
