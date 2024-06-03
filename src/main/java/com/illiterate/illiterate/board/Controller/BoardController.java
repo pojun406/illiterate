@@ -37,7 +37,7 @@ public class BoardController {
 
     @PostMapping("/api/board/post")
     public BoardResponseDto createPost(@RequestBody BoardRequestDto requestsDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return boardService.createPost(requestsDto, userDetails.getUsername());
+        return boardService.createPost(requestsDto, userDetails.getUser());
     }
 
 }

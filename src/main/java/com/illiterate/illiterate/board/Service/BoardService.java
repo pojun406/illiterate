@@ -6,6 +6,7 @@ import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.response.ErrorResponse;
+import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.member.exception.BoardException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,10 +56,9 @@ public class BoardService {
 
     // 게시글 작성
     @Transactional
-    public BoardResponseDto createPost(BoardRequestDto requestsDto, String userid) {
-
+    public BoardResponseDto createPost(BoardRequestDto requestsDto, User user) {
         // 작성 글 저장
-        Board board = boardRepository.save(Board.of(requestsDto, userid));
+        Board board = boardRepository.save(Board.of(requestsDto, user));
 
         // BoardResponseDto 로 변환 후 responseEntity body 에 담아 반환
         return BoardResponseDto.from(board);
