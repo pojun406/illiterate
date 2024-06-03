@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 public class BoardResponseDto {
     private long board_id;
-    private String writer;
     private String title;
+    private String username;
     private String content;
     private String request_img;
     private String reg_date;
@@ -18,8 +18,8 @@ public class BoardResponseDto {
     @Builder
     private BoardResponseDto(Board board){
         this.board_id = board.getBid();
-        this.writer = board.getWriter();
         this.title = board.getTitle();
+        this.username = board.getUser().getUsername();
         this.content = board.getContent();
         this.request_img = board.getRequest_img();
         this.reg_date = board.getReg_date();
