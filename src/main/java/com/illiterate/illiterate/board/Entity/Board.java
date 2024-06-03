@@ -41,5 +41,12 @@ public class Board {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
     }
+    public static Board of(BoardRequestDto requestsDto, String userid) {
+        return Board.builder()
+                .requestsDto(requestsDto)
+                .toString(userid)
+                .build();
+    }
+
 
 }
