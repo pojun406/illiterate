@@ -26,8 +26,12 @@ const Login = () => {
                     'Content-Type': 'application/json'
                 }
             });
+            console.log("response : " + response.data.accessToken + " " + response.data.refreshToken);
             const authHeader = response.headers['authorization'];
             if (authHeader) {
+
+
+
                 localStorage.setItem('authToken', authHeader);
                 console.log('Token stored:', authHeader);
                 setIsLoggedIn(true);
