@@ -5,6 +5,7 @@ CREATE TABLE User
     username VARCHAR(10) NOT NULL,
     password  VARCHAR(225) NOT NULL,
     email  VARCHAR(255) NOT NULL,
+    resetToken VARCHAR(255) NULL,
     roles      VARCHAR(255) NOT NULL,
     PRIMARY KEY (id)
 ) COMMENT '유저 테이블';
