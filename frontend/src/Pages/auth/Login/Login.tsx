@@ -18,49 +18,31 @@ const Login = () => {
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post("/login", {
-                userid: userid,
-                password: password
-            }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            const response = await axios.post("/login", { userid, password }, {
+                headers: { 'Content-Type': 'application/json' }
             });
-            console.log("response : " + response.data.accessToken + " " + response.data.refreshToken);
-            const accessToken = response.data.accessToken;
-            const refreshToken = response.data.refreshToken;
-            if (accessToken && refreshToken) {
-
-
+    
+            if (response.data && response.data.data) {
+                const { accessToken, refreshToken } = response.data.data;
                 localStorage.setItem('authToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
-
-                console.log('Token stored:', accessToken);
-                console.log('Token stored:', refreshToken);
                 setIsLoggedIn(true);
+                setMessage("로그인 성공");
+                navigate("/");
             } else {
-
-                console.error('No authorization header found in response.');
+                setMessage("로그인 실패: 자격 증명을 확인해주세요.");
             }
-            setMessage(`로그인 성공: ${accessToken}+", "+ ${refreshToken}`);
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-
-                setMessage("유효하지 않은 자격 증명");
-            } else {
-                setMessage("로그인 중 오류 발생");
-            }
+            const errorMessage = axios.isAxiosError(error) && error.response
+                ? error.response.data.message
+                : "로그인 중 오류 발생";
+            setMessage(errorMessage);
         }
     };
-    if (isLoggedIn) {
-        navigate("/"); // 로그인 성공 시 리다이렉트
-    }
-
     const handleFetchProtectedResource = async () => {
         try {
             const token = localStorage.getItem("authToken");
             if (!token) {
-                console.error("No auth token found in localStorage.");
                 return;
             }
 
