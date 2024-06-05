@@ -60,6 +60,9 @@ public class UserService {
 
         return id;
     }
+    public boolean checkId(String userid){
+        return userRepository.existsByUserid(userid);
+    }
 
     public LoginTokenDto login(LoginDto memberloginDto) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
