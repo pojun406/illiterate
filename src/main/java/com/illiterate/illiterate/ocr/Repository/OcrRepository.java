@@ -11,8 +11,4 @@ import java.util.Optional;
 @Repository
 public interface OcrRepository extends JpaRepository<OCR, Long> {
 
-    List<OCR> findAll();
-    Optional<OCR> findByImage(String fileName);
-
-    Optional<OCR> findByBidAndUser(Long bid, User user);
 }

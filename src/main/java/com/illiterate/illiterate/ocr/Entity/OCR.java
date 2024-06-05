@@ -33,15 +33,17 @@ public class OCR {
     private String extractedText;
 
     @Builder
-    private OCR(OcrRequestDto requestsDto, User user, byte[] imageData) {
+    private OCR(User user, byte[] beforeimg, byte[] afterimg) {
         this.user = user;
-        this.image = imageData;
+        this.bimage = beforeimg;
+        this.aimage = afterimg;
     }
 
-    public static OCR of(OcrRequestDto requestsDto, User user) {
+    public static OCR of(User user, byte[] beforeimg, byte[] afterimg) {
         return OCR.builder()
-                .requestsDto(requestsDto)
                 .user(user)
+                .beforeimg(beforeimg)
+                .afterimg(afterimg)
                 .build();
     }
 
