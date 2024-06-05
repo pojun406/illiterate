@@ -17,6 +17,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     PASSWORD_NOT_MATCHED(400, "비밀번호와 비밀번호 확인이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
     REQUIRED_TERM_ACCEPT(400, "필수 약관에 동의해주세요.", HttpStatus.BAD_REQUEST),
     UNSUPPORTED_IMAGE_EXTENSION(400, "지원하지 않는 확장자 입니다. jpeg혹은 png 파일을 업로드 해주세요.", HttpStatus.BAD_REQUEST),
+    TOKEN_EXPIRATION(400, "토큰이 만료됐습니다. 다시 시도해주세요.", HttpStatus.BAD_REQUEST),
 
     // 403 FORBIDDEN
     FORBIDDEN_DELETE_MEMBER(403, "권한이 없습니다. 본인 계정만 탈퇴할 수 있습니다.", HttpStatus.FORBIDDEN),
