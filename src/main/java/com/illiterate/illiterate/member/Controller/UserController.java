@@ -11,10 +11,15 @@ import com.illiterate.illiterate.member.Service.UserService;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.CREATE;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +28,10 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/join")
-    public String registerUser(@RequestBody JoinDto joinDTO) {
-        userService.joinUser(joinDTO);
-        return "ok";
+    public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new BfResponse<>(CREATE,
+                        Map.of("member_id", userService.joinUser(joinDTO))));
     }
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
@@ -37,12 +43,13 @@ public class UserController {
 
     //id 중복 확인
     @PostMapping("/useridCheck")
-    public String checkId(@RequestParam String checkId){
-        if(userService.checkId(checkId)) {
-            return "ok";
-        }else{
-            return "no";
-        }
+    public ResponseEntity<BfResponse<String>> checkId(@RequestParam String checkId) {
+        boolean isIdAvailable = userService.checkId(checkId);
+        BfResponse<String> response = isIdAvailable
+                ? new BfResponse<>("ok")
+                : new BfResponse<>("no");
+
+        return ResponseEntity.ok(response);
     }
     @PostMapping("/send-reset-password-link")
     public String sendResetPasswordLink(@RequestParam String id, @RequestParam String name) {
