@@ -10,7 +10,7 @@ public class BoardResponseDto {
     private String title;
     private String username;
     private String content;
-    private String request_img;
+    private byte[] request_img;
     private String reg_date;
     private String del_date;
     private String status;
@@ -21,7 +21,7 @@ public class BoardResponseDto {
         this.title = board.getTitle();
         this.username = board.getUser().getUsername();
         this.content = board.getContent();
-        this.request_img = board.getRequest_img();
+        this.request_img = board.getImage();
         this.reg_date = board.getReg_date();
         this.del_date = board.getDel_date();
         this.status = board.getStatus();

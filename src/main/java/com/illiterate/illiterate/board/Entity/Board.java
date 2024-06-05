@@ -25,21 +25,27 @@ public class Board {
     private String title;
     @Column
     private String content;
-    @Column
-    private String request_img;
-    @Column
-    private String reg_date;
-    @Column
-    private String del_date;
+    /*@Column
+    private String request_img;*/
+    @Lob
+    @Column(name = "request_img", length = 1000)
+    private byte[] image;
+
+    @Column(name = "reg_date")
+    private String regdate;
+    @Column(name = "del_date")
+    private String deldate;
     @Column
     private String status;
 
     @Builder
-    private Board(BoardRequestDto requestsDto, User user) {
+    private Board(BoardRequestDto requestsDto, User user, byte[] imageData) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
         this.user = user;
+        this.image = imageData;
     }
+
     public static Board of(BoardRequestDto requestsDto, User user) {
         return Board.builder()
                 .requestsDto(requestsDto)
