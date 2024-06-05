@@ -4,5 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class OcrRequestDto {
-    private String imagePath;
+    private String Before_image;
+
+    private String Result_image;
+
+
 }
