@@ -22,8 +22,8 @@ public class BoardResponseDto {
         this.username = board.getUser().getUsername();
         this.content = board.getContent();
         this.request_img = board.getImage();
-        this.reg_date = board.getReg_date();
-        this.del_date = board.getDel_date();
+        this.reg_date = board.getRegdate();
+        this.del_date = board.getDeldate();
         this.status = board.getStatus();
     }
 
