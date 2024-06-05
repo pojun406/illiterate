@@ -17,7 +17,7 @@ const FindAccount: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const endpoint = isFindingUsername ? "/find-username" : "/find-password";
+        const endpoint = isFindingUsername ? "/findid" : "/send-reset-password-link";
         const data = isFindingUsername ? { email } : { userid, email };
 
         try {
