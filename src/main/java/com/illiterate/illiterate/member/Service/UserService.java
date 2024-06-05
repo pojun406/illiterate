@@ -14,6 +14,8 @@ import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.mapping.Join;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.*;
 
@@ -37,6 +40,8 @@ public class UserService {
     private final JWTProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
     private final RedisRepository redisRepository;
+    private final JavaMailSender mailSender;
+
 
     /**
      * 회원 등록
@@ -134,4 +139,44 @@ public class UserService {
         return loginTokenDto;
 
     }
+
+    public String findMemberId(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::getUserid)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
+    }
+
+    @Transactional
+    public void sendPasswordResetLink(String id, String name) {
+        User member = userRepository.findByUseridAndUsername(id, name)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
+
+        String resetToken = generateResetToken();
+        member.setResetToken(resetToken);
+        userRepository.save(member);
+
+        String resetUrl = "http://yourdomain.com/reset-password?token=" + resetToken; // 도메인 설정해줘야함
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(member.getEmail());
+        message.setSubject("비밀번호 재설정");
+        message.setText("비밀번호 재설정을 위해 아래 링크를 눌러주세요\n" + resetUrl);
+
+        mailSender.send(message);
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        User member = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new MemberException(TOKEN_EXPIRATION));
+
+        member.setPassword(passwordEncoder.encode(newPassword));
+        member.setResetToken(null);
+        userRepository.save(member);
+    }
+
+    private String generateResetToken() {
+        return UUID.randomUUID().toString();
+    }
+
 }

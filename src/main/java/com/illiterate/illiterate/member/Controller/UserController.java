@@ -35,6 +35,7 @@ public class UserController {
         return userService.login(loginDto);
     }
 
+    //id 중복 확인
     @PostMapping("/useridCheck")
     public String checkId(@RequestParam String checkId){
         if(userService.checkId(checkId)) {
@@ -43,14 +44,16 @@ public class UserController {
             return "no";
         }
     }
-    @PatchMapping("/{userId}/password")
-    public ResponseEntity<BfResponse<?>> resetPassword(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable("userId") Long userId,
-            @Valid @RequestBody UserPasswordResetRequestDto resetRequestDto
-    ) {
-        userService.resetPassword(userDetails, userId, resetRequestDto);
-        return ResponseEntity.noContent().build();
+    @PostMapping("/send-reset-password-link")
+    public String sendResetPasswordLink(@RequestParam String id, @RequestParam String name) {
+        userService.sendPasswordResetLink(id, name);
+        return "email_send";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        userService.resetPassword(token, newPassword);
+        return "ok";
     }
 
     @PostMapping("/refresh")
@@ -58,6 +61,12 @@ public class UserController {
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
+    }
+
+    @PostMapping("/findid")
+    public String findId(@RequestParam String userEmail){
+        String userId = userService.findMemberId(userEmail);
+        return userId;
     }
 
 }
