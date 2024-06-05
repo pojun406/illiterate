@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
     List<Board> findAll();
+    Optional<Board> findByImage(String fileName);
 
     Optional<Board> findByBidAndUser(Long bid, User user);
 }
