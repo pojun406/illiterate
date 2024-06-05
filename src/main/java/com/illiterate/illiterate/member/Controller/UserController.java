@@ -66,7 +66,7 @@ public class UserController {
     @PostMapping("/findid")
     public String findId(@RequestParam String userEmail){
         String userId = userService.findMemberId(userEmail);
-        return userId;
+        return "userid = " + userId;
     }
 
 }
