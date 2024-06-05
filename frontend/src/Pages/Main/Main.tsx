@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import useScrollFadeInLeft from "../hooks/useScrollFadeIn_left";
-import useScrollFadeInRight from "../hooks/useScrollFadeIn_right";
+import useScrollFadeInLeft from "../../hooks/useScrollFadeIn_left";
+import useScrollFadeInRight from "../../hooks/useScrollFadeIn_right";
 
 const Main = () => {
     const headerHeight = 80;
@@ -116,24 +116,24 @@ const FadeInSection = ({ sectionId, index, fadeInProps }: { sectionId: string, i
             style={{ ...fadeInProps.style, minHeight: `calc(100vh - 80px)` }}
         >
             {sectionId === "part1" && (
-                <p className="text-2xl font-normal">ILLITERATE에 오신것을 환영합니다.</p>
+                <p className="text-4xl font-normal">ILLITERATE에 오신것을 환영합니다.</p>
             )}
             {sectionId === "part2" && (
                 <>
                     <img src="/image/paper.png" alt="이미지" className="h-80 w-80 p-8"/>
-                    <p className="p-12">종이문서 귀찮으시잖아요.</p>
+                    <p className="p-12 text-2xl font-bold">종이문서 귀찮으시잖아요.</p>
                 </>
             )}
             {sectionId === "part3" && (
                 <>
-                    <p className="p-12">사진만 주시면 됩니다.</p>
+                    <p className="p-12 text-2xl font-bold">사진만 주시면 됩니다.</p>
                     <img src="/image/ocr.png" alt="이미지" className="h-80 w-80 p-8"/>
                 </>
             )}
             {sectionId === "part4" && (
                 <>
                     <img src="/image/DB.png" alt="이미지" className="h-80 w-80 p-8"/>
-                    <div className="p-12">
+                    <div className="p-12 text-2xl font-bold">
                         <p>간편하게 찍어서</p>
                         <p>전자문서로 저장하세요.</p>
                     </div>
@@ -141,7 +141,7 @@ const FadeInSection = ({ sectionId, index, fadeInProps }: { sectionId: string, i
             )}
             {sectionId === "part5" && (
                 <>
-                    <Link to="/application" className="opacity-1 transition-opacity">시작하기</Link>
+                    <Link to="/application" className="opacity-1 transition-opacity text-3xl font-bold">시작하기</Link>
                 </>
             )}
         </div>
