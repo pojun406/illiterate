@@ -3,7 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Application from './Pages/Application/Application';
 import ServiceCenter from './Pages/ServiceCenter/ServiceCenter';
 import Result from './Pages/Result/Result';
-import Main from './Pages/Main';
+import Main from './Pages/Main/Main';
 import Login from './Pages/auth/Login/Login';
 import Signup from './Pages/auth/Signup/Signup';
 import Header from './Components/Header';
