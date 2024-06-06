@@ -58,12 +58,12 @@ public class UserController {
         return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
     }
 
-    @PostMapping("/findid")
+    @PostMapping("/findId")
     public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
         return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
     }
 
-    @PostMapping("checkId")
+    @PostMapping("/checkId")
     public ResponseEntity<BfResponse<?>> CheckId(@RequestParam String userId){
         return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
     }

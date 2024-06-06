@@ -116,13 +116,13 @@ public class SecurityConfig {
      */
     private RequestMatcher[] permitAllRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(POST, "/member/login"),            // 로그인
-                antMatcher(POST, "/member/register"),        // 회원가입
-                antMatcher(POST, "/certificate/phone"), // 메일 인증번호 전송
-                antMatcher(GET, "/certificate/phone"), // 인증 번호 검증
-                antMatcher(GET, "/certificate/phone/{phone}/status"), // 메일 인증 여부 확인
-                antMatcher(POST, "/member/business/validate-info"), // 사업자등록정보 진위여부 확인
-                antMatcher(POST, "/member/business/validate-status") // 사업자등록번호 상태조회
+                antMatcher(POST, "/login"),            // 로그인
+                antMatcher(POST, "/join"),        // 회원가입
+                antMatcher(POST, "/email"), // 메일 인증번호 전송
+                antMatcher(GET, "/email"), // 인증 번호 검증
+                antMatcher(GET, "/email/{email}/status"), // 메일 인증 여부 확인
+                antMatcher(POST, "/checkId"),
+                antMatcher(POST, "/findId")
                 //antMatcher(GET, "/member/health") // aws 상태 체크
         );
 
@@ -137,7 +137,10 @@ public class SecurityConfig {
                 antMatcher(GET, "/user/{userId}"),                  // 회원 정보 조회
                 antMatcher(PATCH, "/user/{userId}"),                // 회원 정보 수정
                 antMatcher(PATCH, "/user/{userId}/password"),        // 비밀번호 재설정
-                antMatcher(DELETE, "/user/{userId}")                // 회원 탈퇴
+                antMatcher(DELETE, "/user/{userId}"),                // 회원 탈퇴
+                antMatcher(POST,"/ocr/**"),                          // OCR 조회
+                antMatcher(POST, "/member/refresh") // 엑세스 토큰 갱신
+
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

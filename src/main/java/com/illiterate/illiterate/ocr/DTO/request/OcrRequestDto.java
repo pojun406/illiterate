@@ -1,12 +1,11 @@
 package com.illiterate.illiterate.ocr.DTO.request;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class OcrRequestDto {
-    private String Before_image;
-
-    private String Result_image;
-
+    private String imagePath;
 
 }
