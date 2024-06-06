@@ -66,6 +66,7 @@ public class UserController {
 
     // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
     @PostMapping("/findid")
+    @PostMapping("/findId")
     public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
         System.out.println(userService.findMemberId(userEmail));
         return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
