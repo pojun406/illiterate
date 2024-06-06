@@ -51,16 +51,15 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
-    @PostMapping("/send-reset-password-link")
-    public String sendResetPasswordLink(@RequestParam String id, @RequestParam String name) {
-        userService.sendPasswordResetLink(id, name);
-        return "email_send";
-    }
 
-    @PostMapping("/reset-password")
-    public String resetPassword(@RequestParam String token, @RequestParam String newPassword) {
-        userService.resetPassword(token, newPassword);
-        return "ok";
+    @PatchMapping("/{userId}/password")
+    public ResponseEntity<BfResponse<?>> resetPassword(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable("userId") Long memberId,
+            @Valid @RequestBody UserPasswordResetRequestDto resetRequestDto
+    ) {
+        userService.resetPassword(userDetails, memberId, resetRequestDto);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh")
