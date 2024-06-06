@@ -35,8 +35,7 @@ public class UserController {
     }
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
-        System.out.println("res_enti" + ResponseEntity.ok(new BfResponse<>(userService.login(loginDto))));
-        System.out.println("userservice.login : " + userService.login(loginDto));
+
         return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
         //return userService.login(loginDto);
     }
@@ -48,20 +47,22 @@ public class UserController {
             @Valid @RequestBody UserPasswordResetRequestDto resetRequestDto
     ) {
         userService.resetPassword(userDetails, memberId, resetRequestDto);
+        System.out.println(ResponseEntity.noContent().build());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/refresh")
-    public LoginTokenDto refreshAccessToken(
-    //public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
+    //public LoginTokenDto refreshAccessToken(
+    public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        //return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
-        return userService.refreshToken(dto.refreshToken(), userDetails.getId());
+        return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
+        //return userService.refreshToken(dto.refreshToken(), userDetails.getId());
     }
 
     @PostMapping("/findid")
     public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
+        System.out.println(userService.findMemberId(userEmail));
         return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
     }
 
