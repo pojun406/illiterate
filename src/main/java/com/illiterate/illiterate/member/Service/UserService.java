@@ -47,7 +47,7 @@ public class UserService {
      * 회원 등록
      */
     @Transactional
-    public long joinUser(JoinDto joinDto) {
+    public Long joinUser(JoinDto joinDto) {
         // 아이디 중복 체크
         if (userRepository.existsByUserid(joinDto.getUserid())) {
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
