@@ -41,17 +41,6 @@ public class UserController {
         //return userService.login(loginDto);
     }
 
-    //id 중복 확인
-    @PostMapping("/useridCheck")
-    public ResponseEntity<BfResponse<String>> checkId(@RequestParam String checkId) {
-        boolean isIdAvailable = userService.checkId(checkId);
-        BfResponse<String> response = isIdAvailable
-                ? new BfResponse<>("ok")
-                : new BfResponse<>("no");
-
-        return ResponseEntity.ok(response);
-    }
-
     @PatchMapping("/{userId}/password")
     public ResponseEntity<BfResponse<?>> resetPassword(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -70,9 +59,13 @@ public class UserController {
     }
 
     @PostMapping("/findid")
-    public String findId(@RequestParam String userEmail){
-        String userId = userService.findMemberId(userEmail);
-        return "userid = " + userId;
+    public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
+        return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
+    }
+
+    @PostMapping("checkId")
+    public ResponseEntity<BfResponse<?>> CheckId(@RequestParam String userId){
+        return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
     }
 
 }
