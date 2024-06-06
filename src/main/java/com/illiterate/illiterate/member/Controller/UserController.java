@@ -27,12 +27,14 @@ public class UserController {
 
     private final UserService userService;
 
+    //회원가입
     @PostMapping("/join")
     public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BfResponse<>(CREATE,
                         Map.of("member_id", userService.joinUser(joinDTO))));
     }
+    //로그인
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
 
@@ -40,6 +42,7 @@ public class UserController {
         //return userService.login(loginDto);
     }
 
+    //리셋 패스워드(패스워드 리셋을 위한 페이지)
     @PatchMapping("/{userId}/password")
     public ResponseEntity<BfResponse<?>> resetPassword(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -51,6 +54,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // refresh토큰을 다시 설정해줌
     @PostMapping("/refresh")
     //public LoginTokenDto refreshAccessToken(
     public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
@@ -60,12 +64,14 @@ public class UserController {
         //return userService.refreshToken(dto.refreshToken(), userDetails.getId());
     }
 
+    // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
     @PostMapping("/findid")
     public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
         System.out.println(userService.findMemberId(userEmail));
         return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
     }
 
+    // 중복되는 id찾기
     @PostMapping("checkId")
     public ResponseEntity<BfResponse<?>> CheckId(@RequestParam String userId){
         return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
