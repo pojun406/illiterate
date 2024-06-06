@@ -28,10 +28,11 @@ CREATE TABLE Board
 CREATE TABLE OCR_Result
 (
     id         BIGINT          NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
     ocr_image  VARCHAR(255) NOT NULL,
     ocr_result VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT FK_User_TO_OCR_Result FOREIGN KEY (id) REFERENCES User (id)
+    CONSTRAINT FK_User_TO_OCR_Result FOREIGN KEY (user_id) REFERENCES User (id)
 ) COMMENT 'OCR결과';
 
 INSERT INTO User (userid, username, password, email, roles)
