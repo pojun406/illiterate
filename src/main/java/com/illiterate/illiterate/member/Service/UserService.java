@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.member.Service;
 
 import com.illiterate.illiterate.common.repository.RedisRepository;
+import com.illiterate.illiterate.common.util.ConvertUtil;
 import com.illiterate.illiterate.member.DTO.request.JoinDto;
 import com.illiterate.illiterate.member.DTO.request.LoginDto;
 import com.illiterate.illiterate.member.DTO.request.UserPasswordResetRequestDto;
@@ -55,13 +56,13 @@ public class UserService {
             throw new MemberException(DUPLICATED_MEMBER_PHONE_NUMBER);
         }
 
-        User member = new User();
+        User member = ConvertUtil.toDtoOrEntity(joinDto, User.class);
         member.setUserid(joinDto.getUserid());
         member.setPassword(passwordEncoder.encode(joinDto.getPassword()));
         member.setEmail(joinDto.getEmail());
         member.setUsername(joinDto.getUsername());
 
-        long id = userRepository.save(member).getId();
+        Long id = userRepository.save(member).getId();
 
         return id;
     }
