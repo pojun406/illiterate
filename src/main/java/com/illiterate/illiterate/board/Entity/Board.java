@@ -28,8 +28,8 @@ public class Board {
     /*@Column
     private String request_img;*/
     @Lob
-    @Column(name = "request_img", length = 1000)
-    private byte[] image;
+    @Column(name = "request_img")
+    private String image;
 
     @Column(name = "reg_date")
     private String regdate;
@@ -39,17 +39,18 @@ public class Board {
     private String status;
 
     @Builder
-    private Board(BoardRequestDto requestsDto, User user, byte[] imageData) {
+    private Board(BoardRequestDto requestsDto, User user, String imagePath) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
         this.user = user;
-        this.image = imageData;
+        this.image = imagePath;
     }
 
-    public static Board of(BoardRequestDto requestsDto, User user) {
+    public static Board of(BoardRequestDto requestsDto, User user, String imagePath) {
         return Board.builder()
                 .requestsDto(requestsDto)
                 .user(user)
+                .imagePath(imagePath)
                 .build();
     }
 
