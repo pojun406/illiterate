@@ -4,11 +4,9 @@ package com.illiterate.illiterate.board.Controller;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
-import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.board.Service.BoardService;
 import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +26,17 @@ public class BoardController {
     private final BoardRepository boardRepository;
 
     @GetMapping("/posts")
-    public List<BoardResponseDto> getPosts() {
-        return boardService.getPosts();
+    public ResponseEntity<BfResponse<List<BoardResponseDto>>> getPosts() {
+        List<BoardResponseDto> posts = boardService.getPosts();
+        BfResponse<List<BoardResponseDto>> response = new BfResponse<>(posts);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/posts/{id}")
-    public BoardResponseDto getPost(@PathVariable Long id) {
-        return boardService.getPost(id);
+    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@PathVariable Long id) {
+        BoardResponseDto post = boardService.getPost(id);
+        BfResponse<BoardResponseDto> response = new BfResponse<>(post);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
