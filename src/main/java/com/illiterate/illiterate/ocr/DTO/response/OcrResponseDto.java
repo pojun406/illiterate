@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class OcrResponseDto {
+    private Long id;
     private String text;
     private String imageUrl;
-
 }

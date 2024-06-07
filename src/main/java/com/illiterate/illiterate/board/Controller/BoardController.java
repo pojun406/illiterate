@@ -12,9 +12,11 @@ import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,19 +27,24 @@ public class BoardController {
     private final BoardService boardService;
     private final BoardRepository boardRepository;
 
-    @GetMapping("/api/board/posts")
+    @GetMapping("/posts")
     public List<BoardResponseDto> getPosts() {
         return boardService.getPosts();
     }
 
-    @GetMapping("/api/board/posts/{id}")
+    @GetMapping("/posts/{id}")
     public BoardResponseDto getPost(@PathVariable Long id) {
         return boardService.getPost(id);
     }
 
-    @PostMapping("/api/board/post")
-    public BoardResponseDto createPost(@RequestBody BoardRequestDto requestsDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return boardService.createPost(requestsDto, userDetails.getUser());
+    @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<BfResponse<BoardResponseDto>> createPost(
+            @Valid @RequestPart("request") BoardRequestDto requestsDto,
+            @RequestPart("image") MultipartFile image,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        requestsDto.setImage(image);
+        BoardResponseDto responseDto = boardService.createPost(requestsDto, userDetails.getUser());
+        return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
 
 }
