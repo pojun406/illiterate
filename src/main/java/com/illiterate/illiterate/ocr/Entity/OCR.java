@@ -34,5 +34,7 @@ public class OCR {
     @Column(name = "result_text")
     private String extractedText;
 
+    @Column(name = "is_processed")
+    private boolean isProcessed;
 
 }
