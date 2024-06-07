@@ -5,6 +5,7 @@ import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
+import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.common.response.ErrorResponse;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.User;
