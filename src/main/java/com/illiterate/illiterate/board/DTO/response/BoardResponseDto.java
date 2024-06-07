@@ -10,7 +10,7 @@ public class BoardResponseDto {
     private String title;
     private String username;
     private String content;
-    private byte[] request_img;
+    private String request_img;
     private String reg_date;
     private String del_date;
     private String status;
