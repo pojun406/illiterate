@@ -11,11 +11,14 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "board")
+@Table(name = "ocr_result")
 public class OCR {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /*@Column
@@ -31,5 +34,7 @@ public class OCR {
     @Column(name = "result_text")
     private String extractedText;
 
+    @Column(name = "is_processed")
+    private boolean isProcessed;
 
 }
