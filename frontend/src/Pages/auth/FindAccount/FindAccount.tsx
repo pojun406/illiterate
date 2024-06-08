@@ -46,56 +46,54 @@ const FindAccount: React.FC = () => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center px-4">
-            <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
+        <div className="flex min-h-screen items-center justify-center px-4 bg-gray-100">
+            <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="flex items-center justify-center my-4">
                     <Link to="/"><Logo /></Link>
                 </div>
-                <div className="border rounded-md overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
-                    <div className="px-4 py-6">
-                        <div className="flex justify-center mb-4">
-                            <button
-                                onClick={() => handleTabClick(true)}
-                                className={`w-1/2 px-4 py-2 ${isFindingUsername ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500'}`}
-                            >
-                                아이디 찾기
-                            </button>
-                            <button
-                                onClick={() => handleTabClick(false)}
-                                className={`w-1/2 px-4 py-2 ${!isFindingUsername ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500'}`}
-                            >
-                                비밀번호 찾기
-                            </button>
-                        </div>
-                        <div className="text-center font-bold text-blue-300 text-xl mb-4">
-                            {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
-                        </div>
-                        {message && <div className="text-center text-red-500 mb-4">{message}</div>}
-                        <form onSubmit={handleSubmit}>
-                            {!isFindingUsername && (
-                                <input
-                                    type="text"
-                                    placeholder="아이디"
-                                    value={userid}
-                                    onChange={(e) => setUserid(e.target.value)}
-                                    className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
-                                />
-                            )}
+                <div className="px-4 py-6">
+                    <div className="flex justify-center mb-4">
+                        <button
+                            onClick={() => handleTabClick(true)}
+                            className={`w-1/2 px-4 py-2 ${isFindingUsername ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500'}`}
+                        >
+                            아이디 찾기
+                        </button>
+                        <button
+                            onClick={() => handleTabClick(false)}
+                            className={`w-1/2 px-4 py-2 ${!isFindingUsername ? 'text-blue-700 border-b-2 border-blue-700' : 'text-gray-500'}`}
+                        >
+                            비밀번호 찾기
+                        </button>
+                    </div>
+                    <div className="text-center font-bold text-blue-300 text-xl mb-4">
+                        {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
+                    </div>
+                    {message && <div className="text-center text-red-500 mb-4">{message}</div>}
+                    <form onSubmit={handleSubmit}>
+                        {!isFindingUsername && (
                             <input
-                                type="email"
-                                placeholder="이메일"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type="text"
+                                placeholder="아이디"
+                                value={userid}
+                                onChange={(e) => setUserid(e.target.value)}
                                 className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
                             />
-                            <button
-                                type="submit"
-                                className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
-                            >
-                                {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
-                            </button>
-                        </form>
-                    </div>
+                        )}
+                        <input
+                            type="email"
+                            placeholder="이메일"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
+                        />
+                        <button
+                            type="submit"
+                            className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
+                        >
+                            {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
+                        </button>
+                    </form>
                 </div>
                 <ul className="flex pb-4 justify-center gap-5">
                     <li className="relative inline-block px-2 md:px-4">

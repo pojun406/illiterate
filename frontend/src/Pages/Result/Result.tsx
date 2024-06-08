@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import OCR from "../../Components/OCR/OCR";
 import DocumentA from "../../Components/DocumentType/DocumentA/DocumentA";
 import DocumentB from "../../Components/DocumentType/DocumentB/DocumentB";
+import Sidebar from "../../Components/Sidebar/Sidebar";
 
 const Result = () => {
     const location = useLocation();
@@ -44,9 +45,12 @@ const Result = () => {
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            {!data && <OCR onDataLoaded={handleDataLoaded} />}
-            {data && renderDocument()}
+        <div className="flex">
+            <Sidebar />
+            <div className="flex-1 p-8">
+                {!data && <OCR onDataLoaded={handleDataLoaded} />}
+                {data && renderDocument()}
+            </div>
         </div>
     );
 };
