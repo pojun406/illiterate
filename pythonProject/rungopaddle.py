@@ -1,24 +1,29 @@
-import os
-import sys
 from letsgopaddle import MyPaddleOCR
+import sys
+import os
 
-def main(temp_file_path):
+def main(image_path):
     ocr = MyPaddleOCR()
 
-    if not os.path.exists(temp_file_path):
-        print(f"파일을 찾을 수 없습니다: {temp_file_path}")
+    if not os.path.exists(image_path):
+        print(f"파일을 찾을 수 없습니다: {image_path}")
         return
 
     # OCR 실행 및 디버그 모드 활성화
-    result = ocr.run_ocr(temp_file_path, debug=True)
+    results = ocr.run_ocr(image_path, debug=False)
+
     print("OCR 결과:")
-    for item in result:
-        print(item)
+    for idx, item in enumerate(results, start=1):
+        accuracy_percentage = item[1][1] * 100  # Multiply by 100 to convert to percentage
+        print(f"{idx}. Text: {item[1][0]}, Box: {item[0]}, Accuracy: {accuracy_percentage:.2f}%")
+
+    # Save specific indexes to Result.json
+    specific_indexes = [1, 3, 9, 11, 43]
+    ocr.save_texts_by_indexes(specific_indexes, 'Result.json')
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python rungopaddle.py <TempFile>")
-        sys.exit(1)
-
-    temp_file_path = sys.argv[1]
-    main(temp_file_path)
+        print("사용법: python rungopaddle.py <이미지 파일 경로>")
+    else:
+        main(sys.argv[1])
