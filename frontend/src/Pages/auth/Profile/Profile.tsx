@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Profile: React.FC = () => {
     const [password, setPassword] = useState<string>('');
@@ -19,6 +19,7 @@ const Profile: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -41,6 +42,11 @@ const Profile: React.FC = () => {
         fetchUserInfo();
     }, []);
 
+    useEffect(() => {
+        setIsModalOpen(false);
+        setIsDeleteModalOpen(false); // URL 변경 시 모달 닫기
+    }, [location.pathname]);
+
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
     };
@@ -62,7 +68,7 @@ const Profile: React.FC = () => {
         if (password === '1234') {
             setIsAuthenticated(true);
         } else {
-            setModalMessage('비밀번호가 일치하지 않습니다.');
+            setModalMessage('밀번호가 일치하지 않습니다.');
             setIsModalOpen(true);
         }
     };
@@ -95,7 +101,7 @@ const Profile: React.FC = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
+            setModalMessage('서버와의 통신 중 오류�� 발생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -150,7 +156,7 @@ const Profile: React.FC = () => {
                 setIsModalOpen(true);
                 navigate('/');
             } else {
-                setModalMessage('계정 삭제에 실패했습니다. 다시 시도해주세요.');
+                setModalMessage('계정 삭제에 실패했습니다. 다시 시도해주요.');
                 setIsModalOpen(true);
             }
         } catch (error) {
@@ -186,7 +192,7 @@ const Profile: React.FC = () => {
                             </p>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-gray-700 text-sm font-bold mb-2" htmlFor="username">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
                                 이름
                             </label>
                             <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -378,7 +384,7 @@ const Profile: React.FC = () => {
                             className={`cursor-pointer py-2 ${activeTab === 'password' ? 'font-bold' : ''}`}
                             onClick={() => setActiveTab('password')}
                         >
-                            비밀번호 수정
+                            비밀호 수정
                         </li>
                         <li
                             className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}

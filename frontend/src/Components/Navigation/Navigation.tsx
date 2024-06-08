@@ -5,7 +5,7 @@ import { FcMenu } from "react-icons/fc";
 import { IoCloseSharp } from "react-icons/io5";
 import AccessToken from "../AccessToken/AccessToken";
 
-const Navigation = () => {
+const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -41,6 +41,7 @@ const Navigation = () => {
 
     useEffect(() => {
         closeDropdown();
+        setIsMenuOpen(false); // 메뉴도 닫기
     }, [location.pathname]);
 
     const isHomePage = location.pathname === "/";
@@ -65,7 +66,7 @@ const Navigation = () => {
                         )}
                     </button>
                 </div>
-                <div className={`w-full lg:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4 lg:mt-0 absolute top-20 ${isHomePage ? 'bg-black' : 'bg-white'}`}>
+                <div className={`w-full lg:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-0 lg:mt-0 absolute top-20 ${isHomePage ? 'bg-black' : 'bg-white'}`}>
                     <ul className="flex flex-col px-4 w-full">
                         {isLoggedIn ? (
                             <>
@@ -102,16 +103,18 @@ const Navigation = () => {
                     </ul>
                 </div>
                 <div className={`hidden lg:flex lg:items-center lg:ml-auto lg:w-auto space-x-8 px-4 ${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                    <ul className="flex space-x-4">
-                        <li>
-                            <Link to="/application" className="block py-2" onClick={closeDropdown}>등록하기</Link>
-                        </li>
-                        {isHomePage ? null : (
+                    {!isSidebarPage && (
+                        <ul className="flex space-x-4">
                             <li>
-                                <Link to="/servicecenter" className="block py-2" onClick={closeDropdown}>고객센터</Link>
+                                <Link to="/application" className="block py-2" onClick={closeDropdown}>등록하기</Link>
                             </li>
-                        )}
-                    </ul>
+                            {isHomePage ? null : (
+                                <li>
+                                    <Link to="/servicecenter" className="block py-2" onClick={closeDropdown}>고객센터</Link>
+                                </li>
+                            )}
+                        </ul>
+                    )}
                     <ul className="flex space-x-4">
                         {isLoggedIn ? (
                             <li className="relative">
@@ -121,7 +124,7 @@ const Navigation = () => {
                                         className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-1 z-20">
                                         <Link to="/profile"
                                             className="block px-4 py-2 text-gray-800 hover:bg-gray-100" onClick={closeDropdown}>닉네임</Link>
-                                        <Link to="/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-100" onClick={closeDropdown}>내
+                                        <Link to="/mydocument" className="block px-4 py-2 text-gray-800 hover:bg-gray-100" onClick={closeDropdown}>내
                                             문서 보기</Link>
                                         <button onClick={handleLogout}
                                             className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100">로그아웃</button>
