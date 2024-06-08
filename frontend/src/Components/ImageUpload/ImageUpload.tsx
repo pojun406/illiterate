@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const ImageUpload: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -7,6 +7,7 @@ const ImageUpload: React.FC = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const navigate = useNavigate(); // useNavigate hook 사용
+    const location = useLocation(); // useLocation hook 사용
 
     useEffect(() => {
         const savedFile = sessionStorage.getItem('uploadedFile');
@@ -18,6 +19,10 @@ const ImageUpload: React.FC = () => {
             setFilePath(url);
         }
     }, []);
+
+    useEffect(() => {
+        setShowModal(false); // URL 변경 시 모달 닫기
+    }, [location.pathname]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
