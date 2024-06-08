@@ -10,7 +10,7 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/mockup/ocrmockup.json');
+                const response = await fetch('/mockup/customerSupport.json');
                 const mockData = await response.json();
                 sessionStorage.setItem('ocrData', JSON.stringify(mockData));
                 onDataLoaded(mockData);
