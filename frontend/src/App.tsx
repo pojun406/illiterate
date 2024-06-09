@@ -8,6 +8,10 @@ import Login from './Pages/auth/Login/Login';
 import Signup from './Pages/auth/Signup/Signup';
 import Header from './Components/Header';
 import FindAccount from './Pages/auth/FindAccount/FindAccount';
+import Profile from './Pages/auth/Profile/Profile';
+import MyDocument from './Pages/MyDocument/MyDocument';
+import InquiryList from './Components/InquiryList/InquiryList';
+import InquiryDetail from './Components/InquiryDetail/InquiryDetail';
 
 function App() {
   const location = useLocation();
@@ -27,6 +31,10 @@ function App() {
         <Route path="servicecenter" element={<ServiceCenter />} />
         <Route path='result' element={<Result/>} />
         <Route path="/" element={<Main/>}/>
+        <Route path="profile" element={<Profile />} />
+        <Route path="mydocument" element={<MyDocument />} />
+        <Route path="/inquiries" element={<InquiryList/>} />
+        <Route path="/inquiries/:id" element={<InquiryDetail />} />
       </Route>
       <Route path="/auth">
         <Route path="login" element={<Login />} />

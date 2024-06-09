@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import OCR from "../../Components/OCR/OCR";
 import DocumentA from "../../Components/DocumentType/DocumentA/DocumentA";
 import DocumentB from "../../Components/DocumentType/DocumentB/DocumentB";
+import Sidebar from "../../Components/Sidebar/Sidebar";
 
 const Result = () => {
     const location = useLocation();
@@ -29,15 +30,27 @@ const Result = () => {
         }
     };
 
+    const renderDocument = () => {
+        if (data && data[0] && data[0].title) {
+            if (data[0].title === 'B 문서') {
+                return <DocumentB data={data} filePath={filePath as string} />;
+            } else if (data[0].title === 'A 문서') {
+                return <DocumentA data={data} filePath={filePath as string} />;
+            } else {
+                return <div>문서 형식을 확인해 주세요</div>;
+            }
+        } else {
+            return <div>문서 형식을 확인해 주세요</div>;
+        }
+    };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            {!data && <OCR onDataLoaded={handleDataLoaded} />}
-            {data ? (
-                data[0].title === 'B 문서' ? <DocumentB data={data} /> : <DocumentA data={data} />
-            ) : (
-                <div>데이터를 불러오는 중입니다...</div>
-            )}
+        <div className="flex">
+            <Sidebar />
+            <div className="flex-1 p-8">
+                {!data && <OCR onDataLoaded={handleDataLoaded} />}
+                {data && renderDocument()}
+            </div>
         </div>
     );
 };
