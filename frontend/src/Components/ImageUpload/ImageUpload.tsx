@@ -90,15 +90,14 @@ const ImageUpload: React.FC = () => {
     };
 
     return (
-        <div className="p-4 flex flex-col justify-center items-center sm:px-12 md:px-24 lg:px-48 xl:px-96">
+        <div className="p-4 flex flex-col justify-center items-center sm:px-12 md:px-24">
             {!filePath && (
-                <div className="min-w-[280px] w-full sm:min-w-[360px]">
+                <div className="w-full">
                     <div
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer min-h-[75vh] sm:min-h-[75vh]"
-                    >
+                        className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer sm:min-h-[780px] w-full">
                         <p className="text-gray-600 text-center text-lg">이미지를 드래그하거나 클릭하여 업로드하세요.</p>
                         <input
                             type="file"
