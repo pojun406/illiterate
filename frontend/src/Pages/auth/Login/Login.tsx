@@ -60,58 +60,54 @@ const Login = () => {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center px-4">
-            <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
+        <div className="flex min-h-screen items-center justify-center px-4 bg-gray-100">
+            <div className="w-full max-w-lg mx-auto bg-white rounded-lg shadow-md overflow-hidden p-8">
                 <div className="flex items-center justify-center my-4">
                     <Link to="/"><Logo /></Link>
                 </div>
-                <div>
-                    <div className="border rounded-md overflow-hidden w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto">
-                        <div className="px-4 py-6">
-                            <div className="text-center font-bold text-blue-300 text-xl mb-4">로그인</div>
-                            {message && <div className="text-center text-red-500 mb-4">{message}</div>}
-                            <form onSubmit={handleBasicSubmit}>
-                                <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
-                                    <AiOutlineUser className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
-                                    <input
-                                        type="text"
-                                        placeholder="아이디"
-                                        value={userid}
-                                        onChange={(e) => setUserid(e.target.value)}
-                                        className="block w-full px-4 py-2 ml-2 focus:outline-none"
-                                    />
-                                </div>
-                                <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
-                                    <AiOutlineLock className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
-                                    <input
-                                        type="password"
-                                        placeholder="비밀번호"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="block w-full px-4 py-2 ml-2 focus:outline-none"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
-                                >
-                                    로그인
-                                </button>
-                            </form>
+                <div className="px-8 py-6">
+                    <div className="text-center font-bold text-blue-500 text-xl mb-4">로그인</div>
+                    {message && <div className="text-center text-red-500 mb-4">{message}</div>}
+                    <form onSubmit={handleBasicSubmit}>
+                        <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
+                            <AiOutlineUser className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
+                            <input
+                                type="text"
+                                placeholder="아이디"
+                                value={userid}
+                                onChange={(e) => setUserid(e.target.value)}
+                                className="block w-full px-4 py-2 ml-2 focus:outline-none rounded-r-md"
+                            />
                         </div>
-                    </div>
-                    <ul className="flex pb-4 justify-center">
-                        <li className="relative inline-block px-2 md:px-4">
-                            <Link to="/auth/find-account" state={{ tab: "password" }} className="text-sm text-gray-400">비밀번호 찾기</Link>
-                        </li>
-                        <li className="relative inline-block px-2 md:px-4">
-                            <Link to="/auth/find-account" state={{ tab: "username" }} className="text-sm text-gray-400">아이디 찾기</Link>
-                        </li>
-                        <li className="relative inline-block px-2 md:px-4">
-                            <a href="/auth/Signup" className="text-sm text-gray-400">회원가입</a>
-                        </li>
-                    </ul>
+                        <div className="flex items-center mb-4 border rounded-md focus-within:border-black focus-within:text-black">
+                            <AiOutlineLock className="text-gray-400 h-6 w-6 ml-2 focus-within:text-black" />
+                            <input
+                                type="password"
+                                placeholder="비밀번호"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="block w-full px-4 py-2 ml-2 focus:outline-none rounded-r-md"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none"
+                        >
+                            로그인
+                        </button>
+                    </form>
                 </div>
+                <ul className="flex pb-4 justify-center">
+                    <li className="relative inline-block px-2 md:px-4">
+                        <Link to="/auth/find-account" state={{ tab: "password" }} className="text-sm text-gray-400">비밀번호 찾기</Link>
+                    </li>
+                    <li className="relative inline-block px-2 md:px-4">
+                        <Link to="/auth/find-account" state={{ tab: "username" }} className="text-sm text-gray-400">아이디 찾기</Link>
+                    </li>
+                    <li className="relative inline-block px-2 md:px-4">
+                        <Link to="/auth/Signup" className="text-sm text-gray-400">회원가입</Link>
+                    </li>
+                </ul>
             </div>
         </div>
     );
