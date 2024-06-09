@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-    private long id;
+    private Long id;
     private String userid;
     private String password;
     private List<GrantedAuthority> authorities;

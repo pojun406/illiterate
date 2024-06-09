@@ -2,11 +2,9 @@ package com.illiterate.illiterate.member.Controller;
 
 
 import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.member.DTO.request.JoinDto;
-import com.illiterate.illiterate.member.DTO.request.LoginDto;
-import com.illiterate.illiterate.member.DTO.request.RefreshTokenRequestDto;
-import com.illiterate.illiterate.member.DTO.request.UserPasswordResetRequestDto;
+import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
+import com.illiterate.illiterate.member.DTO.response.UserInfoDto;
 import com.illiterate.illiterate.member.Service.UserService;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.CREATE;
+import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
@@ -77,4 +76,30 @@ public class UserController {
         return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
     }
 
+    // 회원정보 조회
+    @GetMapping("/{userId}")
+    public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(
+            @PathVariable Long memberId
+    ) {
+        return ResponseEntity.ok(new BfResponse<>(userService.getUserInfo(memberId)));
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<BfResponse<?>> updateMemberInfo(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long userId,
+            @Valid @RequestBody UserUpdateRequestDto userUpdateDto
+    ) {
+        userService.updateUserInfo(userDetails, userId, userUpdateDto);
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<BfResponse<?>> inactivateMember(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable("userId") Long userId
+    ) {
+        userService.inactiveMember(userDetails, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

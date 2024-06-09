@@ -1,6 +1,8 @@
 package com.illiterate.illiterate.board.Entity;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
+import com.illiterate.illiterate.board.enums.StatusType;
+import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,8 +37,11 @@ public class Board {
     private String regdate;
     @Column(name = "del_date")
     private String deldate;
-    @Column
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(255)")
+    private StatusType status = StatusType.WAIT; // 상태
+
 
     @Builder
     private Board(BoardRequestDto requestsDto, User user, String imagePath) {
@@ -52,6 +57,12 @@ public class Board {
                 .user(user)
                 .imagePath(imagePath)
                 .build();
+    }
+
+    public void updateBoard(BoardRequestDto requestsDto, String imagePath) {
+        this.title = requestsDto.getTitle();
+        this.content = requestsDto.getContents();
+        this.image = imagePath;
     }
 
 

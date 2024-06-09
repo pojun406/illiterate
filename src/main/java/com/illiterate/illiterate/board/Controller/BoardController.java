@@ -7,6 +7,7 @@ import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.board.Service.BoardService;
 import com.illiterate.illiterate.common.response.BfResponse;
+import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class BoardController {
         return ResponseEntity.ok(response);
     }
 
+    //게시글 작성
     @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<BoardResponseDto>> createPost(
             @Valid @RequestPart("request") BoardRequestDto requestsDto,
@@ -48,5 +50,31 @@ public class BoardController {
         BoardResponseDto responseDto = boardService.createPost(requestsDto, userDetails.getUser());
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
+
+    // 게시글 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<BoardResponseDto> updatePost(
+            @PathVariable Long id,
+            @RequestPart("data") BoardRequestDto requestsDto,
+            @RequestPart("image") MultipartFile image,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        requestsDto.setImage(image);
+        User user = userDetails.getUser();
+        BoardResponseDto updatedPost = boardService.updatePost(id, requestsDto, user);
+        return ResponseEntity.ok(updatedPost);
+    }
+
+    // 게시글 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        User user = userDetails.getUser();
+        boardService.deletePost(id, user);
+        return ResponseEntity.noContent().build();
+    }
+}
 
 }
