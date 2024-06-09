@@ -1,0 +1,21 @@
+[
+    {
+        "title": "첫 번째 문의",
+        "content": "첫 번째 문의 내용입니다.",
+        "image": "/mockup/DocumentA.png",
+        "status": "답변완료"
+    },
+    {
+        "title": "두 번째 문의",
+        "content": "두 번째 문의 내용입니다.",
+        "image": "https://example.com/image2.jpg",
+        "status": "미확인"
+    },
+    {
+        "title": "세 번째 문의",
+        "content": "세 번째 문의 내용입니다.",
+        "image": null,
+        "status": "확인 중"
+    }
+]
+

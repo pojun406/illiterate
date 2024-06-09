@@ -1,0 +1,8 @@
+{
+  "userid": "admin",
+  "username": "admin",
+  "password": "$2a$10$xcnUbQuctS1vDILqR80OnuKHyNho3PB/0OoHMVzW7JuRVtfeAIcem",
+  "email": "john@example.com",
+  "resetToken": null,
+  "roles": "ROLE_ADMIN"
+}
