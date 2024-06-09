@@ -15,14 +15,17 @@ const Result = () => {
     const [filePath, setFilePath] = useState<string | null>(() => {
         return location.state?.filePath || sessionStorage.getItem('filePath');
     });
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
+        console.log('Loaded Data:', data); // 데이터 확인용 로그
         if (!location.state?.fromImageUpload) {
             navigate('/application');
         }
-    }, [location, navigate]);
+    }, [location, navigate, data]);
 
     const handleDataLoaded = (loadedData: any) => {
+        console.log('Data Loaded:', loadedData); // 데이터 확인용 로그
         setData(loadedData);
         sessionStorage.setItem('ocrData', JSON.stringify(loadedData));
         if (filePath) {
@@ -46,7 +49,7 @@ const Result = () => {
 
     return (
         <div className="flex">
-            <Sidebar />
+            <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
             <div className="flex-1 p-8">
                 {!data && <OCR onDataLoaded={handleDataLoaded} />}
                 {data && renderDocument()}
