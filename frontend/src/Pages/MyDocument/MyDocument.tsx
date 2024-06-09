@@ -6,6 +6,7 @@ import Sidebar from "../../Components/Sidebar/Sidebar";
 const MyDocument = () => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [filePath, setFilePath] = useState<string | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         const savedDocuments = sessionStorage.getItem('savedDocuments');
@@ -29,9 +30,9 @@ const MyDocument = () => {
     };
 
     return (
-        <div className="flex">
-            <Sidebar />
-            <div className="flex-1 p-8">
+        <div className="flex p-6 bg-gray-100" style={{ userSelect: 'none' }}>
+            <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+            <div className={`flex-auto bg-white rounded-lg shadow-md md:mx-4 transition-all ${sidebarOpen ? 'ml-64' : 'ml-0'} lg:ml-2`}>
                 {documents.length === 0 ? (
                     <div className="text-center text-2xl">저장된 문서가 없습니다.</div>
                 ) : (

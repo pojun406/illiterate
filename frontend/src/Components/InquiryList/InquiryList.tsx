@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import Sidebar from '../Sidebar/Sidebar';
 
 interface Inquiry {
+    id: number;
     title: string;
     content: string;
-    status: string; // 상태 필드 추가
+    image?: string | null;
+    status: string;
 }
 
 const InquiryList: React.FC = () => {
@@ -41,9 +44,9 @@ const InquiryList: React.FC = () => {
             <h2 className="text-2xl font-bold mb-4">나의 문의사항 목록</h2>
             <ul className="space-y-4">
                 {inquiries.length > 0 ? (
-                    inquiries.map((inquiry, index) => (
-                        <li key={index} className="p-4 border rounded-lg shadow-md bg-white">
-                            <Link to={`/inquiries/${index}`}>
+                    inquiries.map((inquiry) => (
+                        <li key={inquiry.id} className="p-4 border rounded-lg shadow-md bg-white">
+                            <Link to={`/servicecenter/list/${inquiry.id}`}>
                                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
                                     <span className="text-lg font-semibold">{inquiry.title}</span>
                                     <span className={`text-sm ${getStatusColor(inquiry.status)} mt-2 sm:mt-0`}>{inquiry.status}</span>
