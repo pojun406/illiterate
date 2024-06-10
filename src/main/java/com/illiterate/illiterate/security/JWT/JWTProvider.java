@@ -108,7 +108,7 @@ public class JWTProvider {
         }
 
         UserDetails user = UserDetailsImpl.builder()
-                .id(claims.get("id", Integer.class))
+                .id(Long.valueOf(claims.get("id", Integer.class)))
                 .userid(claims.getSubject())
                 .password(null)
                 .authorities(authorities)
