@@ -74,10 +74,6 @@ const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
                                     <Link to="/profile"
                                         className="block py-2 border-t border-b hover:bg-gray-100" onClick={closeDropdown}>닉네임</Link>
                                 </li>
-                                <li>
-                                    <Link to="/document" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>내
-                                        문서 보기</Link>
-                                </li>
                             </>
                         ) : (
                             <>
@@ -93,7 +89,7 @@ const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
                             <Link to="/application" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>등록하기</Link>
                         </li>
                         <li>
-                            <Link to="/servicecenter" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>고객센터</Link>
+                            <Link to="/servicecenter/list" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>고객센터</Link>
                         </li>
                         {isLoggedIn && (<li>
                             <button onClick={handleLogout}
@@ -110,7 +106,7 @@ const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
                             </li>
                             {isHomePage ? null : (
                                 <li>
-                                    <Link to="/servicecenter" className="block py-2" onClick={closeDropdown}>고객센터</Link>
+                                    <Link to="/servicecenter/list" className="block py-2" onClick={closeDropdown}>고객센터</Link>
                                 </li>
                             )}
                         </ul>
