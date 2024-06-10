@@ -17,9 +17,8 @@ def main(image_path):
         accuracy_percentage = item[1][1] * 100  # Multiply by 100 to convert to percentage
         print(f"{idx}. Text: {item[1][0]}, Box: {item[0]}, Accuracy: {accuracy_percentage:.2f}%")
 
-    # Save specific indexes to Result.json
-    specific_indexes = [1, 3, 9, 11, 43]
-    ocr.save_texts_by_indexes(specific_indexes, 'Result.json')
+    # Save texts based on file type
+    ocr.save_texts_based_on_file_type('Result.json')
 
 
 if __name__ == '__main__':
