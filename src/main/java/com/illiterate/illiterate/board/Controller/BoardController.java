@@ -32,7 +32,6 @@ public class BoardController {
         BfResponse<List<BoardResponseDto>> response = new BfResponse<>(posts);
         return ResponseEntity.ok(response);
     }
-
     @GetMapping("/posts/{id}")
     public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@PathVariable Long id) {
         BoardResponseDto post = boardService.getPost(id);
