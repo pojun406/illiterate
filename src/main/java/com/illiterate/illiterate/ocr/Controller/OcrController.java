@@ -26,13 +26,17 @@ public class OcrController {
     private final OcrService ocrService;
 
     @PostMapping(value = "/file", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(@Valid @RequestPart(value = "request") OcrRequestDto requestDto, @RequestPart(value = "file", required = false) MultipartFile image) {
+    public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
+            @Valid @RequestPart(value = "request") OcrRequestDto requestDto,
+            @RequestPart(value = "file", required = false) MultipartFile image) {
         OcrResponseDto responseDto = ocrService.uploadOCRImage(requestDto, image);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
 
     @PostMapping(value = "/saveText")
-    public ResponseEntity<BfResponse<OcrResponseDto>> saveText(@RequestParam Long ocrId, @RequestParam String text) {
+    public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
+            @RequestParam Long ocrId,
+            @RequestParam String text) {
         OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
