@@ -25,6 +25,13 @@ public class OcrController {
 
     private final OcrService ocrService;
 
+    /*
+        "id": 123,
+        "text": "이름 이병준 주민등록번호 123456-1234567",
+        "ocrResults": ["이름", "이병준", "주민등록번호", "123456-1234567"],
+        "imageUrl": "/path/to/image/file.jpg",
+        "filteredText": "이병준, 123456-1234567"
+     */
     @PostMapping(value = "/file", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
             @Valid @RequestPart(value = "request") OcrRequestDto requestDto,
@@ -33,6 +40,10 @@ public class OcrController {
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
 
+    /*
+        "id": 123,
+        "text": "저장된 텍스트 내용"
+     */
     @PostMapping(value = "/saveText")
     public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
             @RequestParam Long ocrId,
