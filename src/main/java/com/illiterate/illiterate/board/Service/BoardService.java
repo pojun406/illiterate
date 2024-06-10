@@ -33,6 +33,14 @@ public class BoardService {
     private static final String IMAGE_SAVE_PATH = "C:/Program Files/Illiterate";
 
     // 게시글 전체 목록 조회
+
+    /*
+        "id": 1,
+        "title": "First Post",
+        "content": "This is the content of the first post.",
+        "imagePath": "/images/first-post.jpg",
+        "status": "ACTIVE"
+     */
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getPosts() {
         List<Board> boardList = boardRepository.findAll();
@@ -46,6 +54,13 @@ public class BoardService {
     }
 
     // 선택된 게시글 조회
+    /*
+        "id": 1,
+        "title": "First Post",
+        "content": "This is the content of the first post.",
+        "imagePath": "/images/first-post.jpg",
+        "status": "ACTIVE"
+     */
     @Transactional(readOnly = true)
     public BoardResponseDto getPost(Long id) {
         Board board = boardRepository.findById(id)
@@ -55,6 +70,13 @@ public class BoardService {
     }
 
     // 게시글 작성
+    /*
+        "id": 3,
+        "title": "New Post",
+        "content": "This is the content of the new post.",
+        "imagePath": "/images/new-post.jpg",
+        "status": "ACTIVE"
+     */
     @Transactional
     public BoardResponseDto createPost(BoardRequestDto requestsDto, User user) {
         String imagePath = null;
@@ -74,6 +96,13 @@ public class BoardService {
     }
 
     // 게시글 수정
+    /*
+        "id": 1,
+        "title": "Updated Post",
+        "content": "This is the updated content of the post.",
+        "imagePath": "/images/updated-post.jpg",
+        "status": "ACTIVE"
+     */
     @Transactional
     public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, User user) {
         Board board = boardRepository.findById(postId)
@@ -100,6 +129,7 @@ public class BoardService {
     }
 
     // 게시글 삭제
+    // return 되는 값 없음
     @Transactional
     public void deletePost(Long postId, User user) {
         Board board = boardRepository.findById(postId)
