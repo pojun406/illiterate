@@ -23,6 +23,7 @@ public class CertificateController {
 
     private final CertificateService certificationService;
 
+    // request : "email"
     @PostMapping(value = "/email", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BfResponse<CertificateMailResponseDto>> sendCertificateMail(
             @Valid @RequestBody MailCertificateRequestDto mailCertificateRequestDto
@@ -34,6 +35,7 @@ public class CertificateController {
                 .body(new BfResponse<>(SUCCESS, responseDto));
     }
 
+    // request : /email?email=example@example.com&certificationNumber=123456
     @GetMapping(value = "/email", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BfResponse<?>> verifyMailCertificationNumber(@RequestParam String email, @RequestParam String certificationNumber
     ) {
