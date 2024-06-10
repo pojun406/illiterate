@@ -13,5 +13,6 @@ public class OcrResponseDto {
     private Long id;
     private String text;
     private List<String> ocrResults;
-    private String imageUrl;
+    private String imageUrl; // 이미지 경로
+    private String filteredText; // 필터링
 }
