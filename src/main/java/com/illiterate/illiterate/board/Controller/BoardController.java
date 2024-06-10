@@ -76,5 +76,3 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 }
-
-}
