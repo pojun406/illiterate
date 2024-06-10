@@ -72,8 +72,52 @@ class MyPaddleOCR:
         plt.axis('off')
         plt.show()
 
-    def save_texts_by_indexes(self, indexes, output_file):
-        """지정된 인덱스의 텍스트를 Result.json 파일로 저장하는 함수"""
-        selected_texts = [{"key": self.ocr_results[i - 1][1][0]} for i in indexes if i - 1 < len(self.ocr_results)]
+    def save_texts_based_on_file_type(self, output_file):
+        """파일 유형에 따라 텍스트를 저장하는 함수"""
+        # Define the index orders for the two file types
+        file_type_1_indexes = [21, 266, 264, 268, 38, 48, 49, 50, 53, 54, 56, 57, 275, 52, 55, 63, 64, 65, 71, 66, 73,
+                               74, 78, 79, 287, 81, 288, 98, 100, 101, 103, 112, 111, 113, 114, 117, 119, 120, 121, 147,
+                               148, 205, 207, 208, 213, 214, 215, 216]
+        file_type_2_indexes = [31, 36, 37, 32, 33, 34, 45, 46, 66, 485, 64, 65, 73, 74, 78, 75, 76, 97, 95, 99, 435,
+                               437, 443, 447, 444, 439, 440, 441, 457]
+
+        # Keywords to identify the file type
+        keyword_file_type_1 = "\'생\'신\'고"
+        keyword_file_type_2 = '전입신고서세대'
+
+        detected_file_type = None
+
+        # Determine the file type based on the presence of keywords in OCR results
+        for item in self.ocr_results:
+            text = item[1][0]
+            # Debug: Print each text to verify the content
+            print("OCR Text:", text)
+            if keyword_file_type_1 in text:
+                detected_file_type = 1
+                break
+            elif keyword_file_type_2 in text:
+                detected_file_type = 2
+                break
+
+        # Debug: Print the detected file type
+        print("Detected File Type:", detected_file_type)
+
+        if detected_file_type == 1:
+            selected_indexes = file_type_1_indexes
+        elif detected_file_type == 2:
+            selected_indexes = file_type_2_indexes
+        else:
+            selected_indexes = []
+
+        # Debug: Print the selected indexes
+        print("Selected Indexes:", selected_indexes)
+
+        # Extract texts based on the selected indexes
+        selected_texts = [{"key": self.ocr_results[i - 1][1][0]} for i in selected_indexes if
+                          i - 1 < len(self.ocr_results)]
+
+        # Debug: Print the selected texts
+        print("Selected Texts:", selected_texts)
+
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(selected_texts, f, ensure_ascii=False, indent=4)
