@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Sidebar from '../Sidebar/Sidebar';
 
 interface Inquiry {
+    id: number;
     title: string;
     content: string;
     image?: string | null;
@@ -18,7 +18,7 @@ const InquiryDetail = () => {
             .then(response => response.json())
             .then(data => {
                 if (id) {
-                    const foundInquiry = data.find((item: Inquiry, index: number) => index === parseInt(id));
+                    const foundInquiry = data.find((item: Inquiry) => item.id === parseInt(id));
                     setInquiry(foundInquiry);
                 }
             })
@@ -30,9 +30,8 @@ const InquiryDetail = () => {
     }
 
     return (
-        <div className="flex">
-            <Sidebar />
-            <div className="flex-1 p-8">
+        <div>
+            <div className="flex p-8">
                 <div className="p-8 border-2 border-gray-300 rounded-lg shadow-md bg-white">
                     <div className="mb-6">
                         <label className="block text-lg font-medium text-gray-700 mb-2">제목</label>
