@@ -30,7 +30,7 @@ const Header = () => {
 
     return (
         <div className="flex flex-col h-screen">
-            <header className={`fixed top-0 left-0 w-full z-50 shadow-md lg:px-8 ${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
+            <header className={`fixed top-0 left-0 w-full z-30 shadow-md lg:px-8 ${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
                 <Navigation isSidebarPage={isSidebarPage} />
             </header>
             <main ref={mainRef} className="flex-1 overflow-y-scroll mt-20 scrollbar-hide">
