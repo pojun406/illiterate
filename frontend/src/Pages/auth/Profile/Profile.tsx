@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch('/mockup/profile.json');
+                const response = await fetch('/api/user/info');
                 if (response.ok) {
                     const data = await response.json();
                     setUserInfo(data);
@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
         if (password === '1234') {
             setIsAuthenticated(true);
         } else {
-            setModalMessage('밀번호가 일치하지 않습니다.');
+            setModalMessage('비밀번호가 일치하지 않습니다.');
             setIsModalOpen(true);
         }
     };
@@ -83,7 +83,7 @@ const Profile: React.FC = () => {
     const handleUserInfoSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch('/update-profile', {
+            const response = await fetch('/api/user/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -101,7 +101,7 @@ const Profile: React.FC = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와의 통신 중 오류�� 발생했습니다. 다시 시도해주세요.');
+            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -119,7 +119,7 @@ const Profile: React.FC = () => {
             return;
         }
         try {
-            const response = await fetch('/update-password', {
+            const response = await fetch('/api/user/update-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -144,7 +144,7 @@ const Profile: React.FC = () => {
 
     const handleAccountDeletion = async () => {
         try {
-            const response = await fetch('/delete-account', {
+            const response = await fetch('/api/user/delete', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -156,7 +156,7 @@ const Profile: React.FC = () => {
                 setIsModalOpen(true);
                 navigate('/');
             } else {
-                setModalMessage('계정 삭제에 실패했습니다. 다시 시도해주요.');
+                setModalMessage('계정 삭제에 실패했습니다. 다시 시도해주세요.');
                 setIsModalOpen(true);
             }
         } catch (error) {
