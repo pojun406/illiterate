@@ -44,11 +44,11 @@ public class OcrController {
         "id": 123,
         "text": "저장된 텍스트 내용"
      */
-    @PostMapping(value = "/saveText")
-    public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
-            @RequestParam Long ocrId,
-            @RequestParam String text) {
-        OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
-        return ResponseEntity.ok(new BfResponse<>(responseDto));
-    }
+//    @PostMapping(value = "/saveText")
+//    public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
+//            @RequestParam Long ocrId,
+//            @RequestParam String text) {
+//        OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
+//        return ResponseEntity.ok(new BfResponse<>(responseDto));
+//    }
 }

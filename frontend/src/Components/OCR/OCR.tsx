@@ -1,26 +1,40 @@
 import React, { useEffect, useState } from 'react';
+import AccessToken from '../AccessToken/AccessToken';
 
 interface OCRProps {
     onDataLoaded: (data: any) => void;
+    file: File | null;
 }
 
-const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
+const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log('로컬저장전1'); // 데이터 확인용 로그
         const fetchData = async () => {
             try {
-                    const response = await fetch('/mockup/ocrmockup.json');
-                    if (!response.ok) {
+                if (!file) {
+                    throw new Error('No file provided');
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await AccessToken('/ocr/file', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (typeof response === 'string') {
+                    throw new Error(response);
+                }
+
+                if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                const mockData = await response.json();
-                console.log('로컬저장전', mockData); // 데이터 확인용 로그
-                localStorage.removeItem('ocrData');
-                localStorage.setItem('ocrData', JSON.stringify(mockData));
-                onDataLoaded(mockData);
+
+                const responseData = await response.json();
+                onDataLoaded(responseData);
 
             } catch (error) {
                 console.error('Error fetching OCR data:', error);
@@ -31,7 +45,7 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
         };
 
         fetchData();
-    }, [onDataLoaded]);
+    }, [onDataLoaded, file]);
 
     if (loading) {
         return <div>Loading...</div>;
