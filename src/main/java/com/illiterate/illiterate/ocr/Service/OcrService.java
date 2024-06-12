@@ -2,6 +2,7 @@ package com.illiterate.illiterate.ocr.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.illiterate.illiterate.common.util.ConvertUtil;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.exception.MemberException;
@@ -22,8 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -42,21 +42,25 @@ public class OcrService {
             // 파이썬 코드 실행
             runPythonScript(tempFile);
 
-            // 임시경로에 저장된 이미지 삭제
+            // OCR 결과 읽기
+            List<JsonNode> ocrResults = readOcrResults(new File(tempDir + "/result.json"));
+
+            // OCR 결과를 key:value 형식으로 처리
+            Map<String, String> mappedResults = processOcrResults(ocrResults);
+
+            // 결과를 JSON 파일로 저장
+            String outputFileName = tempDir + "/" + requestDto.getUser().getId() + "_result.json";
+            writeResultToJson(mappedResults, outputFileName, detectFileType(ocrResults));
+
+            // 임시 파일 삭제
             Files.delete(Paths.get(tempFile.getAbsolutePath()));
+            Files.delete(Paths.get(tempDir + "/result.json"));
 
-            // 결과 파일 읽기
-            List<String> ocrResults = readOcrResults(new File(tempDir + "/Result.json"));
-
-            // 결과 파일 삭제
-            Files.delete(Paths.get(tempDir + "/Result.json"));
-
-            // 실행 결과 저장
+            // 응답 DTO 생성
             OcrResponseDto responseDto = new OcrResponseDto();
             responseDto.setImageUrl(tempFile.getAbsolutePath());
             responseDto.setId(requestDto.getUser().getId());
-
-            responseDto.setOcrResults(mergeResults(ocrResults));
+            responseDto.setOcrResults(Collections.singletonList(outputFileName));
 
             return responseDto;
         } catch (IOException | InterruptedException e) {
@@ -76,49 +80,112 @@ public class OcrService {
         }
     }
 
-    private static List<String> readOcrResults(File resultFile) throws IOException {
+    private List<JsonNode> readOcrResults(File resultFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(resultFile);
-
-        List<String> ocrResults = new ArrayList<>();
+        List<JsonNode> ocrResults = new ArrayList<>();
         if (rootNode.isArray()) {
             for (JsonNode node : rootNode) {
-                ocrResults.add(node.get("text").asText());
+                ocrResults.add(node);
             }
         }
         return ocrResults;
     }
 
-    private static List<String> mergeResults(List<String> ocrResults) {
-        List<String> mergedResults = new ArrayList<>();
-        StringBuilder nameBuilder = new StringBuilder();
+    private Map<String, String> processOcrResults(List<JsonNode> ocrResults) {
+        int detectedFileType = detectFileType(ocrResults);
+        Map<String, List<Integer>> selectedMap = detectedFileType == 1 ? createFileType1Map() : createFileType2Map();
 
-        boolean isNameSection = false;
-        for (String result : ocrResults) {
-            if (result.equals("이름")) {
-                isNameSection = true;
-                mergedResults.add(result);
-            } else if (result.equals("주민등록번호")) {
-                isNameSection = false;
-                if (nameBuilder.length() > 0) {
-                    mergedResults.add(nameBuilder.toString());
-                    nameBuilder.setLength(0);
+        Map<String, String> resultMap = new LinkedHashMap<>();
+        for (Map.Entry<String, List<Integer>> entry : selectedMap.entrySet()) {
+            String key = entry.getKey();
+            List<Integer> indexes = entry.getValue();
+            StringBuilder value = new StringBuilder();
+
+            for (int index : indexes) {
+                if (index - 1 < ocrResults.size()) {
+                    value.append(ocrResults.get(index - 1).get(1).get(0).asText()).append(", ");
                 }
-                mergedResults.add(result);
-            } else if (isNameSection) {
-                nameBuilder.append(result);
-            } else {
-                mergedResults.add(result);
             }
-        }
 
-        return mergedResults;
+            // 마지막 콤마 및 공백 제거
+            if (value.length() > 0) {
+                value.setLength(value.length() - 2);
+            }
+
+            resultMap.put(key, value.toString());
+        }
+        return resultMap;
     }
 
-    public OcrResponseDto saveOcrText(Long ocrId, String text) {
-        OcrResponseDto responseDto = new OcrResponseDto();
-        responseDto.setId(ocrId);
-        responseDto.setText(text);
-        return responseDto;
+    private int detectFileType(List<JsonNode> ocrResults) {
+        final String keywordFileType1 = "'생'신'고";
+        final String keywordFileType2 = "전입신고서세대";
+
+        for (JsonNode result : ocrResults) {
+            String text = result.get(1).get(0).asText();
+            if (text.contains(keywordFileType1)) {
+                return 1;
+            } else if (text.contains(keywordFileType2)) {
+                return 2;
+            }
+        }
+        return 0;
+    }
+
+    private void writeResultToJson(Map<String, String> mappedResults, String outputFileName, int detectedFileType) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode resultNode = mapper.createObjectNode();
+        resultNode.put("title", detectedFileType == 1 ? "출생신고서" : "전입신고서");
+        resultNode.set("texts", mapper.valueToTree(mappedResults));
+        mapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFileName), resultNode);
+    }
+
+    private static Map<String, List<Integer>> createFileType1Map() {
+        Map<String, List<Integer>> map = new LinkedHashMap<>();
+        map.put("한글성명", Collections.singletonList(21));
+        map.put("한자성명", Collections.singletonList(266));
+        map.put("본한자", Collections.singletonList(264));
+        map.put("출생일시", Arrays.asList(268, 38));
+        map.put("등록기준지", Arrays.asList(48, 49, 50));
+        map.put("주소", Arrays.asList(53, 54, 56, 57, 275));
+        map.put("세대주및관계", Arrays.asList(52, 55));
+        map.put("외국국적", Arrays.asList(63, 64));
+        map.put("부성명", Collections.singletonList(65));
+        map.put("모성명", Collections.singletonList(71));
+        map.put("부주민", Collections.singletonList(66));
+        map.put("모주민", Arrays.asList(73, 74));
+        map.put("부등록기준지", Arrays.asList(78, 79, 287));
+        map.put("모등록기준지", Arrays.asList(81, 288));
+        map.put("신고인성명", Collections.singletonList(98));
+        map.put("신고인주민", Arrays.asList(100, 101));
+        map.put("기타자격", Collections.singletonList(103));
+        map.put("신고인주소", Arrays.asList(112, 111, 113, 114));
+        map.put("신고인전화", Arrays.asList(117, 119, 120));
+        map.put("신고인메일", Collections.singletonList(121));
+        map.put("임신주수", Collections.singletonList(147));
+        map.put("신생아체중", Collections.singletonList(148));
+        map.put("실결혼시작일", Arrays.asList(205, 207, 208));
+        map.put("출산수", Arrays.asList(213, 214, 215, 216));
+        return map;
+    }
+
+    private static Map<String, List<Integer>> createFileType2Map() {
+        Map<String, List<Integer>> map = new LinkedHashMap<>();
+        map.put("전입자성명", Collections.singletonList(31));
+        map.put("주민앞", Collections.singletonList(36));
+        map.put("주민뒤", Collections.singletonList(37));
+        map.put("상단연락처", Arrays.asList(32, 33, 34));
+        map.put("시도", Collections.singletonList(45));
+        map.put("시군구", Collections.singletonList(46));
+        map.put("세대주성명", Collections.singletonList(66));
+        map.put("하단연락처", Arrays.asList(485, 64, 65));
+        map.put("주소", Arrays.asList(73, 74, 78, 75, 76));
+        map.put("다가구주택명칭", Arrays.asList(97, 95, 99));
+        map.put("세대원성명", Arrays.asList(435, 437));
+        map.put("신청인번호", Arrays.asList(443, 447, 444));
+        map.put("휴대전화", Arrays.asList(439, 440, 441));
+        map.put("신청인성명", Collections.singletonList(457));
+        return map;
     }
 }
