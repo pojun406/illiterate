@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Logo from "../Logo/Logo";
 import { FcMenu } from "react-icons/fc";
 import { IoCloseSharp } from "react-icons/io5";
@@ -10,6 +10,7 @@ const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -21,15 +22,18 @@ const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
     };
 
     const handleLogout = () => {
-        setIsLoggedIn(false);
-        localStorage.clear();
-        closeDropdown();
+        if (window.confirm("정말 로그아웃 하시겠습니까?")) {
+            setIsLoggedIn(false);
+            localStorage.clear();
+            closeDropdown();
+            navigate("/");
+        }
     };
 
     useEffect(() => {
-        const checkToken = async () => {
-            const result = await AccessToken();
-            setIsLoggedIn(result !== '토큰이 없습니다.');
+        const checkToken = () => {
+            const token = localStorage.getItem('authToken');
+            setIsLoggedIn(!!token);
         };
 
         checkToken();

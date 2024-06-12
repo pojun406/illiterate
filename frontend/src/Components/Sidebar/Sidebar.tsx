@@ -19,6 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     const handleTouchStart = (e: React.TouchEvent) => {
         if (isMobileOrTablet()) {
             startX.current = e.touches[0].clientX;
+            isDragging.current = true;
         }
     };
 
@@ -27,6 +28,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             const currentX = e.touches[0].clientX;
             if (currentX - startX.current > 50) {
                 setSidebarOpen(true);
+                isDragging.current = false;
+            } else if (startX.current - currentX > 50) {
+                setSidebarOpen(false);
+                isDragging.current = false;
             }
         }
     };
@@ -50,6 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 const currentX = e.clientX;
                 if (currentX - startX.current > 50) {
                     setSidebarOpen(true);
+                    isDragging.current = false;
+                } else if (startX.current - currentX > 50) {
+                    setSidebarOpen(false);
+                    isDragging.current = false;
                 }
             }
         };
@@ -57,6 +66,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         const handleMouseUp = () => {
             isDragging.current = false;
         };
+
+        const handleTouchStartNative = (e: TouchEvent) => handleTouchStart(e as unknown as React.TouchEvent);
+        const handleTouchMoveNative = (e: TouchEvent) => handleTouchMove(e as unknown as React.TouchEvent);
+        const handleTouchEndNative = () => handleTouchEnd();
 
         const handleResize = () => {
             if (!isMobileOrTablet()) {
@@ -68,6 +81,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             document.addEventListener('mousedown', handleMouseDown);
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('touchstart', handleTouchStartNative);
+            document.addEventListener('touchmove', handleTouchMoveNative);
+            document.addEventListener('touchend', handleTouchEndNative);
         }
 
         window.addEventListener('resize', handleResize);
@@ -77,6 +93,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
                 document.removeEventListener('mousedown', handleMouseDown);
                 document.removeEventListener('mousemove', handleMouseMove);
                 document.removeEventListener('mouseup', handleMouseUp);
+                document.removeEventListener('touchstart', handleTouchStartNative);
+                document.removeEventListener('touchmove', handleTouchMoveNative);
+                document.removeEventListener('touchend', handleTouchEndNative);
             }
             window.removeEventListener('resize', handleResize);
         };
@@ -122,8 +141,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
 
     return (
         <>
-            <div className={`fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={handleOverlayClick}></div>
-            <div className={`fixed top-0 left-0 z-50 h-full bg-white shadow-md rounded-lg p-4 flex flex-col items-center transform ${sidebarOpen ? 'translate-x-0 w-2/5' : '-translate-x-full w-0'} transition-transform lg:relative lg:translate-x-0 lg:w-1/5 lg:top-0 lg:z-30`} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} style={{ userSelect: 'none' }}>
+            {isMobileOrTablet() && (
+                <div className={`fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={handleOverlayClick}></div>
+            )}
+            <div className={`fixed top-0 left-0 z-50 h-full bg-white shadow-md p-4 flex flex-col items-center transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform w-64 md:w-1/5 lg:w-1/6 lg:static lg:transform-none lg:transition-none`}>
                 <ul className="w-full">
                     {renderLinks()}
                 </ul>

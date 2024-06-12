@@ -17,12 +17,19 @@ const FindAccount: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const endpoint = isFindingUsername ? "/findid" : "/send-reset-password-link";
-        const data = isFindingUsername ? { email } : { userid, email };
+        const endpoint = isFindingUsername ? "/findId" : `/${userid}/password`;
+        const data = isFindingUsername ? { userEmail: email } : { email };
+
+        if (!email) {
+            setMessage("이메일을 입력해주세요.");
+            return;
+        }
+
+        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
 
         try {
             const response = await fetch(endpoint, {
-                method: "POST",
+                method: isFindingUsername ? "POST" : "PATCH",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -31,7 +38,7 @@ const FindAccount: React.FC = () => {
 
             if (response.ok) {
                 const result = await response.json();
-                setMessage(isFindingUsername ? `아이디: ${result.userid}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+                setMessage(isFindingUsername ? `아이디: ${result.data}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
             } else {
                 setMessage(isFindingUsername ? "아이디를 찾을 수 없습니다." : "비밀번호를 찾을 수 없습니다.");
             }
