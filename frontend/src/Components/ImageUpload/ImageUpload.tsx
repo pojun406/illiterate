@@ -10,17 +10,6 @@ const ImageUpload: React.FC = () => {
     const location = useLocation(); // useLocation hook 사용
 
     useEffect(() => {
-        const savedFile = sessionStorage.getItem('uploadedFile');
-        if (savedFile) {
-            const { data, type } = JSON.parse(savedFile);
-            const blob = new Blob([new Uint8Array(data)], { type });
-            const url = URL.createObjectURL(blob);
-            setFile(blob as File);
-            setFilePath(url);
-        }
-    }, []);
-
-    useEffect(() => {
         setShowModal(false); // URL 변경 시 모달 닫기
     }, [location.pathname]);
 
@@ -53,32 +42,12 @@ const ImageUpload: React.FC = () => {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-        sessionStorage.removeItem('uploadedFile');
     };
 
     const handleConfirm = () => {
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                if (event.target && event.target.result) {
-                    const arrayBuffer = new Uint8Array(event.target.result as ArrayBuffer);
-                    let binaryString = '';
-                    for (let i = 0; i < arrayBuffer.length; i++) {
-                        binaryString += String.fromCharCode(arrayBuffer[i]);
-                    }
-                    const encodedString = btoa(binaryString);
-                    // 쿠키에 파일 데이터를 저장
-                    document.cookie = `imageData=${encodeURIComponent(encodedString)}; path=/; expires=${new Date(new Date().getTime() + 86400000).toUTCString()};`;
-                    setShowModal(false);
-                    navigate('/result', { state: { fromImageUpload: true, filePath } });
-                } else {
-                    console.error('파일 읽기 실패: 결과 데이터가 없습니다.');
-                }
-            };
-            reader.onerror = (error) => {
-                console.error('파일 읽기 오류:', error);
-            };
-            reader.readAsBinaryString(file);
+            setShowModal(false);
+            navigate('/result', { state: { fromImageUpload: true, file, filePath } });
         } else {
             console.error('파일이 선택되지 않았습니다.');
         }
