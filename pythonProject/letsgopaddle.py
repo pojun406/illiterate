@@ -104,10 +104,13 @@ class MyPaddleOCR:
 
         if detected_file_type == 1:
             selected_indexes = file_type_1_indexes
+            title = "출생신고서"
         elif detected_file_type == 2:
             selected_indexes = file_type_2_indexes
+            title = "전입신고서"
         else:
             selected_indexes = []
+            title = "Unknown"
 
         # Debug: Print the selected indexes
         print("Selected Indexes:", selected_indexes)
@@ -119,5 +122,10 @@ class MyPaddleOCR:
         # Debug: Print the selected texts
         print("Selected Texts:", selected_texts)
 
+        result_data = {
+            "title": title,
+            "texts": selected_texts
+        }
+
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(selected_texts, f, ensure_ascii=False, indent=4)
+            json.dump(result_data, f, ensure_ascii=False, indent=4)
