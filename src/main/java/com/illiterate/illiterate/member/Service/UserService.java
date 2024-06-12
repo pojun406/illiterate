@@ -115,6 +115,7 @@ public class UserService {
 
     //refresh토큰 재발급
     public LoginTokenDto refreshToken(String oldRefreshToken, Long memberId) {
+        System.out.println("Old Refresh Token: " + oldRefreshToken);
 
         User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));

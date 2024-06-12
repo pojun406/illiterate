@@ -17,6 +17,7 @@ const Result = () => {
     });
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [file, setFile] = useState<File | null>(location.state?.file || null);
 
     useEffect(() => {
         if (!location.state?.fromImageUpload) {
@@ -92,7 +93,7 @@ const Result = () => {
         <div className="flex p-6 bg-gray-100 select-none">
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
             <div className="flex flex-col items-center justify-center w-full md:mx-4">
-                {!data && <OCR onDataLoaded={handleDataLoaded} />}
+                {!data && <OCR onDataLoaded={handleDataLoaded} file={file} />}
                 {data && (
                     <div className="flex flex-col lg:flex-row justify-center items-start space-y-4 lg:space-y-0 lg:space-x-4 w-full">
                         <div className="flex-1 p-3 bg-white items-center justify-center shadow-md rounded-lg relative w-full min-h-[610px] md:min-h-[620px] lg:min-h-[1044px] lg:h-[1044px]">
