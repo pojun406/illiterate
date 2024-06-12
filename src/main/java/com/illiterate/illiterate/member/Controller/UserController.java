@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BfResponse<>(CREATE,
-                        Map.of("member_id", userService.joinUser(joinDTO))));
+                        Map.of("userid", userService.joinUser(joinDTO))));
     }
     /*
          "userid": "testuser",
