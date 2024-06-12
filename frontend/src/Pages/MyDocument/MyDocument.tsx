@@ -19,11 +19,16 @@ const MyDocument = () => {
         }
     }, []);
 
+    const handleSave = () => {
+        // 저장 로직을 여기에 추가하세요
+        console.log('저장되었습니다.');
+    };
+
     const renderDocument = (document: any) => {
         if (document.title === 'A 문서') {
-            return <DocumentA data={document} filePath={filePath as string} />;
+            return <DocumentA data={document} filePath={filePath as string} onSave={handleSave} />;
         } else if (document.title === 'B 문서') {
-            return <DocumentB data={document} filePath={filePath as string} />;
+            return <DocumentB data={document} filePath={filePath as string} onSave={handleSave} />;
         } else {
             return <div>문서 형식을 확인해 주세요</div>;
         }
