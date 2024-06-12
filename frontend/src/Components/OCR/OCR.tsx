@@ -9,17 +9,13 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded }) => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log('로컬저장전1'); // 데이터 확인용 로그
         const fetchData = async () => {
             try {
-                    const response = await fetch('/mockup/ocrmockup.json');
+                    const response = await fetch('/mockup/ocrmockup_B.json');
                     if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const mockData = await response.json();
-                console.log('로컬저장전', mockData); // 데이터 확인용 로그
-                localStorage.removeItem('ocrData');
-                localStorage.setItem('ocrData', JSON.stringify(mockData));
                 onDataLoaded(mockData);
 
             } catch (error) {
