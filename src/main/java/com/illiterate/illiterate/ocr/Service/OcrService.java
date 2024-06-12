@@ -48,6 +48,9 @@ public class OcrService {
             // 결과 파일 읽기
             List<String> ocrResults = readOcrResults(new File(tempDir + "/Result.json"));
 
+            // 결과 파일 삭제
+            Files.delete(Paths.get(tempDir + "/Result.json"));
+
             // 실행 결과 저장
             OcrResponseDto responseDto = new OcrResponseDto();
             responseDto.setImageUrl(tempFile.getAbsolutePath());
