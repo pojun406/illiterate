@@ -47,6 +47,9 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
 
+        System.out.println("로그인할때 return값 : " + ResponseEntity.ok(new BfResponse<>(userService.login(loginDto))));
+        System.out.println("BfResponse<>() : " + new BfResponse<>(userService.login(loginDto)));
+        System.out.println("서비스만 : " + userService.login(loginDto));
         return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
         //return userService.login(loginDto);
     }
@@ -68,6 +71,7 @@ public class UserController {
 
     /*
         "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "userid" : "test"
      */
     // refresh토큰을 다시 설정해줌
     @PostMapping("/refresh")
@@ -75,6 +79,8 @@ public class UserController {
     public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        System.out.println("dto : " + dto);
+        System.out.println("user detail : " + userDetails);
         return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
         //return userService.refreshToken(dto.refreshToken(), userDetails.getId());
     }
