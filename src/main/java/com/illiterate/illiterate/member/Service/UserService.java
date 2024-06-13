@@ -79,7 +79,6 @@ public class UserService {
                 memberloginDto.getPassword()
         );
 
-        System.out.println("before auth : " + authentication);
         Authentication authenticated = authenticationManager.authenticate(authentication);
 
         System.out.println("after auth : " + authentication);
@@ -90,7 +89,7 @@ public class UserService {
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
-        LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken);
+        LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken, userDetail.getId());
 
         // redis 토큰 정보 저장
         redisRepository.saveToken(userDetail.getId(), refreshToken);
@@ -230,5 +229,11 @@ public class UserService {
         }
 
         member.inactivateUser();
+    }
+
+    // UserService.java
+    public User getUserFromToken(String token) {
+        Long userId = jwtProvider.getUserIdFromToken(token);
+        return userRepository.findById(userId).orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
     }
 }
