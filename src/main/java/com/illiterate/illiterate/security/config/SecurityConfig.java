@@ -138,8 +138,9 @@ public class SecurityConfig {
                 antMatcher(PATCH, "/user/{userId}"),                // 회원 정보 수정
                 antMatcher(PATCH, "/user/{userId}/password"),        // 비밀번호 재설정
                 antMatcher(DELETE, "/user/{userId}"),                // 회원 탈퇴
-                antMatcher(POST,"/ocr/**"),                          // OCR 조회
-                antMatcher(POST, "/member/refresh") // 엑세스 토큰 갱신
+                antMatcher(POST,"/ocr/file"),                          // OCR 조회
+                antMatcher(POST, "/refresh"), // 엑세스 토큰 갱신
+                antMatcher(POST, "/ocr/")
 
         );
 
