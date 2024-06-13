@@ -135,4 +135,17 @@ public class JWTProvider {
     private SecretKey extractSecretKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessSecret));
     }
+
+    /**
+     *
+     * @param token
+     * @return
+     */
+    public Long getUserIdFromToken(String token) {
+        JwtParser jwtParser = Jwts.parserBuilder()
+                .setSigningKey(extractSecretKey())
+                .build();
+        Claims claims = jwtParser.parseClaimsJws(token).getBody();
+        return claims.get("id", Long.class);
+    }
 }
