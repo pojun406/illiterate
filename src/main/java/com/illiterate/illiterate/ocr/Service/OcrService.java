@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
-import com.illiterate.illiterate.ocr.Entity.OcrResult;
-import com.illiterate.illiterate.ocr.Repository.OcrResultRepository;
+import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ public class OcrService {
 
     private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/letsgopaddle.py";
 
-    private final OcrResultRepository ocrResultRepository;
+    private final OcrRepository ocrRepository;
 
     public OcrResponseDto uploadOCRImage(User user, MultipartFile image) {
         try {
@@ -216,21 +215,25 @@ public class OcrService {
     }
 
     public OcrResponseDto saveOcrText(Long ocrId, String text) {
-        // OCR 결과를 DB에 저장하는 로직
-        Optional<OcrResult> ocrResultOptional = ocrResultRepository.findById(ocrId);
+        Optional<OCR> ocrResultOptional = ocrRepository.findById(ocrId);
         if (!ocrResultOptional.isPresent()) {
             throw new RuntimeException("OCR 결과를 찾을 수 없습니다.");
         }
 
-        OcrResult ocrResult = ocrResultOptional.get();
-        ocrResult.setModifiedText(text);
-        ocrResultRepository.save(ocrResult);
+        OCR ocrResult = ocrResultOptional.get();
+        ocrResult.setResult(Collections.singletonList(text)); // JSON 데이터를 문자열로 저장
 
-        // 결과 DTO 작성
+        ocrRepository.save(ocrResult);
+
         OcrResponseDto responseDto = new OcrResponseDto();
         responseDto.setId(ocrResult.getId());
         responseDto.setText(text);
 
         return responseDto;
+    }
+
+    private String convertToJsonString(Map<String, String> ocrResult) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(ocrResult);
     }
 }
