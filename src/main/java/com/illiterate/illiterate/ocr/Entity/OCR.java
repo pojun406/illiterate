@@ -4,6 +4,11 @@ import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -24,17 +29,15 @@ public class OCR {
     /*@Column
     private String request_img;*/
     @Lob
-    @Column(name = "ocr_image")
+    @Column(name = "image_path")
     private String imagePath;
 
     @Lob
-    @Column(name = "ocr_result")
+    @Column(name = "processed_image_path")
     private String processedImagePath;
 
-    @Column(name = "result_text")
-    private String extractedText;
-
-    @Column(name = "is_processed")
-    private boolean isProcessed;
+    @Column(name = "db_filed", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<String> result;
 
 }
