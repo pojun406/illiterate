@@ -23,9 +23,10 @@ const Login = () => {
             });
     
             if (response.data && response.data.data) {
-                const { accessToken, refreshToken } = response.data.data;
+                const { accessToken, refreshToken, id } = response.data.data;
                 localStorage.setItem('authToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
+                localStorage.setItem('id', id);
                 setIsLoggedIn(true);
                 setMessage("로그인 성공");
                 navigate("/");
