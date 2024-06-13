@@ -188,4 +188,16 @@ public class OcrService {
         map.put("신청인성명", Collections.singletonList(457));
         return map;
     }
+
+
+    public OcrResponseDto saveOcrText(Long ocrId, String text) {
+        // 텍스트를 DB에 저장하는 로직 ( 추가예정 )
+
+        // 결과 DTO 작성
+        OcrResponseDto responseDto = new OcrResponseDto();
+        responseDto.setId(ocrId);
+        responseDto.setText(text);
+
+        return responseDto;
+    }
 }
