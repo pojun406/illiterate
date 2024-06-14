@@ -38,6 +38,5 @@ public class OCR {
 
     @Column(name = "db_filed", columnDefinition = "json")
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<String> result;
-
+    private String result;
 }

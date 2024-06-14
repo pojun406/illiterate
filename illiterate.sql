@@ -27,10 +27,11 @@ CREATE TABLE Board
 
 CREATE TABLE OCR_Result
 (
-    id         BIGINT          NOT NULL AUTO_INCREMENT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    ocr_image  VARCHAR(255) NOT NULL,
-    ocr_result VARCHAR(255) NOT NULL,
+    image_path LONGTEXT,
+    processed_image_path LONGTEXT,
+    result JSON,
     PRIMARY KEY (id),
     CONSTRAINT FK_User_TO_OCR_Result FOREIGN KEY (user_id) REFERENCES User (id)
 ) COMMENT 'OCR결과';
