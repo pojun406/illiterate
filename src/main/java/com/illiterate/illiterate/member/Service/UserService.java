@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -118,26 +119,30 @@ public class UserService {
         member.resetPassword(passwordEncoder.encode(resetRequestDto.newPassword()));
     }
 
-    //refresh토큰 재발급
+    // refresh토큰 재발급
     public LoginTokenDto refreshToken(String oldRefreshToken, Long memberId) {
         System.out.println("Old Refresh Token: " + oldRefreshToken);
 
         User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
-        // redis 갱신된 refresh token 유효성 검증
         if (!redisRepository.hasKey(member.getId())) {
             throw new MemberException(NOT_FOUND_REFRESH_TOKEN);
         }
 
-        // redis에 저장된 토큰과 비교
-        if (!redisRepository.getRefreshToken(member.getId()).get("refreshToken").equals(oldRefreshToken)) {
+        Map<String, String> storedRefreshTokenMap = redisRepository.getRefreshToken(member.getId());
+        String storedRefreshToken = storedRefreshTokenMap.get("refreshToken");
+        System.out.println("레디스에 저장된 refresh 토큰정보 : " + storedRefreshToken);
+
+        if (!storedRefreshToken.equals(oldRefreshToken)) {
+            System.out.println("토큰 불일치: ");
+            System.out.println("oldRefreshToken: " + oldRefreshToken);
+            System.out.println("storedRefreshToken: " + storedRefreshToken);
             throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
         }
 
         UserDetailsImpl userDetail = (UserDetailsImpl) UserDetailsImpl.from(member);
 
-        // accessToken, refreshToken 생성
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String newRefreshToken = jwtProvider.createRefreshToken(userDetail);
 
@@ -147,12 +152,11 @@ public class UserService {
                 .id(userDetail.getId())
                 .build();
 
-        // redis 토큰 정보 저장
         redisRepository.saveToken(userDetail.getId(), newRefreshToken);
 
         return loginTokenDto;
-
     }
+
 
     public UserInfoDto getUserInfo(Long userId) {
         // 회원 조회
