@@ -221,7 +221,7 @@ public class OcrService {
         }
 
         OCR ocrResult = ocrResultOptional.get();
-        ocrResult.setResult(Collections.singletonList(text)); // JSON 데이터를 문자열로 저장
+        ocrResult.setResult(text); // JSON 데이터를 문자열로 저장
 
         ocrRepository.save(ocrResult);
 
