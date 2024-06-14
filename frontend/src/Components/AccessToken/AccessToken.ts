@@ -1,73 +1,62 @@
-const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData): Promise<Response | string> => {
-    const getAccessToken = async (): Promise<string | null> => {
-        let token = localStorage.getItem('authToken');
-        if (!token) {
-            return null;
-        }
-        return token;
+import axios, { AxiosResponse } from "axios";
+
+const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData): Promise<AxiosResponse | string> => {
+    const getToken = async (key: string): Promise<string | null> => {
+        const data = localStorage.getItem(key);
+        return data ? data : null;
     };
 
-    const token = await getAccessToken();
-    if (!token) {
+    const accessToken = await getToken('authToken');
+    if (!accessToken) {
         return "인증 토큰이 없습니다.";
+    }
+
+    const refreshToken = await getToken('refreshToken');
+    if (!refreshToken) {
+        return "인증 토큰이 없습니다.";
+    }
+
+    const id = await getToken('id');
+    if (!id) {
+        return "id값이 없습니다.";
     }
 
     const isFormData = requestParameters instanceof FormData;
 
-    const response = await fetch(apiUrl, {
-        method: 'POST',
+    const requestOptions = {
         headers: {
-            'Authorization': `Bearer ${token}`,
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' })
+            'Content-Type': isFormData ? 'application/x-www-form-urlencoded' : 'application/json',
+            'Authorization': `Bearer ${accessToken}`
         },
-        body: isFormData ? requestParameters : JSON.stringify(requestParameters)
-    });
+        data: isFormData ? requestParameters : JSON.stringify(requestParameters)
+    };
 
-    if (response.status === 401) {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-            console.log("리프레시 토큰이 없습니다.");
-            return "리프레시 토큰이 없습니다.";
-        }
-        const id = localStorage.getItem("id");
-        if (!id) {
-            console.log("아이디가 없습니다.");
-            return "아이디가 없습니다.";
-        }
-        
-        const refreshResponse = await fetch('/refresh', {
-            method: 'POST',
+    const initialResponse = await axios.post(apiUrl, requestOptions);
+
+    if (initialResponse.status === 401) {
+        const refreshResponse = await axios.post('/refresh', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${refreshToken}`
             },
-            body: JSON.stringify({ "id":id }),
+            data: JSON.stringify({ "id": id }),
         });
+        if (refreshResponse.data) {
+            const { accessToken, refreshToken, id } = refreshResponse.data.data;
+            localStorage.setItem('authToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('id', id);
 
-        if (refreshResponse.ok) {
-            const data = await refreshResponse.json();
-            const token = data.accessToken;
-            if (token) {
-                localStorage.setItem('authToken', token);
-                response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        ...(isFormData ? {} : { 'Content-Type': 'application/json' })
-                    },
-                    body: isFormData ? requestParameters : JSON.stringify(requestParameters)
-                });
-                return response;
-            } else {
-                return "새로운 토큰을 가져오지 못했습니다.";
-            }
+            // 재발급 받은 토큰으로 동일한 요청 재실행
+            requestOptions.headers['Authorization'] = `Bearer ${accessToken}`;
+            const retryResponse = await axios.post(apiUrl, requestOptions);
+            return retryResponse;
         } else {
-            console.error("리프레시 토큰 요청 실패:", refreshResponse.statusText);
-            return `리프레시 토큰 요청 실패: ${refreshResponse.statusText}`;
+            return "토큰 갱신에 실패했습니다.";
         }
     }
 
-    return response;
+    return initialResponse;
 };
 
 export default fetchWithAuth;
