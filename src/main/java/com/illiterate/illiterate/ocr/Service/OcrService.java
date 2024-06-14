@@ -3,24 +3,17 @@ package com.illiterate.illiterate.ocr.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.illiterate.illiterate.common.util.ConvertUtil;
-import com.illiterate.illiterate.common.util.LocalFileUtil;
-import com.illiterate.illiterate.member.exception.MemberException;
-import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
+import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -31,9 +24,10 @@ import java.util.*;
 public class OcrService {
 
     private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/letsgopaddle.py";
-    private static final String SAVE_TEXT_FOLDER = "/pythonProject/savetext/";
 
-    public OcrResponseDto uploadOCRImage(OcrRequestDto requestDto, MultipartFile image) {
+    private final OcrRepository ocrRepository;
+
+    public OcrResponseDto uploadOCRImage(User user, MultipartFile image) {
         try {
             String tempDir = System.getProperty("java.io.tmpdir");
             File tempFile = new File(tempDir + "/" + image.getOriginalFilename());
@@ -49,7 +43,7 @@ public class OcrService {
             Map<String, String> mappedResults = processOcrResults(ocrResults);
 
             // 결과를 JSON 파일로 저장
-            String outputFileName = tempDir + "/" + requestDto.getUser().getId() + "_result.json";
+            String outputFileName = tempDir + "/" + user.getId() + "_result.json";
             writeResultToJson(mappedResults, outputFileName, detectFileType(ocrResults));
 
             // 임시 파일 삭제
@@ -59,7 +53,7 @@ public class OcrService {
             // 응답 DTO 생성
             OcrResponseDto responseDto = new OcrResponseDto();
             responseDto.setImageUrl(tempFile.getAbsolutePath());
-            responseDto.setId(requestDto.getUser().getId());
+            responseDto.setId(user.getId());
             responseDto.setOcrResults(Collections.singletonList(outputFileName));
 
             return responseDto;
@@ -143,61 +137,103 @@ public class OcrService {
 
     private static Map<String, List<Integer>> createFileType1Map() {
         Map<String, List<Integer>> map = new LinkedHashMap<>();
-        map.put("한글성명", Collections.singletonList(21));
-        map.put("한자성명", Collections.singletonList(266));
-        map.put("본한자", Collections.singletonList(264));
-        map.put("출생일시", Arrays.asList(268, 38));
-        map.put("등록기준지", Arrays.asList(48, 49, 50));
-        map.put("주소", Arrays.asList(53, 54, 56, 57, 275));
-        map.put("세대주및관계", Arrays.asList(52, 55));
-        map.put("외국국적", Arrays.asList(63, 64));
-        map.put("부성명", Collections.singletonList(65));
-        map.put("모성명", Collections.singletonList(71));
-        map.put("부주민", Collections.singletonList(66));
-        map.put("모주민", Arrays.asList(73, 74));
-        map.put("부등록기준지", Arrays.asList(78, 79, 287));
-        map.put("모등록기준지", Arrays.asList(81, 288));
-        map.put("신고인성명", Collections.singletonList(98));
-        map.put("신고인주민", Arrays.asList(100, 101));
-        map.put("기타자격", Collections.singletonList(103));
-        map.put("신고인주소", Arrays.asList(112, 111, 113, 114));
-        map.put("신고인전화", Arrays.asList(117, 119, 120));
-        map.put("신고인메일", Collections.singletonList(121));
-        map.put("임신주수", Collections.singletonList(147));
-        map.put("신생아체중", Collections.singletonList(148));
-        map.put("실결혼시작일", Arrays.asList(205, 207, 208));
-        map.put("출산수", Arrays.asList(213, 214, 215, 216));
+        map.put("한글성명", Collections.singletonList(1));
+        map.put("한자성명", Collections.singletonList(2));
+        map.put("본한자", Collections.singletonList(3));
+        map.put("출생연도", Collections.singletonList(4));
+        map.put("출생월일", Collections.singletonList(5));
+        map.put("등록기준지1", Collections.singletonList(6));
+        map.put("등록기준지2", Collections.singletonList(7));
+        map.put("등록기준지3", Collections.singletonList(8));
+        map.put("주소1", Collections.singletonList(9));
+        map.put("주소2", Collections.singletonList(10));
+        map.put("주소3", Collections.singletonList(11));
+        map.put("주소4", Collections.singletonList(12));
+        map.put("주소5", Collections.singletonList(13));
+        map.put("세대주및관계", Collections.singletonList(14));
+        map.put("외국국적", Collections.singletonList(15));
+        map.put("부성명", Collections.singletonList(16));
+        map.put("모성명", Collections.singletonList(17));
+        map.put("부주민", Collections.singletonList(18));
+        map.put("모주민", Collections.singletonList(19));
+        map.put("부등록기준지", Collections.singletonList(20));
+        map.put("모등록기준지", Collections.singletonList(21));
+        map.put("신고인성명", Collections.singletonList(22));
+        map.put("신고인주민1", Collections.singletonList(23));
+        map.put("신고인주민2", Collections.singletonList(24));
+        map.put("기타자격", Collections.singletonList(25));
+        map.put("신고인주소1", Collections.singletonList(26));
+        map.put("신고인주소2", Collections.singletonList(27));
+        map.put("신고인주소3", Collections.singletonList(28));
+        map.put("신고인주소4", Collections.singletonList(29));
+        map.put("신고인전화1", Collections.singletonList(30));
+        map.put("신고인전화2", Collections.singletonList(31));
+        map.put("신고인전화3", Collections.singletonList(32));
+        map.put("신고인메일", Collections.singletonList(33));
+        map.put("임신주수", Collections.singletonList(34));
+        map.put("신생아체중", Collections.singletonList(35));
+        map.put("실결혼시작일1", Collections.singletonList(36));
+        map.put("실결혼시작일2", Collections.singletonList(37));
+        map.put("실결혼시작일3", Collections.singletonList(38));
+        map.put("출산수", Collections.singletonList(39));
+        map.put("출산상황", Collections.singletonList(40));
         return map;
     }
 
     private static Map<String, List<Integer>> createFileType2Map() {
         Map<String, List<Integer>> map = new LinkedHashMap<>();
-        map.put("전입자성명", Collections.singletonList(31));
-        map.put("주민앞", Collections.singletonList(36));
-        map.put("주민뒤", Collections.singletonList(37));
-        map.put("상단연락처", Arrays.asList(32, 33, 34));
-        map.put("시도", Collections.singletonList(45));
-        map.put("시군구", Collections.singletonList(46));
-        map.put("세대주성명", Collections.singletonList(66));
-        map.put("하단연락처", Arrays.asList(485, 64, 65));
-        map.put("주소", Arrays.asList(73, 74, 78, 75, 76));
-        map.put("다가구주택명칭", Arrays.asList(97, 95, 99));
-        map.put("세대원성명", Arrays.asList(435, 437));
-        map.put("신청인번호", Arrays.asList(443, 447, 444));
-        map.put("휴대전화", Arrays.asList(439, 440, 441));
-        map.put("신청인성명", Collections.singletonList(457));
+        map.put("전입자성명", Collections.singletonList(1));
+        map.put("주민앞", Collections.singletonList(2));
+        map.put("주민뒤", Collections.singletonList(3));
+        map.put("상단연락처1", Collections.singletonList(4));
+        map.put("상단연락처2", Collections.singletonList(5));
+        map.put("상단연락처3", Collections.singletonList(6));
+        map.put("시도", Collections.singletonList(7));
+        map.put("시군구", Collections.singletonList(8));
+        map.put("세대주성명", Collections.singletonList(9));
+        map.put("하단연락처1", Collections.singletonList(10));
+        map.put("하단연락처2", Collections.singletonList(11));
+        map.put("하단연락처3", Collections.singletonList(12));
+        map.put("주소1", Collections.singletonList(13));
+        map.put("주소2", Collections.singletonList(14));
+        map.put("주소3", Collections.singletonList(15));
+        map.put("주소4", Collections.singletonList(16));
+        map.put("세대주및관계", Collections.singletonList(17));
+        map.put("세대원성명1", Collections.singletonList(18));
+        map.put("세대원성명2", Collections.singletonList(19));
+        map.put("세대원성명3", Collections.singletonList(20));
+        map.put("세대원성명4", Collections.singletonList(21));
+        map.put("주소이전", Collections.singletonList(22));
+        map.put("이전후연락처1", Collections.singletonList(23));
+        map.put("이전후연락처2", Collections.singletonList(24));
+        map.put("이전후연락처3", Collections.singletonList(25));
+        map.put("이전주소1", Collections.singletonList(26));
+        map.put("이전주소2", Collections.singletonList(27));
+        map.put("이전주소3", Collections.singletonList(28));
+        map.put("이전주소4", Collections.singletonList(29));
         return map;
     }
 
-
     public OcrResponseDto saveOcrText(Long ocrId, String text) {
-        // 텍스트를 DB에 저장하는 로직 ( 추가예정 )
+        Optional<OCR> ocrResultOptional = ocrRepository.findById(ocrId);
+        if (!ocrResultOptional.isPresent()) {
+            throw new RuntimeException("OCR 결과를 찾을 수 없습니다.");
+        }
 
-        // 결과 DTO 작성
+        OCR ocrResult = ocrResultOptional.get();
+        ocrResult.setResult(text); // JSON 데이터를 문자열로 저장
+
+        ocrRepository.save(ocrResult);
+
         OcrResponseDto responseDto = new OcrResponseDto();
-        responseDto.setId(ocrId);
+        responseDto.setId(ocrResult.getId());
         responseDto.setText(text);
 
         return responseDto;
+    }
+
+    private String convertToJsonString(Map<String, String> ocrResult) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(ocrResult);
     }
 }
