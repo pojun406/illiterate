@@ -13,7 +13,8 @@ const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData)
     }
 
     const isFormData = requestParameters instanceof FormData;
-    let response = await fetch(apiUrl, {
+
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -28,13 +29,19 @@ const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData)
             console.log("리프레시 토큰이 없습니다.");
             return "리프레시 토큰이 없습니다.";
         }
-
+        const id = localStorage.getItem("id");
+        if (!id) {
+            console.log("아이디가 없습니다.");
+            return "아이디가 없습니다.";
+        }
+        
         const refreshResponse = await fetch('/refresh', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${refreshToken}`
-            }
+            },
+            body: JSON.stringify({ "id":id }),
         });
 
         if (refreshResponse.ok) {
