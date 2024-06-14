@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,22 +43,16 @@ public class JWTProvider {
         Date expiration = Date.from(now.plusSeconds(accessExpirationSeconds));
         SecretKey key = extractSecretKey();
 
-        StringBuilder roles = new StringBuilder();
-        // member roles 추출
-        if(userDetails.getAuthorities() != null && !userDetails.getAuthorities().isEmpty()) {
-            roles.append(
-                    userDetails.getAuthorities().stream()
-                            .map(GrantedAuthority::getAuthority)
-                            .collect(Collectors.joining(", "))
-            );
-        }
+        String roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(", "));
 
         return Jwts.builder()
                 .claim("id", userDetails.getId())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(expiration)
-                .claim(AUTHENTICATION_CLAIM_NAME, roles.toString())
+                .claim(AUTHENTICATION_CLAIM_NAME, roles)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -70,22 +65,16 @@ public class JWTProvider {
         Date expiration = Date.from(now.plusSeconds(refreshExpirationSeconds));
         SecretKey key = extractSecretKey();
 
-        StringBuilder roles = new StringBuilder();
-        // member roles 추출
-        if(userDetails.getAuthorities() != null && !userDetails.getAuthorities().isEmpty()) {
-            roles.append(
-                    userDetails.getAuthorities().stream()
-                            .map(GrantedAuthority::getAuthority)
-                            .collect(Collectors.joining(", "))
-            );
-        }
+        String roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(", "));
 
         return Jwts.builder()
                 .claim("id", userDetails.getId())
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(expiration)
-                .claim(AUTHENTICATION_CLAIM_NAME, roles.toString())
+                .claim(AUTHENTICATION_CLAIM_NAME, roles)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -99,11 +88,10 @@ public class JWTProvider {
                 .build();
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
-        Object roles = claims.get(AUTHENTICATION_CLAIM_NAME);
-        List<GrantedAuthority> authorities = null;
-        if(roles != null && !roles.toString().trim().isEmpty()) {
-            authorities = List.of(new SimpleGrantedAuthority(roles.toString()));
-        }
+        String roles = claims.get(AUTHENTICATION_CLAIM_NAME, String.class);
+        List<GrantedAuthority> authorities = Arrays.stream(roles.split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
         UserDetails user = UserDetailsImpl.builder()
                 .id(Long.valueOf(claims.get("id", Integer.class)))
@@ -118,19 +106,21 @@ public class JWTProvider {
     /**
      * 토큰 검증
      */
-    public void validate(String token) {
+    public boolean validate(String token) {
         try {
             JwtParser jwtParser = Jwts.parserBuilder()
                     .setSigningKey(extractSecretKey())
                     .build();
-
             jwtParser.parseClaimsJws(token);
-            System.out.println("Token is valid: " + token);
+            return true;
+        } catch (ExpiredJwtException e) {
+            System.out.println("Expired JWT token: " + e.getMessage());
         } catch (MalformedJwtException e) {
             System.out.println("Invalid JWT token: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("JWT token validation error: " + e.getMessage());
         }
+        return false;
     }
 
     /**
@@ -141,7 +131,6 @@ public class JWTProvider {
     }
 
     /**
-     *
      * 토큰값으로 ID 추출
      */
     public Long getUserIdFromToken(String token) {
