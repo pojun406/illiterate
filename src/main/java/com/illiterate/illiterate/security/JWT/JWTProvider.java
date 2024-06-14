@@ -1,10 +1,7 @@
 package com.illiterate.illiterate.security.JWT;
 
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -122,11 +119,18 @@ public class JWTProvider {
      * 토큰 검증
      */
     public void validate(String token) {
-        JwtParser jwtParser = Jwts.parserBuilder()
-                .setSigningKey(extractSecretKey())
-                .build();
+        try {
+            JwtParser jwtParser = Jwts.parserBuilder()
+                    .setSigningKey(extractSecretKey())
+                    .build();
 
-        jwtParser.parseClaimsJws(token);
+            jwtParser.parseClaimsJws(token);
+            System.out.println("Token is valid: " + token);
+        } catch (MalformedJwtException e) {
+            System.out.println("Invalid JWT token: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("JWT token validation error: " + e.getMessage());
+        }
     }
 
     /**
@@ -138,8 +142,7 @@ public class JWTProvider {
 
     /**
      *
-     * @param token
-     * @return
+     * 토큰값으로 ID 추출
      */
     public Long getUserIdFromToken(String token) {
         JwtParser jwtParser = Jwts.parserBuilder()
