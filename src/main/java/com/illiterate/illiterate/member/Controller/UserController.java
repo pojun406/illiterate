@@ -3,12 +3,14 @@ package com.illiterate.illiterate.member.Controller;
 
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.DTO.request.*;
+import com.illiterate.illiterate.member.DTO.response.LoginResponseDto;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.UserInfoDto;
 import com.illiterate.illiterate.member.Service.UserService;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,9 +47,20 @@ public class UserController {
      */
     //로그인
     @PostMapping("/login")
-    public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
-        return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
-        //return userService.login(loginDto);
+    public ResponseEntity<BfResponse<LoginResponseDto>> login(@Valid @RequestBody LoginDto loginDto) {
+        LoginTokenDto loginTokenDto = userService.login(loginDto);
+
+        // 토큰을 헤더에 삽입
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Access-Token", loginTokenDto.accessToken());
+        headers.set("Refresh-Token", loginTokenDto.refreshToken());
+
+        // id만 json에 입력
+        LoginResponseDto loginResponseDto = new LoginResponseDto(loginTokenDto.id());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(new BfResponse<>(loginResponseDto));
     }
 
     /*
