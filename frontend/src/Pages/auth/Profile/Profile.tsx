@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch('/api/user/info');
+                const response = await fetch('/userinfo');
                 if (response.ok) {
                     const data = await response.json();
                     setUserInfo(data);
