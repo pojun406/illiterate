@@ -89,7 +89,13 @@ public class UserService {
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
-        LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken, userDetail.getId());
+        //LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken, userDetail.getId());
+
+        LoginTokenDto loginTokenDto = LoginTokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .id(userDetail.getId())
+                .build();
 
         // redis 토큰 정보 저장
         redisRepository.saveToken(userDetail.getId(), refreshToken);
@@ -138,6 +144,7 @@ public class UserService {
         LoginTokenDto loginTokenDto = LoginTokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(newRefreshToken)
+                .id(userDetail.getId())
                 .build();
 
         // redis 토큰 정보 저장
