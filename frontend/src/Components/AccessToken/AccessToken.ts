@@ -1,71 +1,62 @@
-const fetchWithAuth = async (apiUrl: string, requestOptions: RequestInit): Promise<Response | string> => {
-    const getAccessToken = async (): Promise<string | null> => {
-        let token = localStorage.getItem('authToken');
-        if (!token) {
-            return null;
-        }
+import axios, { AxiosResponse } from "axios";
 
-        const headers = new Headers(requestOptions.headers);
-        headers.append("Authorization", `Bearer ${token}`);
-
-        const response = await fetch(apiUrl, { ...requestOptions, headers });
-        if (response.status === 401) {
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
-                console.log("리프레시 토큰이 없습니다.")
-                return null;
-            }
-
-            const refreshResponse = await fetch('/refresh', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "refreshToken": refreshToken }),
-            });
-
-            if (refreshResponse.ok) {
-                const data = await refreshResponse.json();
-                console.log("새로운 토큰:", data);
-                token = data.accessToken; // Adjust the path based on your actual response structure
-                if (token) {
-                    localStorage.setItem('authToken', token);
-                    return token;
-                } else {
-                    return null;
-                }
-            } else {
-                console.error("리프레시 토큰 요청 실패:", refreshResponse.statusText);
-                return null;
-            }
-        }
-
-        return token;
+const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData): Promise<AxiosResponse | string> => {
+    const getToken = async (key: string): Promise<string | null> => {
+        const data = localStorage.getItem(key);
+        return data ? data : null;
     };
 
-    try {
-        let token = await getAccessToken();
-        if (!token) {
-            throw new Error('토큰이 없습니다.');
-        }
-
-        const headers = new Headers(requestOptions.headers);
-        headers.set('Authorization', `Bearer ${token}`);
-
-        let response = await fetch(apiUrl, { ...requestOptions, headers });
-        if (response.status === 401) {
-            token = await getAccessToken();
-            if (!token) {
-                throw new Error('토큰이 없습니다.');
-            }
-            headers.set('Authorization', `Bearer ${token}`);
-            response = await fetch(apiUrl, { ...requestOptions, headers });
-        }
-
-        return response;
-    } catch (error: any) {
-        return `에러가 발생했습니다: ${error.message}`;
+    const accessToken = await getToken('authToken');
+    if (!accessToken) {
+        return "인증 토큰이 없습니다.";
     }
+
+    const refreshToken = await getToken('refreshToken');
+    if (!refreshToken) {
+        return "인증 토큰이 없습니다.";
+    }
+
+    const id = await getToken('id');
+    if (!id) {
+        return "id값이 없습니다.";
+    }
+
+    const isFormData = requestParameters instanceof FormData;
+
+    const requestOptions = {
+        headers: {
+            'Content-Type': isFormData ? 'application/x-www-form-urlencoded' : 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        data: isFormData ? requestParameters : JSON.stringify(requestParameters)
+    };
+
+    const initialResponse = await axios.post(apiUrl, requestOptions);
+
+    if (initialResponse.status === 401) {
+        const refreshResponse = await axios.post('/refresh', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${refreshToken}`
+            },
+            data: JSON.stringify({ "id": id }),
+        });
+        if (refreshResponse.data) {
+            const { accessToken, refreshToken, id } = refreshResponse.data.data;
+            localStorage.setItem('authToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('id', id);
+
+            // 재발급 받은 토큰으로 동일한 요청 재실행
+            requestOptions.headers['Authorization'] = `Bearer ${accessToken}`;
+            const retryResponse = await axios.post(apiUrl, requestOptions);
+            return retryResponse;
+        } else {
+            return "토큰 갱신에 실패했습니다.";
+        }
+    }
+
+    return initialResponse;
 };
 
 export default fetchWithAuth;
