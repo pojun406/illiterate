@@ -20,20 +20,13 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const response = await AccessToken('/ocr/file', {
-                    method: 'POST',
-                    body: formData,
-                });
+                const response = await AccessToken('/ocr/file', formData);
 
-                if (typeof response === 'string') {
-                    throw new Error(response);
-                }
-
-                if (!response.ok) {
+                if (!response) {
                     throw new Error('Network response was not ok');
                 }
 
-                const responseData = await response.json();
+                const responseData = await response;
                 onDataLoaded(responseData);
 
             } catch (error) {
