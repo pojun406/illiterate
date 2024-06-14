@@ -12,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -67,12 +69,27 @@ public class OcrService {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
-        process.waitFor();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
 
-        if (process.exitValue() != 0) {
-            throw new IOException("Python script execution failed.");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.info("Python Script Output: {}", line);
+            }
+
+            StringBuilder errorOutput = new StringBuilder();
+            while ((line = errorReader.readLine()) != null) {
+                errorOutput.append(line).append(System.lineSeparator());
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                log.error("Python script execution failed with exit code {}: {}", exitCode, errorOutput.toString());
+                throw new IOException("Python script execution failed. " + errorOutput.toString());
+            }
         }
     }
+
 
     private List<JsonNode> readOcrResults(File resultFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
