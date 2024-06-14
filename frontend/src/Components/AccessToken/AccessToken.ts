@@ -5,10 +5,16 @@ const fetchWithAuth = async (apiUrl: string, requestOptions: RequestInit): Promi
             return null;
         }
 
-        const headers = new Headers(requestOptions.headers);
-        headers.append("Authorization", `Bearer ${token}`);
-
-        const response = await fetch(apiUrl, { ...requestOptions, headers });
+        const response = await fetch(apiUrl,
+            {
+                method:'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body:JSON.stringify({requestOptions:requestOptions})
+            }
+        );
         if (response.status === 401) {
             const refreshToken = localStorage.getItem('refreshToken');
             if (!refreshToken) {
@@ -20,8 +26,8 @@ const fetchWithAuth = async (apiUrl: string, requestOptions: RequestInit): Promi
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "refreshToken": refreshToken }),
+                    'Authorization': `Bearer ${refreshToken}`,
+                }
             });
 
             if (refreshResponse.ok) {
