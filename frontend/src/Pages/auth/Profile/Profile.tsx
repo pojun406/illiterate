@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import fetchWithAuth from '../../../Components/AccessToken/AccessToken';
 
 const Profile: React.FC = () => {
     const [password, setPassword] = useState<string>('');
@@ -24,14 +25,16 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch('/userinfo');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserInfo(data);
-                } else {
-                    setModalMessage('사용자 정보를 가져오는데 실패했습니다.');
-                    setIsModalOpen(true);
+                const userid = localStorage.getItem('id');
+                if (!userid) {
+                    throw new Error('User ID is missing');
                 }
+                const userIdJson = { "userid":userid };
+                const response = await fetchWithAuth('/userinfo', userIdJson);
+                if (typeof response === 'string') {
+                    throw new Error(response);
+                }
+                setUserInfo(response.data);
             } catch (error) {
                 console.error('Error:', error);
                 setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -243,7 +246,7 @@ const Profile: React.FC = () => {
                     <form onSubmit={handleUserInfoSubmit}>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userid">
-                                아이디
+                                아��디
                             </label>
                             <input
                                 type="text"
@@ -442,3 +445,4 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+
