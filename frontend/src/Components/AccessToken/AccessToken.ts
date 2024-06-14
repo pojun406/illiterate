@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData): Promise<AxiosResponse | string> => {
+const fetchWithAuth = async (apiUrl: string, requestParameters: any): Promise<AxiosResponse | string> => {
     const getToken = async (key: string): Promise<string | null> => {
         const data = localStorage.getItem(key);
         return data ? data : null;
@@ -25,7 +25,7 @@ const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData)
 
     const requestOptions = {
         headers: {
-            'Content-Type': isFormData ? 'application/x-www-form-urlencoded' : 'application/json',
+            'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
         data: isFormData ? requestParameters : JSON.stringify(requestParameters)
