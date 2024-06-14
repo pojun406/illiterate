@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -133,5 +134,18 @@ public class JWTProvider {
      */
     private SecretKey extractSecretKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessSecret));
+    }
+
+    /**
+     *
+     * @param token
+     * @return
+     */
+    public Long getUserIdFromToken(String token) {
+        JwtParser jwtParser = Jwts.parserBuilder()
+                .setSigningKey(extractSecretKey())
+                .build();
+        Claims claims = jwtParser.parseClaimsJws(token).getBody();
+        return claims.get("id", Long.class);
     }
 }
