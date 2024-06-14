@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AccessToken from '../AccessToken/AccessToken';
+import fetchWithAuth from '../AccessToken/AccessToken';
 
 interface OCRProps {
     onDataLoaded: (data: any) => void;
@@ -20,14 +20,13 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const response = await AccessToken('/ocr/file', formData);
+                const response = await fetchWithAuth('/ocr/file', formData);
 
-                if (!response) {
-                    throw new Error('Network response was not ok');
+                if (typeof response === 'string') {
+                    throw new Error(response);
                 }
 
-                const responseData = await response;
-                onDataLoaded(responseData);
+                onDataLoaded(response.data);
 
             } catch (error) {
                 console.error('Error fetching OCR data:', error);
