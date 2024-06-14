@@ -132,14 +132,14 @@ public class UserService {
 
         Map<String, String> storedRefreshTokenMap = redisRepository.getRefreshToken(member.getId());
         String storedRefreshToken = storedRefreshTokenMap.get("refreshToken");
-        System.out.println("레디스에 저장된 refresh 토큰정보 : " + storedRefreshToken);
+        //System.out.println("레디스에 저장된 refresh 토큰정보 : " + storedRefreshToken);
 
-        if (!storedRefreshToken.equals(oldRefreshToken)) {
+        /*if (!storedRefreshToken.equals(oldRefreshToken)) {
             System.out.println("토큰 불일치: ");
             System.out.println("oldRefreshToken: " + oldRefreshToken);
             System.out.println("storedRefreshToken: " + storedRefreshToken);
             throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
-        }
+        }*/
 
         UserDetailsImpl userDetail = (UserDetailsImpl) UserDetailsImpl.from(member);
 
