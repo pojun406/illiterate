@@ -25,38 +25,43 @@ const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData)
 
     const requestOptions = {
         headers: {
-            'Content-Type': isFormData ? 'application/x-www-form-urlencoded' : 'application/json',
+            'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
             'Authorization': `Bearer ${accessToken}`
-        },
-        data: isFormData ? requestParameters : JSON.stringify(requestParameters)
-    };
-
-    const initialResponse = await axios.post(apiUrl, requestOptions);
-
-    if (initialResponse.status === 401) {
-        const refreshResponse = await axios.post('/refresh', {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${refreshToken}`
-            },
-            data: JSON.stringify({ "id": id }),
-        });
-        if (refreshResponse.data) {
-            const { accessToken, refreshToken, id } = refreshResponse.data.data;
-            localStorage.setItem('authToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-            localStorage.setItem('id', id);
-
-            // 재발급 받은 토큰으로 동일한 요청 재실행
-            requestOptions.headers['Authorization'] = `Bearer ${accessToken}`;
-            const retryResponse = await axios.post(apiUrl, requestOptions);
-            return retryResponse;
-        } else {
-            return "토큰 갱신에 실패했습니다.";
         }
-    }
+    };
+        const initialResponse = await axios.post(apiUrl, isFormData ? requestParameters : JSON.stringify(requestParameters), requestOptions);
 
-    return initialResponse;
+        if (initialResponse.status === 401) {
+            // 토큰이 만료된 경우, 갱신 시도
+            try {
+                const refreshResponse = await axios.post('/refresh', {
+                    id: id
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${refreshToken}`
+                    }
+                });
+
+                const { accessToken: newAccessToken, refreshToken: newRefreshToken, id: newId } = refreshResponse.data.data;
+                if (newAccessToken && newRefreshToken && newId) {
+                    localStorage.setItem('authToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+                    localStorage.setItem('id', newId);
+
+                    // 새로운 토큰으로 원래 요청 재시도
+                    requestOptions.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                    const retryResponse = await axios.post(apiUrl, isFormData ? requestParameters : JSON.stringify(requestParameters), requestOptions);
+                    return retryResponse;
+                } else {
+                    return "토큰 갱신에 실패했습니다.";
+                }
+            } catch (refreshError) {
+                return "토큰 갱신 요청 중 오류가 발생했습니다.";
+            }
+        }
+
+        return initialResponse;
 };
 
 export default fetchWithAuth;
