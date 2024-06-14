@@ -6,7 +6,9 @@ import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.UserInfoDto;
 import com.illiterate.illiterate.member.Service.UserService;
+import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 public class UserController {
 
     private final UserService userService;
+    private final JWTProvider jwtProvider;
+
 
     /*
     "userid": "testuser",
@@ -72,14 +76,10 @@ public class UserController {
     // refresh토큰을 다시 설정해줌
 
     @PostMapping("/refresh")
-    //public LoginTokenDto refreshAccessToken(
     public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        System.out.println("dto : " + dto);
-        System.out.println("user detail : " + userDetails);
         return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
-        //return userService.refreshToken(dto.refreshToken(), userDetails.getId());
     }
 
     // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
