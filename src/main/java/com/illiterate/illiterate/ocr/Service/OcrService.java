@@ -9,13 +9,15 @@ import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -25,36 +27,58 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OcrService {
 
-    private static final String UTIL_PYTHON_SCRIPT_PATH = "/pythonProject/letsgopaddle.py";
+    @Value("${python.script.path}")
+    private String pythonScriptPath;
+
+    @Value("${python.executable.path}")
+    private String pythonExecutable;
+
+    @Value("${image.upload.dir}")
+    private String imageUploadDir;
 
     private final OcrRepository ocrRepository;
 
     public OcrResponseDto uploadOCRImage(User user, MultipartFile image) {
         try {
-            String tempDir = System.getProperty("java.io.tmpdir");
-            File tempFile = new File(tempDir + "/" + image.getOriginalFilename());
-            image.transferTo(tempFile);
+            // 이미지 저장
+            File savedImageFile = saveImage(image, user);
 
             // 파이썬 코드 실행
-            runPythonScript(tempFile);
+            runPythonScript(savedImageFile.getAbsolutePath());
+
+            // 결과 파일 확인
+            File resultFile = new File(imageUploadDir, "result.json");
+            if (!resultFile.exists()) {
+                log.error("Result file not found: {}", resultFile.getAbsolutePath());
+                throw new RuntimeException("Result file not found");
+            }
 
             // OCR 결과 읽기
-            List<JsonNode> ocrResults = readOcrResults(new File(tempDir + "/result.json"));
+            JsonNode ocrResult = readOcrResult(resultFile);
 
             // OCR 결과를 key:value 형식으로 처리
-            Map<String, String> mappedResults = processOcrResults(ocrResults);
+            Map<String, String> mappedResults = processOcrResult(ocrResult);
 
             // 결과를 JSON 파일로 저장
-            String outputFileName = tempDir + "/" + user.getId() + "_result.json";
-            writeResultToJson(mappedResults, outputFileName, detectFileType(ocrResults));
+            String title = ocrResult.get("title").asText("unknown");
+            String outputFileName = imageUploadDir + "/" + title + "_" + user.getId() + ".json";
+            writeResultToJson(mappedResults, outputFileName, title);
+
+            // OCR 엔티티 생성 및 저장
+            OCR ocr = new OCR();
+            ocr.setUser(user);
+            ocr.setImagePath(savedImageFile.getAbsolutePath());
+            ocr.setResult(convertToJsonString(mappedResults));
+            ocrRepository.save(ocr);
 
             // 임시 파일 삭제
-            Files.delete(Paths.get(tempFile.getAbsolutePath()));
-            Files.delete(Paths.get(tempDir + "/result.json"));
+            Files.deleteIfExists(savedImageFile.toPath());
+            Files.deleteIfExists(resultFile.toPath());
+
 
             // 응답 DTO 생성
             OcrResponseDto responseDto = new OcrResponseDto();
-            responseDto.setImageUrl(tempFile.getAbsolutePath());
+            responseDto.setImageUrl(savedImageFile.getAbsolutePath());
             responseDto.setId(user.getId());
             responseDto.setOcrResults(Collections.singletonList(outputFileName));
 
@@ -64,171 +88,164 @@ public class OcrService {
         }
     }
 
-    private void runPythonScript(File file) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder("python", UTIL_PYTHON_SCRIPT_PATH, file.getAbsolutePath());
-        processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
+    private File saveImage(MultipartFile image, User user) throws IOException {
+        File uploadDir = new File(imageUploadDir);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
+        }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-             BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+        String newFileName = System.currentTimeMillis() + "_" + user.getId() + ".png";
+        File imageFile = new File(uploadDir, newFileName);
+        log.info("Saving image to: {}", imageFile.getAbsolutePath());
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                log.info("Python Script Output: {}", line);
-            }
+        image.transferTo(imageFile);
 
-            StringBuilder errorOutput = new StringBuilder();
-            while ((line = errorReader.readLine()) != null) {
-                errorOutput.append(line).append(System.lineSeparator());
-            }
+        return imageFile;
+    }
 
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                log.error("Python script execution failed with exit code {}: {}", exitCode, errorOutput.toString());
-                throw new IOException("Python script execution failed. " + errorOutput.toString());
-            }
+    private void runPythonScript(String imagePath) throws IOException, InterruptedException {
+        File imageFile = new File(imagePath);
+        if (!imageFile.exists()) {
+            log.error("Image file not found: {}", imagePath);
+            throw new IOException("Image file not found: " + imagePath);
+        }
+
+        log.info("Executing Python script with image path: {}", imagePath);
+
+        CommandLine commandLine = new CommandLine(pythonExecutable);
+        commandLine.addArgument(pythonScriptPath);
+        commandLine.addArgument(imagePath);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+
+        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, errorStream);
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.setStreamHandler(streamHandler);
+
+        try {
+            int exitCode = executor.execute(commandLine);
+            String output = outputStream.toString("UTF-8");
+            String errorOutput = errorStream.toString("UTF-8");
+
+            log.info("Python script executed successfully with output: {}", output);
+        } catch (ExecuteException e) {
+            String errorOutput = errorStream.toString("UTF-8");
+            log.error("Python script execution failed with exit code {}: {}", e.getExitValue(), errorOutput);
+            throw new RuntimeException("Python script execution failed. " + errorOutput, e);
         }
     }
 
-
-    private List<JsonNode> readOcrResults(File resultFile) throws IOException {
+    private JsonNode readOcrResult(File resultFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(resultFile);
-        List<JsonNode> ocrResults = new ArrayList<>();
-        if (rootNode.isArray()) {
-            for (JsonNode node : rootNode) {
-                ocrResults.add(node);
-            }
-        }
-        return ocrResults;
+        return objectMapper.readTree(resultFile);
     }
 
-    private Map<String, String> processOcrResults(List<JsonNode> ocrResults) {
-        int detectedFileType = detectFileType(ocrResults);
-        Map<String, List<Integer>> selectedMap = detectedFileType == 1 ? createFileType1Map() : createFileType2Map();
+    private Map<String, String> processOcrResult(JsonNode ocrResult) {
+        String title = ocrResult.get("title").asText("unknown");
+        Map<String, List<Integer>> selectedMap;
+
+        if ("출생신고서".equals(title)) {
+            selectedMap = createFileType1Map();
+        } else if ("전입신고서".equals(title)) {
+            selectedMap = createFileType2Map();
+        } else {
+            selectedMap = new HashMap<>();
+        }
 
         Map<String, String> resultMap = new LinkedHashMap<>();
-        for (Map.Entry<String, List<Integer>> entry : selectedMap.entrySet()) {
-            String key = entry.getKey();
-            List<Integer> indexes = entry.getValue();
-            StringBuilder value = new StringBuilder();
+        JsonNode texts = ocrResult.get("texts");
+        if (texts.isArray()) {
+            for (Map.Entry<String, List<Integer>> entry : selectedMap.entrySet()) {
+                String key = entry.getKey();
+                List<Integer> indexes = entry.getValue();
+                StringBuilder value = new StringBuilder();
 
-            for (int index : indexes) {
-                if (index - 1 < ocrResults.size()) {
-                    value.append(ocrResults.get(index - 1).get(1).get(0).asText()).append(", ");
+                for (int index : indexes) {
+                    if (index - 1 < texts.size()) {
+                        JsonNode node = texts.get(index - 1);
+                        if (node != null && node.has("key")) {
+                            value.append(node.get("key").asText()).append(" ");
+                        } else {
+                            log.warn("OCR result at index {} is null or malformed", index - 1);
+                        }
+                    } else {
+                        log.warn("OCR result index {} out of bounds", index - 1);
+                    }
                 }
-            }
 
-            // 마지막 콤마 및 공백 제거
-            if (value.length() > 0) {
-                value.setLength(value.length() - 2);
-            }
+                if (value.length() > 0) {
+                    value.setLength(value.length() - 1); // Remove trailing space
+                }
 
-            resultMap.put(key, value.toString());
+                resultMap.put(key, value.toString());
+            }
+        } else {
+            log.error("OCR result texts node is not an array");
         }
         return resultMap;
     }
 
-    private int detectFileType(List<JsonNode> ocrResults) {
-        final String keywordFileType1 = "'생'신'고";
-        final String keywordFileType2 = "전입신고서세대";
-
-        for (JsonNode result : ocrResults) {
-            String text = result.get(1).get(0).asText();
-            if (text.contains(keywordFileType1)) {
-                return 1;
-            } else if (text.contains(keywordFileType2)) {
-                return 2;
-            }
-        }
-        return 0;
-    }
-
-    private void writeResultToJson(Map<String, String> mappedResults, String outputFileName, int detectedFileType) throws IOException {
+    private void writeResultToJson(Map<String, String> mappedResults, String outputFileName, String title) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode resultNode = mapper.createObjectNode();
-        resultNode.put("title", detectedFileType == 1 ? "출생신고서" : "전입신고서");
+        resultNode.put("title", title);
         resultNode.set("texts", mapper.valueToTree(mappedResults));
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File(outputFileName), resultNode);
     }
 
     private static Map<String, List<Integer>> createFileType1Map() {
         Map<String, List<Integer>> map = new LinkedHashMap<>();
-        map.put("한글성명", Collections.singletonList(1));
-        map.put("한자성명", Collections.singletonList(2));
-        map.put("본한자", Collections.singletonList(3));
-        map.put("출생연도", Collections.singletonList(4));
-        map.put("출생월일", Collections.singletonList(5));
-        map.put("등록기준지1", Collections.singletonList(6));
-        map.put("등록기준지2", Collections.singletonList(7));
-        map.put("등록기준지3", Collections.singletonList(8));
-        map.put("주소1", Collections.singletonList(9));
-        map.put("주소2", Collections.singletonList(10));
-        map.put("주소3", Collections.singletonList(11));
-        map.put("주소4", Collections.singletonList(12));
-        map.put("주소5", Collections.singletonList(13));
-        map.put("세대주및관계", Collections.singletonList(14));
-        map.put("외국국적", Collections.singletonList(15));
-        map.put("부성명", Collections.singletonList(16));
-        map.put("모성명", Collections.singletonList(17));
-        map.put("부주민", Collections.singletonList(18));
-        map.put("모주민", Collections.singletonList(19));
-        map.put("부등록기준지", Collections.singletonList(20));
-        map.put("모등록기준지", Collections.singletonList(21));
-        map.put("신고인성명", Collections.singletonList(22));
-        map.put("신고인주민1", Collections.singletonList(23));
-        map.put("신고인주민2", Collections.singletonList(24));
-        map.put("기타자격", Collections.singletonList(25));
-        map.put("신고인주소1", Collections.singletonList(26));
-        map.put("신고인주소2", Collections.singletonList(27));
-        map.put("신고인주소3", Collections.singletonList(28));
-        map.put("신고인주소4", Collections.singletonList(29));
-        map.put("신고인전화1", Collections.singletonList(30));
-        map.put("신고인전화2", Collections.singletonList(31));
-        map.put("신고인전화3", Collections.singletonList(32));
-        map.put("신고인메일", Collections.singletonList(33));
-        map.put("임신주수", Collections.singletonList(34));
-        map.put("신생아체중", Collections.singletonList(35));
-        map.put("실결혼시작일1", Collections.singletonList(36));
-        map.put("실결혼시작일2", Collections.singletonList(37));
-        map.put("실결혼시작일3", Collections.singletonList(38));
-        map.put("출산수", Collections.singletonList(39));
-        map.put("출산상황", Collections.singletonList(40));
+        addToMap(map, "한글성명", 1);
+        addToMap(map, "한자성명", 2);
+        addToMap(map, "본한자", 3);
+        addToMap(map, "출생연도", 4);
+        addToMap(map, "출생월일", 5);
+        addToMap(map, "등록기준지", 6, 7, 8);
+        addToMap(map, "주소", 9, 10, 11, 12, 13);
+        addToMap(map, "세대주및관계", 14);
+        addToMap(map, "외국국적", 15);
+        addToMap(map, "부성명", 16);
+        addToMap(map, "모성명", 17);
+        addToMap(map, "부주민", 18);
+        addToMap(map, "모주민", 19);
+        addToMap(map, "부등록기준지", 20);
+        addToMap(map, "모등록기준지", 21);
+        addToMap(map, "신고인성명", 22);
+        addToMap(map, "신고인주민", 23, 24);
+        addToMap(map, "기타자격", 25);
+        addToMap(map, "신고인주소", 26, 27, 28, 29);
+        addToMap(map, "신고인전화", 30, 31, 32);
+        addToMap(map, "신고인메일", 33);
+        addToMap(map, "임신주수", 34);
+        addToMap(map, "신생아체중", 35);
+        addToMap(map, "실결혼시작일", 36, 37, 38);
+        addToMap(map, "출산수", 39);
+        addToMap(map, "출산상황", 40);
         return map;
     }
 
     private static Map<String, List<Integer>> createFileType2Map() {
         Map<String, List<Integer>> map = new LinkedHashMap<>();
-        map.put("전입자성명", Collections.singletonList(1));
-        map.put("주민앞", Collections.singletonList(2));
-        map.put("주민뒤", Collections.singletonList(3));
-        map.put("상단연락처1", Collections.singletonList(4));
-        map.put("상단연락처2", Collections.singletonList(5));
-        map.put("상단연락처3", Collections.singletonList(6));
-        map.put("시도", Collections.singletonList(7));
-        map.put("시군구", Collections.singletonList(8));
-        map.put("세대주성명", Collections.singletonList(9));
-        map.put("하단연락처1", Collections.singletonList(10));
-        map.put("하단연락처2", Collections.singletonList(11));
-        map.put("하단연락처3", Collections.singletonList(12));
-        map.put("주소1", Collections.singletonList(13));
-        map.put("주소2", Collections.singletonList(14));
-        map.put("주소3", Collections.singletonList(15));
-        map.put("주소4", Collections.singletonList(16));
-        map.put("세대주및관계", Collections.singletonList(17));
-        map.put("세대원성명1", Collections.singletonList(18));
-        map.put("세대원성명2", Collections.singletonList(19));
-        map.put("세대원성명3", Collections.singletonList(20));
-        map.put("세대원성명4", Collections.singletonList(21));
-        map.put("주소이전", Collections.singletonList(22));
-        map.put("이전후연락처1", Collections.singletonList(23));
-        map.put("이전후연락처2", Collections.singletonList(24));
-        map.put("이전후연락처3", Collections.singletonList(25));
-        map.put("이전주소1", Collections.singletonList(26));
-        map.put("이전주소2", Collections.singletonList(27));
-        map.put("이전주소3", Collections.singletonList(28));
-        map.put("이전주소4", Collections.singletonList(29));
+        addToMap(map, "전입자성명", 1);
+        addToMap(map, "주민앞", 2);
+        addToMap(map, "주민뒤", 3);
+        addToMap(map, "상단연락처", 4, 5, 6);
+        addToMap(map, "시도", 7);
+        addToMap(map, "시군구", 8);
+        addToMap(map, "세대주성명", 9);
+        addToMap(map, "하단연락처", 10, 11, 12);
+        addToMap(map, "주소", 13, 14, 15, 16);
+        addToMap(map, "세대주및관계", 17);
+        addToMap(map, "세대원성명", 18, 19, 20, 21);
+        addToMap(map, "주소이전", 22);
+        addToMap(map, "이전후연락처", 23, 24, 25);
+        addToMap(map, "이전주소", 26, 27, 28, 29);
         return map;
+    }
+
+    private static void addToMap(Map<String, List<Integer>> map, String key, Integer... values) {
+        map.put(key, Arrays.asList(values));
     }
 
     public OcrResponseDto saveOcrText(Long ocrId, String text) {
@@ -238,7 +255,7 @@ public class OcrService {
         }
 
         OCR ocrResult = ocrResultOptional.get();
-        ocrResult.setResult(text); // JSON 데이터를 문자열로 저장
+        ocrResult.setResult(text);
 
         ocrRepository.save(ocrResult);
 
