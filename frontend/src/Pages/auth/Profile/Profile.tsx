@@ -25,12 +25,7 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const userid = localStorage.getItem('id');
-                if (!userid) {
-                    throw new Error('User ID is missing');
-                }
-                const userIdJson = { "userid":userid };
-                const response = await fetchWithAuth('/userinfo', userIdJson);
+                const response = await fetchWithAuth('/userinfo');
                 if (typeof response === 'string') {
                     throw new Error(response);
                 }
@@ -104,7 +99,7 @@ const Profile: React.FC = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
+            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -135,12 +130,12 @@ const Profile: React.FC = () => {
                 setIsModalOpen(true);
                 navigate('/');
             } else {
-                setModalMessage('비밀번호 수정에 실패했습니다. 다시 시도해주세요.');
+                setModalMessage('비밀번호 수정에 실패했습니다. 다시 시도주세요.');
                 setIsModalOpen(true);
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
+            setModalMessage('서버와 통신 중 오류가 생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -204,7 +199,7 @@ const Profile: React.FC = () => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                                이메일
+                                이메
                             </label>
                             <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 {userInfo.email}
@@ -246,7 +241,7 @@ const Profile: React.FC = () => {
                     <form onSubmit={handleUserInfoSubmit}>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userid">
-                                아��디
+                                아디
                             </label>
                             <input
                                 type="text"
@@ -352,7 +347,7 @@ const Profile: React.FC = () => {
                 return (
                     <div>
                         <h2 className="text-2xl font-semibold mb-6">회원 탈퇴</h2>
-                        <p className="mb-4">정말로 회원 탈퇴를 하시겠습니까?</p>
+                        <p className="mb-4">정로 회원 탈퇴를 하시겠습니까?</p>
                         <button
                             onClick={() => setIsDeleteModalOpen(true)}
                             className="w-full px-4 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 focus:outline-none"
@@ -421,7 +416,7 @@ const Profile: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded shadow-lg relative z-50" onClick={(e) => e.stopPropagation()}>
                         <p>저장되어있는 문서데이터와 계정정보가 모두 사라집니다. </p>
-                        <p>정말로 회원 탈퇴를 하시겠습니까?</p>
+                        <p>정로 회원 탈퇴 하시겠습니까?</p>
                         <div className="mt-4 flex justify-between">
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
@@ -445,4 +440,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
