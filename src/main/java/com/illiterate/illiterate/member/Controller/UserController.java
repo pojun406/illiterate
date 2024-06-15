@@ -11,6 +11,8 @@ import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -107,9 +109,10 @@ public class UserController {
      */
     // 회원정보 조회
     @PostMapping("/userinfo")
-    public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(
-            @PathVariable Long memberId
-    ) {
+    public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        // JWT 토큰에서 "Bearer " 부분 제거
+        String jwtToken = token.substring(7);
+        Long memberId = jwtProvider.getUserIdFromToken(jwtToken);
         return ResponseEntity.ok(new BfResponse<>(userService.getUserInfo(memberId)));
     }
 
