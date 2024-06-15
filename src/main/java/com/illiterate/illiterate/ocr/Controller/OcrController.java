@@ -41,6 +41,7 @@ public class OcrController {
         User user = userService.getUserFromToken(accessToken);
 
         OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
+        System.out.println("유저정보랑 이미지가 있는지 확인용 : " + responseDto);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
 

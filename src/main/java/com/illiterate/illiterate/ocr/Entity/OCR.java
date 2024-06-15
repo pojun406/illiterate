@@ -36,7 +36,7 @@ public class OCR {
     @Column(name = "processed_image_path")
     private String processedImagePath;
 
-    @Column(name = "db_filed", columnDefinition = "json")
+    @Column(name = "result", columnDefinition = "json")
     @JdbcTypeCode(SqlTypes.JSON)
     private String result;
 }
