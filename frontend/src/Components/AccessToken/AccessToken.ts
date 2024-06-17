@@ -34,6 +34,7 @@ const fetchWithAuth = async (apiUrl: string, requestParameters: JSON | FormData)
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${refreshToken}`
                     }
+                    // body : 'refreshToken' : '${refreshToken}'
                 };
 
                 const refreshResponse = await axios.post('/refresh', { refreshToken }, refreshRequestOptions);
