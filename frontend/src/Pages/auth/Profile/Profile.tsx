@@ -24,6 +24,7 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
+                const userid = localStorage.getItem("id");
                 const response = await fetch('/userinfo');
                 if (response.ok) {
                     const data = await response.json();

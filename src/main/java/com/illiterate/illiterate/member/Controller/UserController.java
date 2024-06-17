@@ -58,7 +58,7 @@ public class UserController {
         "newPassword": "newpassword123"
      */
     //리셋 패스워드(패스워드 리셋을 위한 페이지)
-    @PatchMapping("/{userId}/password")
+    @PostMapping("/{userId}/password")
     public ResponseEntity<BfResponse<?>> resetPassword(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("userId") Long memberId,
@@ -103,14 +103,14 @@ public class UserController {
     }
 
     /*
-    Request X
+    id : 1 ( Long )
      */
     // 회원정보 조회
-    @GetMapping("/userinfo")
+    @PostMapping("/userinfo")
     public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(
-            @PathVariable Long memberId
+            @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(new BfResponse<>(userService.getUserInfo(memberId)));
+        return ResponseEntity.ok(new BfResponse<>(userService.getUserInfo(userId)));
     }
 
 
@@ -118,7 +118,7 @@ public class UserController {
     "name": "Updated User",
     "email": "updateduser@example.com"
      */
-    @PatchMapping("/{userId}")
+    @PatchMapping("/updateuser")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId,
@@ -130,10 +130,10 @@ public class UserController {
 
     //Request X
     // 회원 삭제
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/deluser")
     public ResponseEntity<BfResponse<?>> inactivateMember(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable("userId") Long userId
+            @PathVariable Long userId
     ) {
         userService.inactiveMember(userDetails, userId);
         return ResponseEntity.noContent().build();
