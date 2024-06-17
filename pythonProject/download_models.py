@@ -3,7 +3,7 @@ import os
 
 def download_ocr_models():
     # 더미 이미지 파일 경로 설정
-    dummy_image_path = 'photo/11.png'
+    dummy_image_path = 'D:/Project/illiterate/src/main/resources/image_save/1718476006580_1.png'
 
     # 더미 이미지 파일 생성
     if not os.path.exists(dummy_image_path):
