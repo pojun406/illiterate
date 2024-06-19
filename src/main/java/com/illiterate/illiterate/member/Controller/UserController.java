@@ -31,10 +31,17 @@ public class UserController {
 
 
     /*
+    request :
     "userid": "testuser",
     "username": "Test User",
     "password": "password123",
     "email": "testuser@example.com"
+
+    response :
+    "status": "CREATE",
+    "data": {
+        "userid": "testuser"
+    }
      */
     //회원가입
     @PostMapping("/join")
@@ -44,8 +51,16 @@ public class UserController {
                         Map.of("userid", userService.joinUser(joinDTO))));
     }
     /*
-         "userid": "testuser",
+    request :
+        "userid": "testuser",
         "password": "password123"
+    response :
+        "status": "SUCCESS",
+        "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "id": 1
+    }
      */
     //로그인
     @PostMapping("/login")
@@ -55,6 +70,7 @@ public class UserController {
     }
 
     /*
+    {userId}는 유저번호 로컬에서 받아서 넘기는걸로 일단 로직 구성함
         "newPassword": "newpassword123"
      */
     //리셋 패스워드(패스워드 리셋을 위한 페이지)
@@ -70,8 +86,13 @@ public class UserController {
     }
 
     /*
+    request :
         "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         "userid" : "test"
+    response :
+        "accessToken": "newAccessToken...",
+        "refreshToken": "newRefreshToken...",
+        "id": 1
      */
     // refresh토큰을 다시 설정해줌
 
@@ -84,7 +105,10 @@ public class UserController {
 
     // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
     /*
-    "userEmail"
+    request :
+        "userEmail": "testuser@example.com"
+    response :
+        "data": "testuser" (user의 id값)
      */
     @PostMapping("/findId")
     public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
@@ -93,7 +117,10 @@ public class UserController {
     }
 
     /*
-    "userId": "testuser"
+    request :
+        "userId": "testuser"
+    response :
+        "data": true (boolean)
      */
 
     // 중복되는 id찾기
@@ -103,10 +130,15 @@ public class UserController {
     }
 
     /*
-    id : 1 ( Long )
+    request :
+        "userId" : 1 ( Long )
+    response :
+        "id": 1,
+        "email": "testuser@example.com",
+        "name": "Test User"
      */
     // 회원정보 조회
-    @PostMapping("/userinfo")
+    @PostMapping("/userinfo/{userId}")
     public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(
             @PathVariable Long userId
     ) {
@@ -115,10 +147,14 @@ public class UserController {
 
 
     /*
-    "name": "Updated User",
-    "email": "updateduser@example.com"
+    request :
+        "userId" : 1 ( Long )
+        "name": "Updated User",
+        "email": "updateduser@example.com"
+    response :
+    X
      */
-    @PatchMapping("/updateuser")
+    @PostMapping("/userUpdate/{userId}")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId,
@@ -128,9 +164,12 @@ public class UserController {
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
     }
 
-    //Request X
+    /*
+    request :
+        "userId" : 1 ( Long )
+    */
     // 회원 삭제
-    @DeleteMapping("/deluser")
+    @DeleteMapping("/deluser/{userId}")
     public ResponseEntity<BfResponse<?>> inactivateMember(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId
