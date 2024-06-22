@@ -1,4 +1,3 @@
-https://github.com/pojun406/illiterate/assets/58235899/66962fb0-bdc5-42bc-8a12-15ba170790b8
 # 2024년도 캡스톤 디자인 프로젝트 : OCR을 이용한 전자문서화
 
 이 프로젝트는 OCR(Optical Character Recognition) 기술을 이용해 종이 문서를 전자 문서로 변환하는 시스템을 구축하는 것을 목표로 합니다.
@@ -9,6 +8,10 @@ https://github.com/pojun406/illiterate/assets/58235899/66962fb0-bdc5-42bc-8a12-1
 - [사용법](#사용법)
 - [설치](#설치)
 - [연락처](#연락처)
+
+## Logo
+![image](https://github.com/pojun406/illiterate/assets/58235899/9e68efd3-0bb1-431d-b65d-f80d0e71a5fd)
+
 
 ## 팀 소개
 - **팀장**: 이병준
@@ -43,5 +46,5 @@ https://github.com/pojun406/illiterate/assets/58235899/66962fb0-bdc5-42bc-8a12-1
 - **김  건**:
 
 
-#판넬 디자인
-https://github.com/pojun406/illiterate/assets/58235899/efefb1a0-4e8e-4a31-8fab-5183887d85b5
+# 판넬 디자인
+![문맹팀 판넬 디자인](https://github.com/pojun406/illiterate/assets/58235899/f551b278-5f07-4414-9007-a4855a2de590)
