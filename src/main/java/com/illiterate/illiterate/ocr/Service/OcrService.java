@@ -3,6 +3,8 @@ package com.illiterate.illiterate.ocr.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
+import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
@@ -77,10 +79,12 @@ public class OcrService {
 
 
             // 응답 DTO 생성
-            OcrResponseDto responseDto = new OcrResponseDto();
-            responseDto.setImageUrl(savedImageFile.getAbsolutePath());
-            responseDto.setId(user.getId());
-            responseDto.setOcrResults(Collections.singletonList(outputFileName));
+            OcrResponseDto responseDto = OcrResponseDto.builder()
+                    .id(user.getId())
+                    .imageUrl(savedImageFile.getAbsolutePath())
+                    .ocrResults(mappedResults.toString())
+                    .createdAt(new Date())
+                    .build();
 
             return responseDto;
         } catch (IOException | InterruptedException e) {
@@ -259,9 +263,10 @@ public class OcrService {
 
         ocrRepository.save(ocrResult);
 
-        OcrResponseDto responseDto = new OcrResponseDto();
-        responseDto.setId(ocrResult.getId());
-        responseDto.setText(text);
+        OcrResponseDto responseDto = OcrResponseDto.builder()
+                .id(ocrResult.getId())
+                .text(text)
+                .build();
 
         return responseDto;
     }
@@ -269,5 +274,16 @@ public class OcrService {
     private String convertToJsonString(Map<String, String> ocrResult) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(ocrResult);
+    }
+
+    public List<OcrResponseDto> getPosts() {
+        List<OCR> ocrList = ocrRepository.findAll();
+        List<OcrResponseDto> responseDtoList = new ArrayList<>();
+
+        for (OCR ocr : ocrList) {
+            responseDtoList.add(OcrResponseDto.from(ocr));
+        }
+
+        return responseDtoList;
     }
 }

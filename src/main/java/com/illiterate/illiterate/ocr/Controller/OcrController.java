@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.ocr.Controller;
 
+import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.Entity.User;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.CREATE;
@@ -47,7 +49,6 @@ public class OcrController {
         User user = userService.getUserFromToken(accessToken);
 
         OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
-        System.out.println("유저정보랑 이미지가 있는지 확인용 : " + responseDto);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
 
@@ -65,5 +66,32 @@ public class OcrController {
             @RequestParam String text) {
         OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
+    }
+    /*
+        request :
+            userId : (Long)
+        response :
+            "data": [
+            {
+                "id": 1,
+                "title": "First Post",
+                "content": "This is the content of the first post.",
+                "imagePath": "/images/first-post.jpg",
+                "status": "ACTIVE"
+            },
+            {
+                "id": 2,
+                "title": "Second Post",
+                "content": "This is the content of the second post.",
+                "imagePath": "/images/second-post.jpg",
+                "status": "ACTIVE"
+            }
+        ]
+             */
+    @PostMapping("/posts")
+    public ResponseEntity<BfResponse<List<OcrResponseDto>>> getPosts() {
+        List<OcrResponseDto> posts = ocrService.getPosts();
+        BfResponse<List<OcrResponseDto>> response = new BfResponse<>(posts);
+        return ResponseEntity.ok(response);
     }
 }
