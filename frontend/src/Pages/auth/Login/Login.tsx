@@ -32,12 +32,14 @@ const Login = () => {
                 navigate("/");
             } else {
                 setMessage("로그인 실패: 자격 증명을 확인해주세요.");
+                alert("아이디/비밀번호를 다시 확인해주세요");
             }
         } catch (error) {
             const errorMessage = axios.isAxiosError(error) && error.response
                 ? error.response.data.message
                 : "로그인 중 오류 발생";
             setMessage(errorMessage);
+            alert("아이디/비밀번호를 다시 확인해주세요");
         }
     };
     const handleFetchProtectedResource = async () => {
