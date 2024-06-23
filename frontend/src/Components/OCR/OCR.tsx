@@ -10,6 +10,7 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    /*
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -37,6 +38,24 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
 
         fetchData();
     }, [onDataLoaded, file]);
+    */
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/mockup/ocrmockup_A.json');
+                const data = await response.json();
+                onDataLoaded(data);
+            } catch (error) {
+                console.error('Error fetching OCR mockup data:', error);
+                setError('서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [onDataLoaded]);
 
     if (loading) {
         return <div>Loading...</div>;
