@@ -25,9 +25,15 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetchWithAuth('/userinfo');
-                if (typeof response === 'string') {
-                    throw new Error(response);
+
+                const userid = localStorage.getItem("id");
+                const response = await fetch('/userinfo');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserInfo(data);
+                } else {
+                    setModalMessage('사용자 정보를 가져오는데 실패했습니다.');
+                    setIsModalOpen(true);
                 }
                 setUserInfo(response.data);
             } catch (error) {

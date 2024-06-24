@@ -13,7 +13,6 @@ def plt_imshow(title='image', img=None, figsize=(16, 12), dpi=2400):
     # 이미지 파일 경로가 주어진 경우 이미지를 로드
     if isinstance(img, str):
         img = cv2.imread(img)
-
     # 여러 이미지를 동시에 보여주기 위한 처리
     if isinstance(img, list):
         # 타이틀이 리스트로 주어진 경우, 각 이미지에 대응하는 타이틀 사용

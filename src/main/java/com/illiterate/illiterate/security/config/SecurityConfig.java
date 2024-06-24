@@ -1,6 +1,5 @@
 package com.illiterate.illiterate.security.config;
 
-
 import com.illiterate.illiterate.security.JWT.JWTFilter;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.exception.CustomAccessDeniedHandler;
@@ -17,7 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -32,7 +30,7 @@ import java.util.List;
 import static com.illiterate.illiterate.member.enums.RolesType.ROLE_ADMIN;
 import static com.illiterate.illiterate.member.enums.RolesType.ROLE_USER;
 import static org.springframework.http.HttpMethod.*;
-import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
@@ -49,7 +47,6 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        //return PasswordEncoderFactories.createDelegatingPasswordEncoder();
         return new BCryptPasswordEncoder();
     }
 
@@ -74,7 +71,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitAllRequestMatchers()).permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                .cors(withDefaults()); // 기본 CORS 설정 추가
+
         return http.build();
     }
 
@@ -97,62 +96,18 @@ public class SecurityConfig {
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .addFilterBefore(new JWTFilter(jwtProvider), ExceptionTranslationFilter.class);
-        return http.build();
-    }
-
-    @Bean    // no @Order defaults to last
-    public SecurityFilterChain testFilterChain(HttpSecurity http) throws Exception {
-        httpSecuritySetting(http);
-        http
-                .securityMatchers(matcher -> matcher
-                        .requestMatchers(OPTIONS, "/**")
-                );
 
         return http.build();
     }
 
     /**
-     * permitAll endpoint
-     */
-    private RequestMatcher[] permitAllRequestMatchers() {
-        List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(POST, "/login"),            // 로그인
-                antMatcher(POST, "/join"),        // 회원가입
-                antMatcher(POST, "/email"), // 메일 인증번호 전송
-                antMatcher(GET, "/email"), // 인증 번호 검증
-                antMatcher(GET, "/email/{email}/status"), // 메일 인증 여부 확인
-                antMatcher(POST, "/checkId"),
-                antMatcher(POST, "/findId")
-                //antMatcher(GET, "/member/health") // aws 상태 체크
-        );
-
-        return requestMatchers.toArray(RequestMatcher[]::new);
-    }
-
-    /**
-     * JWT Authentication, Roles Authorization endpoint
-     */
-    private RequestMatcher[] AuthRequestMatchers() {
-        List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(GET, "/user/{userId}"),                  // 회원 정보 조회
-                antMatcher(PATCH, "/user/{userId}"),                // 회원 정보 수정
-                antMatcher(PATCH, "/user/{userId}/password"),       // 비밀번호 재설정
-                antMatcher(DELETE, "/user/{userId}"),               // 회원 탈퇴
-                antMatcher(POST, "/ocr/file"),                      // OCR 조회
-                antMatcher(POST, "/ocr/"),
-                antMatcher(POST, "/refresh")                        // 엑세스 토큰 갱신
-        );
-        return requestMatchers.toArray(RequestMatcher[]::new);
-    }
-
-    /**
-     * cors 설정
+     * CORS 설정
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 허용할 Origin(출처)d
+        // 허용할 Origin(출처)
         configuration.setAllowedOrigins(
                 Arrays.asList(
                         "http://localhost:8080",
@@ -208,6 +163,39 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성을 하지 않음
                 )
                 .anonymous(AbstractHttpConfigurer::disable); // 익명 사용자 접근 제한, 모든 요청이 인증 필요
+    }
 
+    /**
+     * permitAll endpoint
+     */
+    private RequestMatcher[] permitAllRequestMatchers() {
+        List<RequestMatcher> requestMatchers = List.of(
+                antMatcher(POST, "/login"),            // 로그인
+                antMatcher(POST, "/join"),        // 회원가입
+                antMatcher(POST, "/email"), // 메일 인증번호 전송
+                antMatcher(GET, "/email"), // 인증 번호 검증
+                antMatcher(GET, "/email/{email}/status"), // 메일 인증 여부 확인
+                antMatcher(POST, "/checkId"),
+                antMatcher(POST, "/findId")
+                //antMatcher(GET, "/member/health") // aws 상태 체크
+        );
+
+        return requestMatchers.toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * JWT Authentication, Roles Authorization endpoint
+     */
+    private RequestMatcher[] AuthRequestMatchers() {
+        List<RequestMatcher> requestMatchers = List.of(
+                antMatcher(GET, "/user/{userId}"),                  // 회원 정보 조회
+                antMatcher(PATCH, "/user/{userId}"),                // 회원 정보 수정
+                antMatcher(PATCH, "/user/{userId}/password"),       // 비밀번호 재설정
+                antMatcher(DELETE, "/user/{userId}"),               // 회원 탈퇴
+                antMatcher(POST, "/ocr/file"),                      // OCR 조회
+                antMatcher(POST, "/ocr/"),
+                antMatcher(POST, "/refresh")                        // 엑세스 토큰 갱신
+        );
+        return requestMatchers.toArray(RequestMatcher[]::new);
     }
 }

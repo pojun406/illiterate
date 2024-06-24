@@ -32,15 +32,7 @@ public class BoardService {
 
     private static final String IMAGE_SAVE_PATH = "C:/Program Files/Illiterate";
 
-    // 게시글 전체 목록 조회
 
-    /*
-        "id": 1,
-        "title": "First Post",
-        "content": "This is the content of the first post.",
-        "imagePath": "/images/first-post.jpg",
-        "status": "ACTIVE"
-     */
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getPosts() {
         List<Board> boardList = boardRepository.findAll();
@@ -54,13 +46,6 @@ public class BoardService {
     }
 
     // 선택된 게시글 조회
-    /*
-        "id": 1,
-        "title": "First Post",
-        "content": "This is the content of the first post.",
-        "imagePath": "/images/first-post.jpg",
-        "status": "ACTIVE"
-     */
     @Transactional(readOnly = true)
     public BoardResponseDto getPost(Long id) {
         Board board = boardRepository.findById(id)
