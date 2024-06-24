@@ -44,13 +44,13 @@ public class OCR {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date createdAt;
+    private String createdAt;
 
-    @Builder
+    /*@Builder
     private OCR(OcrRequestDto requestsDto, User user, String imagePath) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
         this.user = user;
         this.image = imagePath;
-    }
+    }*/
 }

@@ -74,14 +74,14 @@ public class OcrController {
             "data": [
             {
                 "id": 1,
-                "title": "First Post",
+                "title": "출생신고서",
                 "content": "This is the content of the first post.",
                 "imagePath": "/images/first-post.jpg",
                 "status": "ACTIVE"
             },
             {
                 "id": 2,
-                "title": "Second Post",
+                "title": "전입신고서",
                 "content": "This is the content of the second post.",
                 "imagePath": "/images/second-post.jpg",
                 "status": "ACTIVE"
