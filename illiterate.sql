@@ -27,7 +27,7 @@ CREATE TABLE Board
 
 CREATE TABLE OCR_Result
 (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     image_path LONGTEXT,
     processed_image_path LONGTEXT,
