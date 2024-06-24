@@ -83,7 +83,7 @@ public class OcrService {
                     .id(user.getId())
                     .imageUrl(savedImageFile.getAbsolutePath())
                     .ocrResults(mappedResults.toString())
-                    .createdAt(new Date())
+                    .createdAt(String.valueOf(new Date()))
                     .build();
 
             return responseDto;
