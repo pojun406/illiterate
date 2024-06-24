@@ -18,7 +18,7 @@ public class OcrResponseDto {
     private String text;
     private String ocrResults;
     private String imageUrl; // 이미지 경로
-    private Date createdAt;
+    private String createdAt;
 
     public static OcrResponseDto from(OCR ocr) {
         return OcrResponseDto.builder()
