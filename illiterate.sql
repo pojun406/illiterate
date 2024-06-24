@@ -32,6 +32,7 @@ CREATE TABLE OCR_Result
     image_path LONGTEXT,
     processed_image_path LONGTEXT,
     result JSON,
+    created_at TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT FK_User_TO_OCR_Result FOREIGN KEY (user_id) REFERENCES User (id)
 ) COMMENT 'OCR결과';
