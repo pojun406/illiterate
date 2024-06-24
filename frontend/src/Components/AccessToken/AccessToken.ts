@@ -33,9 +33,25 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any): Promise<A
                         'Authorization': `Bearer ${newAccessToken}`,
                         'Content-Type': 'application/json'
                     }
-                });
-                return retryResponse;
-            } catch (refreshError: any) {
+
+                    // body : 'refreshToken' : '${refreshToken}'
+                };
+
+                const refreshResponse = await axios.post('/refresh', { refreshToken }, refreshRequestOptions);
+
+                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
+                if (newAccessToken && newRefreshToken) {
+                    localStorage.setItem('authToken', newAccessToken);
+                    localStorage.setItem('refreshToken', newRefreshToken);
+
+                    // 새로운 토큰으로 원래 요청 재시도
+                    requestOptions.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                    const retryResponse = await axios.post(apiUrl, isFormData ? requestParameters : JSON.stringify(requestParameters), requestOptions);
+                    return retryResponse;
+                } else {
+                    return "토큰 갱신에 실패했습니다.";
+                }
+            } catch (refreshError) {
                 return "토큰 갱신 요청 중 오류가 발생했습니다.";
             }
         } else {
