@@ -99,7 +99,6 @@ class MyPaddleOCR:
                 detected_file_type = 2
                 break
 
-        # Debug: Print the detected file type
         print("Detected File Type:", detected_file_type)
 
         if detected_file_type == 1:
@@ -112,14 +111,11 @@ class MyPaddleOCR:
             selected_indexes = []
             title = "Unknown"
 
-        # Debug: Print the selected indexes
         print("Selected Indexes:", selected_indexes)
 
-        # Extract texts based on the selected indexes
         selected_texts = [{"key": self.ocr_results[i - 1][1][0]} for i in selected_indexes if
                           i - 1 < len(self.ocr_results)]
 
-        # Debug: Print the selected texts
         print("Selected Texts:", selected_texts)
 
         result_data = {
@@ -129,3 +125,5 @@ class MyPaddleOCR:
 
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result_data, f, ensure_ascii=False, indent=4)
+
+        print(f"OCR 결과를 파일에 저장했습니다: {output_file}")
