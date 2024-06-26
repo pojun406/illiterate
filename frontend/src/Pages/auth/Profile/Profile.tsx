@@ -10,8 +10,8 @@ const Profile: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<string>('profile');
     const [userInfo, setUserInfo] = useState({
-        userid: '',
-        username: '',
+        id: '',
+        name: '',
         email: '',
         password: ''
     });
@@ -25,17 +25,21 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-
                 const userid = localStorage.getItem("id");
-                const response = await fetch('/userinfo');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserInfo(data);
+                const response = await fetchWithAuth(`/userinfo/${userid}`);
+                if (typeof response !== 'string' && response.status === 200) {
+                    const data = response.data;
+                    console.log('Fetched User Info:', data);
+                    setUserInfo({
+                        id: data.data.id,
+                        name: data.data.name,
+                        email: data.data.email,
+                        password: '' // Password should not be set from fetched data
+                    });
                 } else {
                     setModalMessage('사용자 정보를 가져오는데 실패했습니다.');
                     setIsModalOpen(true);
                 }
-                setUserInfo(response.data);
             } catch (error) {
                 console.error('Error:', error);
                 setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -105,7 +109,7 @@ const Profile: React.FC = () => {
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시해주세요.');
+            setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -136,12 +140,12 @@ const Profile: React.FC = () => {
                 setIsModalOpen(true);
                 navigate('/');
             } else {
-                setModalMessage('비밀번호 수정에 실패했습니다. 다시 시도주세요.');
+                setModalMessage('비밀번호 수정에 실패했습니다. 다시 시도해주세요.');
                 setIsModalOpen(true);
             }
         } catch (error) {
             console.error('Error:', error);
-            setModalMessage('서버와 통신 중 오류가 생했습니다. 다시 시도해주세요.');
+            setModalMessage('서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -183,29 +187,29 @@ const Profile: React.FC = () => {
                                 alt="User Avatar"
                             />
                             <div>
-                                <h3 className="text-xl font-semibold">{userInfo.username}</h3>
+                                <h3 className="text-xl font-semibold">{userInfo.name}</h3>
                                 <p className="text-gray-600">{userInfo.email}</p>
                             </div>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userid">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
                                 아이디
                             </label>
                             <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                {userInfo.userid}
+                                {userInfo.id}
                             </p>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                                 이름
                             </label>
                             <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                {userInfo.username}
+                                {userInfo.name}
                             </p>
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                                이메
+                                이메일
                             </label>
                             <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 {userInfo.email}
@@ -246,28 +250,28 @@ const Profile: React.FC = () => {
                     <>
                     <form onSubmit={handleUserInfoSubmit}>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userid">
-                                아디
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
+                                아이디
                             </label>
                             <input
                                 type="text"
-                                id="userid"
-                                name="userid"
-                                value={userInfo.userid}
+                                id="id"
+                                name="id"
+                                value={userInfo.id}
                                 onChange={handleUserInfoChange}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                                 이름
                             </label>
                             <input
                                 type="text"
-                                id="username"
-                                name="username"
-                                value={userInfo.username}
+                                id="name"
+                                name="name"
+                                value={userInfo.name}
                                 onChange={handleUserInfoChange}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
@@ -353,7 +357,7 @@ const Profile: React.FC = () => {
                 return (
                     <div>
                         <h2 className="text-2xl font-semibold mb-6">회원 탈퇴</h2>
-                        <p className="mb-4">정로 회원 탈퇴를 하시겠습니까?</p>
+                        <p className="mb-4">정말 회원 탈퇴를 하시겠습니까?</p>
                         <button
                             onClick={() => setIsDeleteModalOpen(true)}
                             className="w-full px-4 py-2 text-white bg-red-700 rounded-md hover:bg-red-800 focus:outline-none"
@@ -388,7 +392,7 @@ const Profile: React.FC = () => {
                             className={`cursor-pointer py-2 ${activeTab === 'password' ? 'font-bold' : ''}`}
                             onClick={() => setActiveTab('password')}
                         >
-                            비밀호 수정
+                            비밀번호 수정
                         </li>
                         <li
                             className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}
@@ -422,7 +426,7 @@ const Profile: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded shadow-lg relative z-50" onClick={(e) => e.stopPropagation()}>
                         <p>저장되어있는 문서데이터와 계정정보가 모두 사라집니다. </p>
-                        <p>정로 회원 탈퇴 하시겠습니까?</p>
+                        <p>정말 회원 탈퇴 하시겠습니까?</p>
                         <div className="mt-4 flex justify-between">
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
