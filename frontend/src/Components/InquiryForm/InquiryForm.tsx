@@ -1,14 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import fetchWithAuth from '../AccessToken/AccessToken';
 
 const InquiryForm = () => {
+    const location = useLocation();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [buttonText, setButtonText] = useState('문의하기');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        if (location.pathname === '/servicecenter/write') {
+            setButtonText('문의하기');
+        } else if (location.pathname === '/servicecenter/edit') {
+            setButtonText('수정하기');
+        }
+    }, [location.pathname]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // 문의 사항 저장 로직 추가
+        console.log('Form submitted'); // 디버깅을 위해 추가
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        if (!content) {
+            alert('내용을 입력해주세요.');
+            return;
+        }
+
+        const data = {
+            title,
+            content
+        };
+        
+        try {
+            console.log('Sending request to:', location.pathname);
+            console.log('Request data:', data);
+
+            if (location.pathname === '/servicecenter/write') {
+                const response = await fetchWithAuth('/post', data, image || undefined); // 이미지 포함
+                console.log('Response received:', response);
+                if (typeof response === 'string') {
+                    throw new Error(response);
+                }
+                console.log('문의 사항 저장 성공:', response);
+            } else if (location.pathname === '/servicecenter/edit') {
+                const id = new URLSearchParams(location.search).get('id');
+                if (!id) {
+                    throw new Error('ID가 없습니다.');
+                }
+                const response = await fetchWithAuth(`/fix_post/${id}`, data, image || undefined); // 이미지 포함
+                console.log('Response received:', response);
+                if (typeof response === 'string') {
+                    throw new Error(response);
+                }
+                console.log('문의 사항 수정 성공:', response);
+            }
+        } catch (error) {
+            console.error('문의 사항 처리 중 오류 발생:', error);
+        }
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +102,7 @@ const InquiryForm = () => {
                 </button>
             </div>
             {imagePreview && <div className="flex justify-center"><img src={imagePreview} alt="첨부 이미지" className="w-1/2 h-auto mb-4" /></div>}
-            <button type="submit" className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500">제출</button>
+            <button type="submit" className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500">{buttonText}</button>
         </form>
     );
 };
