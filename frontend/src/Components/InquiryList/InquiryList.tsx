@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../Sidebar/Sidebar';
+import fetchWithAuth from '../AccessToken/AccessToken';
 
 interface Inquiry {
     id: number;
@@ -13,14 +12,22 @@ interface Inquiry {
 
 const InquiryList: React.FC = () => {
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+    const didFetchRef = useRef(false);
 
     useEffect(() => {
+        if (didFetchRef.current) return;
+        didFetchRef.current = true;
+
         const fetchInquiries = async () => {
             try {
-                const response = await axios.get('/mockup/service.json');
-                setInquiries(response.data);
+                const response = await fetchWithAuth('/posts');
+                if (typeof response !== 'string') {
+                    setInquiries(response.data.data);
+                } else {
+                    console.error('문의사항을 가져오는 중 오류가 발생했습니다:', response);
+                }
             } catch (error) {
-                console.error('Error fetching inquiries:', error);
+                console.error('문의사항을 가져오는 중 오류가 발생했습니다:', error);
             }
         };
         fetchInquiries();

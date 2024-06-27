@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import DocumentA from "../../Components/DocumentType/DocumentA/DocumentA";
 import DocumentB from "../../Components/DocumentType/DocumentB/DocumentB";
 import Sidebar from "../../Components/Sidebar/Sidebar";
+import fetchWithAuth from "../../Components/AccessToken/AccessToken";
 
 const MyDocument = () => {
     const [documents, setDocuments] = useState<any[]>([]);
     const [filePath, setFilePath] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const fetchDocumentsRef = useRef(false);
 
     useEffect(() => {
-        const savedDocuments = sessionStorage.getItem('savedDocuments');
-        const savedFilePath = sessionStorage.getItem('filePath');
-        if (savedDocuments) {
-            setDocuments(JSON.parse(savedDocuments));
-        }
-        if (savedFilePath) {
-            setFilePath(savedFilePath);
-        }
+        if (fetchDocumentsRef.current) return;
+        fetchDocumentsRef.current = true;
+
+        const fetchDocuments = async () => {
+            const response = await fetchWithAuth('/ocr/posts');
+            if (typeof response !== 'string' && Array.isArray(response.data.data) && response.data.data.length > 0) {
+                setDocuments(response.data);
+            }
+        };
+
+        fetchDocuments();
     }, []);
 
     const handleSave = () => {
@@ -39,11 +44,13 @@ const MyDocument = () => {
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
             <div className={`flex-auto bg-white rounded-lg shadow-md md:mx-4 transition-all ${sidebarOpen ? 'ml-64' : 'ml-0'} lg:ml-2`}>
                 {documents.length === 0 ? (
-                    <div className="text-center text-2xl">저장된 문서가 없습니다.</div>
+                    <div className="flex items-center justify-center h-full text-center text-2xl">저장된 문서가 없습니다.</div>
                 ) : (
                     documents.map((document, index) => (
                         <div key={index} className="mb-6">
-                            {renderDocument(document)}
+                            <div className="cursor-pointer" onClick={() => alert(JSON.stringify(document))}>
+                                {document.title}
+                            </div>
                         </div>
                     ))
                 )}

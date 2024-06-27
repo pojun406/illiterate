@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import fetchWithAuth from '../../../Components/AccessToken/AccessToken';
 
@@ -18,6 +18,7 @@ const Profile: React.FC = () => {
     const [modalMessage, setModalMessage] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+    const hasFetchedUserInfo = useRef(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -29,12 +30,11 @@ const Profile: React.FC = () => {
                 const response = await fetchWithAuth(`/userinfo/${userid}`);
                 if (typeof response !== 'string' && response.status === 200) {
                     const data = response.data;
-                    console.log('Fetched User Info:', data);
                     setUserInfo({
                         id: data.data.id,
                         name: data.data.name,
                         email: data.data.email,
-                        password: '' // Password should not be set from fetched data
+                        password: '' 
                     });
                 } else {
                     setModalMessage('사용자 정보를 가져오는데 실패했습니다.');
@@ -47,7 +47,10 @@ const Profile: React.FC = () => {
             }
         };
 
-        fetchUserInfo();
+        if (!hasFetchedUserInfo.current) {
+            fetchUserInfo();
+            hasFetchedUserInfo.current = true;
+        }
     }, []);
 
     useEffect(() => {
@@ -110,42 +113,6 @@ const Profile: React.FC = () => {
         } catch (error) {
             console.error('Error:', error);
             setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
-            setIsModalOpen(true);
-        }
-    };
-
-    const handlePasswordUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (currentPassword !== userInfo.password) {
-            setModalMessage('현재 비밀번호가 일치하지 않습니다.');
-            setIsModalOpen(true);
-            return;
-        }
-        if (newPassword !== confirmNewPassword) {
-            setModalMessage('새 비밀번호가 일치하지 않습니다.');
-            setIsModalOpen(true);
-            return;
-        }
-        try {
-            const response = await fetch('/api/user/update-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ password: newPassword })
-            });
-
-            if (response.ok) {
-                setModalMessage('비밀번호가 성공적으로 수정되었습니다.');
-                setIsModalOpen(true);
-                navigate('/');
-            } else {
-                setModalMessage('비밀번호 수정에 실패했습니다. 다시 시도해주세요.');
-                setIsModalOpen(true);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            setModalMessage('서버와 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
             setIsModalOpen(true);
         }
     };
@@ -300,59 +267,6 @@ const Profile: React.FC = () => {
                     </form>
                     </>
                 );
-            case 'password':
-                return (
-                    <form onSubmit={handlePasswordUpdateSubmit}>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="currentPassword">
-                                현재 비밀번호
-                            </label>
-                            <input
-                                type="password"
-                                id="currentPassword"
-                                name="currentPassword"
-                                value={currentPassword}
-                                onChange={handleCurrentPasswordChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="newPassword">
-                                새 비밀번호
-                            </label>
-                            <input
-                                type="password"
-                                id="newPassword"
-                                name="newPassword"
-                                value={newPassword}
-                                onChange={handleNewPasswordChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmNewPassword">
-                                새 비밀번호 확인
-                            </label>
-                            <input
-                                type="password"
-                                id="confirmNewPassword"
-                                name="confirmNewPassword"
-                                value={confirmNewPassword}
-                                onChange={handleConfirmNewPasswordChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
-                        >
-                            비밀번호 수정
-                        </button>
-                    </form>
-                );
             case 'delete':
                 return (
                     <div>
@@ -387,12 +301,6 @@ const Profile: React.FC = () => {
                             onClick={() => setActiveTab('edit')}
                         >
                             정보 수정
-                        </li>
-                        <li
-                            className={`cursor-pointer py-2 ${activeTab === 'password' ? 'font-bold' : ''}`}
-                            onClick={() => setActiveTab('password')}
-                        >
-                            비밀번호 수정
                         </li>
                         <li
                             className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}
