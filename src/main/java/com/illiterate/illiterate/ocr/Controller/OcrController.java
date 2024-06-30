@@ -94,4 +94,22 @@ public class OcrController {
         BfResponse<List<OcrResponseDto>> response = new BfResponse<>(posts);
         return ResponseEntity.ok(response);
     }
+
+    /*
+        request :
+            "board_id" : 1(Long)
+        response :
+            "id": 1,
+            "board_id" : 1(Long),
+            "title": "First Post",
+            "content": "This is the content of the first post.",
+            "imagePath": "/images/first-post.jpg",
+            "status": "ACTIVE"
+     */
+    @PostMapping("/posts/{ocrid}")
+    public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long ocrid) {
+        OcrResponseDto post = ocrService.getPost(ocrid);
+        BfResponse<OcrResponseDto> response = new BfResponse<>(post);
+        return ResponseEntity.ok(response);
+    }
 }
