@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.member.Entity.User;
+import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
@@ -17,12 +18,15 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
 
 @Slf4j
 @Service
@@ -285,5 +289,14 @@ public class OcrService {
         }
 
         return responseDtoList;
+    }
+
+    // 선택된 문서 조회
+    @Transactional(readOnly = true)
+    public OcrResponseDto getPost(Long id) {
+        OCR ocr = ocrRepository.findById(id)
+                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        return OcrResponseDto.from(ocr);
     }
 }
