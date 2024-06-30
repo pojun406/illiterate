@@ -18,7 +18,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "ocr_result")
+@Table(name = "OCR_Result")
 public class OCR {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
