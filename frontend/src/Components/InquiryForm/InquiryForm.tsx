@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import fetchWithAuth from '../AccessToken/AccessToken';
+import axios from 'axios';
 
 const InquiryForm = () => {
     const location = useLocation();
@@ -41,27 +41,53 @@ const InquiryForm = () => {
             console.log('Sending request to:', location.pathname);
             console.log('Request data:', data);
 
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                alert('인증 토큰이 없습니다.');
+                return;
+            }
+
             if (location.pathname === '/servicecenter/write') {
-                const response = await fetchWithAuth('/post', data, image || undefined); // 이미지 포함
-                console.log('Response received:', response);
-                if (typeof response === 'string') {
-                    throw new Error(response);
+                const formData = new FormData();
+                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+                if (image) {
+                    formData.append('image', image);
+                    console.log('Image file:', image);
                 }
+
+                const response = await axios.post('/post', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                console.log('Response received:', response);
                 console.log('문의 사항 저장 성공:', response);
             } else if (location.pathname === '/servicecenter/edit') {
                 const id = new URLSearchParams(location.search).get('id');
                 if (!id) {
                     throw new Error('ID가 없습니다.');
                 }
-                const response = await fetchWithAuth(`/fix_post/${id}`, data, image || undefined); // 이미지 포함
-                console.log('Response received:', response);
-                if (typeof response === 'string') {
-                    throw new Error(response);
+
+                const formData = new FormData();
+                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+                if (image) {
+                    formData.append('image', image);
+                    console.log('Image file:', image);
                 }
+
+                const response = await axios.post(`/fix_post/${id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                console.log('Response received:', response);
                 console.log('문의 사항 수정 성공:', response);
             }
         } catch (error) {
             console.error('문의 사항 처리 중 오류 발생:', error);
+            alert('문의 사항 처리 중 오류가 발생했습니다.');
         }
     };
 

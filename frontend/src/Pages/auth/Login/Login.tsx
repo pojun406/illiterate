@@ -18,6 +18,7 @@ const Login = () => {
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            console.log("로그인 요청:", { userid, password }); // 로그인 요청으로 보낸 값을 콘솔에 출력
             const response = await axios.post("/login", { userid, password }, {
                 headers: { 'Content-Type': 'application/json' }
             });
