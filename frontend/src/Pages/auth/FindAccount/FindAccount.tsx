@@ -15,10 +15,10 @@ const FindAccount: React.FC = () => {
         }
     }, [location.state]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleFindIdSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const endpoint = isFindingUsername ? "/findId" : `/${userid}/password`;
-        const data = isFindingUsername ? { userEmail: email } : { email };
+        const endpoint = "/findId";
+        const data = { userEmail: email };
 
         if (!email) {
             setMessage("이메일을 입력해주세요.");
@@ -29,7 +29,7 @@ const FindAccount: React.FC = () => {
 
         try {
             const response = await fetch(endpoint, {
-                method: isFindingUsername ? "POST" : "PATCH",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -38,9 +38,40 @@ const FindAccount: React.FC = () => {
 
             if (response.ok) {
                 const result = await response.json();
-                setMessage(isFindingUsername ? `아이디: ${result.data}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+                setMessage(`아이디: ${result.data}`);
             } else {
-                setMessage(isFindingUsername ? "아이디를 찾을 수 없습니다." : "비밀번호를 찾을 수 없습니다.");
+                setMessage("아이디를 찾을 수 없습니다.");
+            }
+        } catch (error) {
+            setMessage("오류가 발생했습니다. 다시 시도해주세요.");
+        }
+    };
+
+    const handleFindPasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const endpoint = `/${userid}/password`;
+        const data = { email };
+
+        if (!email) {
+            setMessage("이메일을 입력해주세요.");
+            return;
+        }
+
+        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+            } else {
+                setMessage("비밀번호를 찾을 수 없습니다.");
             }
         } catch (error) {
             setMessage("오류가 발생했습니다. 다시 시도해주세요.");
@@ -77,7 +108,7 @@ const FindAccount: React.FC = () => {
                         {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
                     </div>
                     {message && <div className="text-center text-red-500 mb-4">{message}</div>}
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={isFindingUsername ? handleFindIdSubmit : handleFindPasswordSubmit}>
                         {!isFindingUsername && (
                             <input
                                 type="text"
