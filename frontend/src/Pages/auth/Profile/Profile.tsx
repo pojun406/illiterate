@@ -119,13 +119,14 @@ const Profile: React.FC = () => {
 
     const handleAccountDeletion = async () => {
         try {
-            const response = await fetch('/api/user/delete', {
+            const userId = localStorage.getItem('id');
+            const response = await fetch(`/deluser/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({ userId })
             });
-
             if (response.ok) {
                 setModalMessage('계정이 성공적으로 삭제되었습니다.');
                 setIsModalOpen(true);
