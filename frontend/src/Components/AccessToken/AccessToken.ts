@@ -31,8 +31,15 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, file?: Fil
                     'Content-Type': 'multipart/form-data'
                 }
             });
-        } else {
+        } else if (requestParameters) {
             response = await axios.post(apiUrl, { ...requestParameters, userId }, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } else {
+            response = await axios.post(apiUrl, { userId }, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
@@ -44,12 +51,12 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, file?: Fil
     } catch (error: any) {
         if (error.response && error.response.status === 401) {
             try {
-                const refreshResponse = await axios.post('/api/refresh', { refreshToken, userId }, {
+                const refreshResponse = await axios.post('/refresh', { refreshToken, userId }, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
-                const newAccessToken = refreshResponse.data.accessToken;
+                const newAccessToken = refreshResponse.data.data.accessToken;
                 localStorage.setItem('authToken', newAccessToken);
 
                 let retryResponse;
@@ -68,8 +75,15 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, file?: Fil
                             'Content-Type': 'multipart/form-data'
                         }
                     });
-                } else {
+                } else if (requestParameters) {
                     retryResponse = await axios.post(apiUrl, { ...requestParameters, userId }, {
+                        headers: {
+                            'Authorization': `Bearer ${newAccessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } else {
+                    retryResponse = await axios.post(apiUrl, { userId }, {
                         headers: {
                             'Authorization': `Bearer ${newAccessToken}`,
                             'Content-Type': 'application/json'
@@ -82,6 +96,9 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, file?: Fil
                 console.error('토큰 갱신 요청 중 오류:', refreshError);
                 return "토큰 갱신 요청 중 오류가 발생했습니다.";
             }
+        } else if (error.response && error.response.status === 400) {
+            console.error('잘못된 요청:', error.response.data);
+            return "잘못된 요청입니다.";
         } else {
             console.error('요청 중 오류:', error);
             if (error.response) {
