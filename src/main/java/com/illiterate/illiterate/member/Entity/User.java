@@ -23,7 +23,6 @@ public class User {
     private String username;
     private String password;
     private String email;
-    private String resetToken;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
