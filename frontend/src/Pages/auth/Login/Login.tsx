@@ -18,6 +18,7 @@ const Login = () => {
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            console.log("로그인 요청:", { userid, password }); // 로그인 요청으로 보낸 값을 콘솔에 출력
             const response = await axios.post("/login", { userid, password }, {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -32,12 +33,14 @@ const Login = () => {
                 navigate("/");
             } else {
                 setMessage("로그인 실패: 자격 증명을 확인해주세요.");
+                alert("아이디/비밀번호를 다시 확인해주세요");
             }
         } catch (error) {
             const errorMessage = axios.isAxiosError(error) && error.response
                 ? error.response.data.message
                 : "로그인 중 오류 발생";
             setMessage(errorMessage);
+            alert("아이디/비밀번호를 다시 확인해주세요");
         }
     };
     const handleFetchProtectedResource = async () => {
