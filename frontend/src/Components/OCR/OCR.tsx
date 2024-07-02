@@ -20,7 +20,13 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                const response = await fetchWithAuth('/ocr/file', formData);
+                const response = await fetchWithAuth('/ocr/file', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
                 if (typeof response === 'string') {
                     throw new Error(response);

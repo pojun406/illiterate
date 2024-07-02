@@ -55,8 +55,10 @@ public class UserService {
     public Long joinUser(JoinDto joinDto) {
         // 아이디 중복 체크
         if (userRepository.existsByUserid(joinDto.getUserid())) {
+            System.out.println("중복된 아이디입니다: " + joinDto.getUserid());
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
         } else if (userRepository.existsByEmail(joinDto.getEmail())) {
+            System.out.println("중복된 이메일입니다: " + joinDto.getEmail());
             throw new MemberException(DUPLICATED_MEMBER_PHONE_NUMBER);
         }
 
