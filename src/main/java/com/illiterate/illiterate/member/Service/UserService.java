@@ -120,38 +120,34 @@ public class UserService {
     }
 
     // refresh토큰 재발급
+    @Transactional
     public LoginTokenDto refreshToken(String oldRefreshToken, Long memberId) {
-        System.out.println("Old Refresh Token: " + oldRefreshToken);
 
         User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
+        // redis 갱신된 refresh token 유효성 검증
         if (!redisRepository.hasKey(member.getId())) {
             throw new MemberException(NOT_FOUND_REFRESH_TOKEN);
         }
 
-        Map<String, String> storedRefreshTokenMap = redisRepository.getRefreshToken(member.getId());
-        String storedRefreshToken = storedRefreshTokenMap.get("refreshToken");
-        //System.out.println("레디스에 저장된 refresh 토큰정보 : " + storedRefreshToken);
-
-        /*if (!storedRefreshToken.equals(oldRefreshToken)) {
-            System.out.println("토큰 불일치: ");
-            System.out.println("oldRefreshToken: " + oldRefreshToken);
-            System.out.println("storedRefreshToken: " + storedRefreshToken);
+        // redis에 저장된 토큰과 비교
+        if (!redisRepository.getRefreshToken(member.getId()).get("refreshToken").equals(oldRefreshToken)) {
             throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
-        }*/
+        }
 
         UserDetailsImpl userDetail = (UserDetailsImpl) UserDetailsImpl.from(member);
 
+        // accessToken, refreshToken 생성
         String accessToken = jwtProvider.createAccessToken(userDetail);
         String newRefreshToken = jwtProvider.createRefreshToken(userDetail);
 
         LoginTokenDto loginTokenDto = LoginTokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(newRefreshToken)
-                .id(userDetail.getId())
                 .build();
 
+        // redis 토큰 정보 저장
         redisRepository.saveToken(userDetail.getId(), newRefreshToken);
 
         return loginTokenDto;
@@ -182,7 +178,7 @@ public class UserService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
 
         String resetToken = generateResetToken();
-        member.setResetToken(resetToken);
+        //member.setResetToken(resetToken);
         userRepository.save(member);
 
         String resetUrl = "http://yourdomain.com/reset-password?token=" + resetToken; // 도메인 설정해줘야함
@@ -195,7 +191,7 @@ public class UserService {
         mailSender.send(message);
     }
 
-    @Transactional
+    /*@Transactional
     public void resetPassword(String token, String newPassword) {
         User member = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new MemberException(TOKEN_EXPIRATION));
@@ -203,7 +199,7 @@ public class UserService {
         member.setPassword(passwordEncoder.encode(newPassword));
         member.setResetToken(null);
         userRepository.save(member);
-    }
+    }*/
 
     private String generateResetToken() {
         return UUID.randomUUID().toString();
