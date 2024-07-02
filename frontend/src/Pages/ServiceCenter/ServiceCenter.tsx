@@ -1,20 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { FaBars } from 'react-icons/fa';
+import React, { useState } from 'react';
 import Sidebar from '../../Components/Sidebar/Sidebar';
 import { Outlet } from 'react-router-dom';
 
 const ServiceCenter = () => {
-    const [tickets, setTickets] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    useEffect(() => {
-        const fetchTickets = async () => {
-            const response = await axios.get('/mockup/tickets.json');
-            setTickets(response.data);
-        };
-        fetchTickets();
-    }, []);
 
     return (
         <div className="flex p-6 bg-gray-100" style={{ userSelect: 'none' }}>

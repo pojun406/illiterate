@@ -1,14 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const InquiryForm = () => {
+    const location = useLocation();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [buttonText, setButtonText] = useState('문의하기');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        if (location.pathname === '/servicecenter/write') {
+            setButtonText('문의하기');
+        } else if (location.pathname === '/servicecenter/edit') {
+            setButtonText('수정하기');
+        }
+    }, [location.pathname]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // 문의 사항 저장 로직 추가
+        console.log('Form submitted'); // 디버깅을 위해 추가
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        if (!content) {
+            alert('내용을 입력해주세요.');
+            return;
+        }
+
+        const data = {
+            title,
+            content
+        };
+        
+        try {
+            console.log('Sending request to:', location.pathname);
+            console.log('Request data:', data);
+
+            const authToken = localStorage.getItem('authToken');
+            if (!authToken) {
+                alert('인증 토큰이 없습니다.');
+                return;
+            }
+
+            if (location.pathname === '/servicecenter/write') {
+                const formData = new FormData();
+                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+                if (image) {
+                    formData.append('image', image);
+                    console.log('Image file:', image);
+                }
+
+                const response = await axios.post('/post', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                console.log('Response received:', response);
+                console.log('문의 사항 저장 성공:', response);
+            } else if (location.pathname === '/servicecenter/edit') {
+                const id = new URLSearchParams(location.search).get('id');
+                if (!id) {
+                    throw new Error('ID가 없습니다.');
+                }
+
+                const formData = new FormData();
+                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+                if (image) {
+                    formData.append('image', image);
+                    console.log('Image file:', image);
+                }
+
+                const response = await axios.post(`/fix_post/${id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                console.log('Response received:', response);
+                console.log('문의 사항 수정 성공:', response);
+            }
+        } catch (error) {
+            console.error('문의 사항 처리 중 오류 발생:', error);
+            alert('문의 사항 처리 중 오류가 발생했습니다.');
+        }
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +128,7 @@ const InquiryForm = () => {
                 </button>
             </div>
             {imagePreview && <div className="flex justify-center"><img src={imagePreview} alt="첨부 이미지" className="w-1/2 h-auto mb-4" /></div>}
-            <button type="submit" className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500">제출</button>
+            <button type="submit" className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500">{buttonText}</button>
         </form>
     );
 };
