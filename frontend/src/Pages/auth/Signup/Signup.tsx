@@ -54,7 +54,7 @@ const Signup: React.FC = () => {
         }
     };
 
-    const handleCheckDuplicate = () => {
+    const handleCheckDuplicate = async () => {
         // 아이디 중복 확인 로직을 여기에 추가합니다.
         // 예를 들어, 서버와 통신하여 아이디 중복 확인 결과를 받아오도록 할 수 있습니다.
         const idRegex = /^[a-z]+$/; // 영문 소문자만 가능
@@ -68,11 +68,19 @@ const Signup: React.FC = () => {
 
         setIdError(""); // 정규식 통과
 
-        const isAvailable = userid !== "takenId"; // 예시: "takenId"는 이미 사용 중인 아이디
+        try {
+            const response = await axios.post('/checkId', { userId: userid });
+            const isAvailable = response.data.data; // 서버에서 반환된 중복 체크 결과
 
-        if (isAvailable) {
-            setIsIdValid(true);
-        } else {
+            if (isAvailable) {
+                setIsIdValid(true);
+            } else {
+                setIsIdValid(false);
+                setIdError("이미 사용 중인 아이디입니다.");
+            }
+        } catch (error) {
+            console.error(error);
+            setIdError("아이디 중복 확인 중 오류가 발생했습니다.");
             setIsIdValid(false);
         }
         setIsIdCheck(true);
