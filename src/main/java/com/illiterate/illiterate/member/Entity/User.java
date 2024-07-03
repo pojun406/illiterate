@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user")
+@Table(name = "User")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,6 @@ public class User {
     private String username;
     private String password;
     private String email;
-    private String resetToken;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
