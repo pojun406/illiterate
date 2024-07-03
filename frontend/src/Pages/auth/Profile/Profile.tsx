@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import fetchWithAuth from '../../../Components/AccessToken/AccessToken';
+import axios from 'axios';
+import { IoEye, IoEyeOff } from 'react-icons/io5';
 
 const Profile: React.FC = () => {
     const [password, setPassword] = useState<string>('');
@@ -15,10 +17,21 @@ const Profile: React.FC = () => {
         email: '',
         password: ''
     });
+    const [editUserInfo, setEditUserInfo] = useState({
+        name: '',
+        email: ''
+    });
     const [modalMessage, setModalMessage] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+    const [isUnsavedChangesModalOpen, setIsUnsavedChangesModalOpen] = useState<boolean>(false);
     const hasFetchedUserInfo = useRef(false);
+    const [pendingTab, setPendingTab] = useState<string>('');
+    const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
+    const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState<boolean>(false);
+    const [newPasswordError, setNewPasswordError] = useState<string>('');
+    const [confirmNewPasswordError, setConfirmNewPasswordError] = useState<string>('');
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -30,11 +43,16 @@ const Profile: React.FC = () => {
                 const response = await fetchWithAuth(`/userinfo/${userid}`);
                 if (typeof response !== 'string' && response.status === 200) {
                     const data = response.data;
+                    console.log(data); // 콘솔에 출력
                     setUserInfo({
                         id: data.data.id,
                         name: data.data.name,
                         email: data.data.email,
                         password: '' 
+                    });
+                    setEditUserInfo({
+                        name: data.data.name,
+                        email: data.data.email
                     });
                 } else {
                     setModalMessage('사용자 정보를 가져오는데 실패했습니다.');
@@ -67,11 +85,23 @@ const Profile: React.FC = () => {
     };
 
     const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setNewPassword(e.target.value);
+        const value = e.target.value;
+        setNewPassword(value);
+        setNewPasswordError(""); // 입력 중일 때는 에러 메시지를 지웁니다.
+    };
+
+    const handleNewPasswordBlur = () => {
+        validateNewPassword();
     };
 
     const handleConfirmNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setConfirmNewPassword(e.target.value);
+        const value = e.target.value;
+        setConfirmNewPassword(value);
+        setConfirmNewPasswordError(""); // 입력 중일 때는 에러 메시지를 지웁니다.
+    };
+
+    const handleConfirmNewPasswordBlur = () => {
+        validateConfirmNewPassword();
     };
 
     const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,8 +115,8 @@ const Profile: React.FC = () => {
     };
 
     const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUserInfo({
-            ...userInfo,
+        setEditUserInfo({
+            ...editUserInfo,
             [e.target.name]: e.target.value
         });
     };
@@ -94,12 +124,15 @@ const Profile: React.FC = () => {
     const handleUserInfoSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/user/update', {
+            const userId = localStorage.getItem('id');
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch(`/userUpdate/${userId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(userInfo)
+                body: JSON.stringify(editUserInfo)
             });
 
             if (response.ok) {
@@ -142,31 +175,75 @@ const Profile: React.FC = () => {
         }
     };
 
+    const handleTabChange = (tab: string) => {
+        if (activeTab === 'edit' && (editUserInfo.name !== userInfo.name || editUserInfo.email !== userInfo.email)) {
+            setPendingTab(tab);
+            setIsUnsavedChangesModalOpen(true);
+        } else {
+            setActiveTab(tab);
+        }
+    };
+
+    const confirmTabChange = () => {
+        setIsUnsavedChangesModalOpen(false);
+        setActiveTab(pendingTab);
+        setEditUserInfo({
+            name: userInfo.name,
+            email: userInfo.email
+        });
+    };
+
+    const validateNewPassword = () => {
+        const regex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[a-z\d@$!%*?&]{8,}$/;
+        if (!regex.test(newPassword)) {
+            setNewPasswordError("비밀번호는 최소 8자, 하나 이상의 소문자, 숫자, 특수문자가 포함되어야 합니다.");
+            return false;
+        }
+        return true;
+    };
+
+    const validateConfirmNewPassword = () => {
+        if (newPassword !== confirmNewPassword) {
+            setConfirmNewPasswordError("새 비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+            return false;
+        }
+        return true;
+    };
+
+    const handleChangePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (validateNewPassword() && validateConfirmNewPassword()) {
+            if (userInfo.password !== currentPassword) {
+                setModalMessage('현재 비밀번호가 일치하지 않습니다.');
+                setIsModalOpen(true);
+                return;
+            }
+            try {
+                const userId = localStorage.getItem('id');
+                await axios.post(`/userUpdate/${userId}/password`, 
+                { newPassword }, 
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setModalMessage('비밀번호가 성공적으로 변경되었습니다.');
+                setIsModalOpen(true);
+            } catch (error) {
+                console.error('Error:', error);
+                setModalMessage('서버와의 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
+                setIsModalOpen(true);
+            }
+        }
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'profile':
                 return (
                     <div>
                         <h2 className="text-2xl font-semibold mb-6">프로필</h2>
-                        <div className="flex items-center mb-6">
-                            <img
-                                className="w-16 h-16 rounded-full mr-4"
-                                src="https://via.placeholder.com/150"
-                                alt="User Avatar"
-                            />
-                            <div>
-                                <h3 className="text-xl font-semibold">{userInfo.name}</h3>
-                                <p className="text-gray-600">{userInfo.email}</p>
-                            </div>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
-                                아이디
-                            </label>
-                            <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                {userInfo.id}
-                            </p>
-                        </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                                 이름
@@ -183,8 +260,16 @@ const Profile: React.FC = () => {
                                 {userInfo.email}
                             </p>
                         </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
+                                아이디
+                            </label>
+                            <p className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                {userInfo.id}
+                            </p>
+                        </div>
                         <button
-                            onClick={() => setActiveTab('edit')}
+                            onClick={() => handleTabChange('edit')}
                             className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
                         >
                             정보 수정
@@ -218,20 +303,6 @@ const Profile: React.FC = () => {
                     <>
                     <form onSubmit={handleUserInfoSubmit}>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
-                                아이디
-                            </label>
-                            <input
-                                type="text"
-                                id="id"
-                                name="id"
-                                value={userInfo.id}
-                                onChange={handleUserInfoChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
                                 이름
                             </label>
@@ -239,7 +310,7 @@ const Profile: React.FC = () => {
                                 type="text"
                                 id="name"
                                 name="name"
-                                value={userInfo.name}
+                                value={editUserInfo.name}
                                 onChange={handleUserInfoChange}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
@@ -253,7 +324,7 @@ const Profile: React.FC = () => {
                                 type="email"
                                 id="email"
                                 name="email"
-                                value={userInfo.email}
+                                value={editUserInfo.email}
                                 onChange={handleUserInfoChange}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
@@ -267,6 +338,98 @@ const Profile: React.FC = () => {
                         </button>
                     </form>
                     </>
+                );
+            case 'changePassword':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-6">비밀번호 변경</h2>
+                        <form onSubmit={handleChangePasswordSubmit}>
+                            <div className="mb-4 relative">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="currentPassword">
+                                    현재 비밀번호
+                                </label>
+                                <div className="flex items-center relative">
+                                    <input
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        id="currentPassword"
+                                        value={currentPassword}
+                                        onChange={handleCurrentPasswordChange}
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+                                        required
+                                    />
+                                    <span
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                        className="absolute right-3 cursor-pointer select-none"
+                                        style={{ userSelect: 'none' }}
+                                    >
+                                        {showCurrentPassword ? <IoEye /> : <IoEyeOff />}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="mb-4 relative">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="newPassword">
+                                    새 비밀번호
+                                </label>
+                                <div className="flex items-center relative">
+                                    <input
+                                        type={showNewPassword ? "text" : "password"}
+                                        id="newPassword"
+                                        value={newPassword}
+                                        onChange={handleNewPasswordChange}
+                                        onBlur={handleNewPasswordBlur}
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+                                        required
+                                    />
+                                    <span
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-3 cursor-pointer select-none"
+                                        style={{ userSelect: 'none' }}
+                                    >
+                                        {showNewPassword ? <IoEye /> : <IoEyeOff />}
+                                    </span>
+                                </div>
+                                {newPasswordError && (
+                                    <div className="text-red-500 text-xs mt-1">
+                                        {newPasswordError}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mb-4 relative">
+                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmNewPassword">
+                                    새 비밀번호 확인
+                                </label>
+                                <div className="flex items-center relative">
+                                    <input
+                                        type={showConfirmNewPassword ? "text" : "password"}
+                                        id="confirmNewPassword"
+                                        value={confirmNewPassword}
+                                        onChange={handleConfirmNewPasswordChange}
+                                        onBlur={handleConfirmNewPasswordBlur}
+                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+                                        required
+                                    />
+                                    <span
+                                        onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                                        className="absolute right-3 cursor-pointer select-none"
+                                        style={{ userSelect: 'none' }}
+                                    >
+                                        {showConfirmNewPassword ? <IoEye /> : <IoEyeOff />}
+                                    </span>
+                                </div>
+                                {confirmNewPasswordError && (
+                                    <div className="text-red-500 text-xs mt-1">
+                                        {confirmNewPasswordError}
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
+                            >
+                                비밀번호 변경
+                            </button>
+                        </form>
+                    </div>
                 );
             case 'delete':
                 return (
@@ -293,19 +456,25 @@ const Profile: React.FC = () => {
                     <ul>
                         <li
                             className={`cursor-pointer py-2 ${activeTab === 'profile' ? 'font-bold' : ''}`}
-                            onClick={() => setActiveTab('profile')}
+                            onClick={() => handleTabChange('profile')}
                         >
                             프로필
                         </li>
                         <li
                             className={`cursor-pointer py-2 ${activeTab === 'edit' ? 'font-bold' : ''}`}
-                            onClick={() => setActiveTab('edit')}
+                            onClick={() => handleTabChange('edit')}
                         >
                             정보 수정
                         </li>
                         <li
+                            className={`cursor-pointer py-2 ${activeTab === 'changePassword' ? 'font-bold' : ''}`}
+                            onClick={() => handleTabChange('changePassword')}
+                        >
+                            비밀번호 변경
+                        </li>
+                        <li
                             className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}
-                            onClick={() => setActiveTab('delete')}
+                            onClick={() => handleTabChange('delete')}
                         >
                             회원 탈퇴
                         </li>
@@ -348,6 +517,29 @@ const Profile: React.FC = () => {
                                 className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800"
                             >
                                 회원 탈퇴
+                            </button>
+                        </div>
+                    </div>
+                    <div className="fixed inset-0 bg-black opacity-50 z-40"></div>
+                </div>
+            )}
+            {isUnsavedChangesModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded shadow-lg relative z-50" onClick={(e) => e.stopPropagation()}>
+                        <p>변경사항이 저장되지 않았습니다.</p>
+                        <p>그래도 이동하시겠습니까?</p>
+                        <div className="mt-4 flex justify-between">
+                            <button
+                                onClick={() => setIsUnsavedChangesModalOpen(false)}
+                                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={confirmTabChange}
+                                className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800"
+                            >
+                                확인
                             </button>
                         </div>
                     </div>
