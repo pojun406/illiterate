@@ -44,7 +44,7 @@ const InquiryForm = () => {
             content,
             id
         };
-        
+
         try {
             console.log('Sending request to:', location.pathname);
             console.log('Request data:', data);
@@ -119,17 +119,17 @@ const InquiryForm = () => {
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목" className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용" className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" style={{ height: '200px', verticalAlign: 'top' }} />
             <div className="flex items-center space-x-4">
-                <input 
-                    id="fileInput" 
-                    type="file" 
+                <input
+                    id="fileInput"
+                    type="file"
                     accept="image/*"
-                    onChange={handleImageChange} 
-                    className="hidden" 
+                    onChange={handleImageChange}
+                    className="hidden"
                 />
                 <span>{image ? image.name : '선택된 파일 없음'}</span>
-                <button 
-                    type="button" 
-                    onClick={() => document.getElementById('fileInput')?.click()} 
+                <button
+                    type="button"
+                    onClick={() => document.getElementById('fileInput')?.click()}
                     className="px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     파일 선택
