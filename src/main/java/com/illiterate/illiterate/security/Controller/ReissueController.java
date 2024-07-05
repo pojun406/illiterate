@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.security.Controller;
 
+import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.security.Service.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,7 @@ public class ReissueController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
-        return reissueService.reissue(request, response);
+    public ResponseEntity<BfResponse<?>> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(new BfResponse<>(reissueService.reissue(request, response)));
     }
 }

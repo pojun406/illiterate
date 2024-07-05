@@ -5,7 +5,7 @@ import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
-import com.illiterate.illiterate.security.service.UserDetailsImpl;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

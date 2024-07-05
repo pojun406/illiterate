@@ -1,9 +1,13 @@
 package com.illiterate.illiterate.security.Config;
 
+import com.illiterate.illiterate.security.Filter.CustomLogoutFilter;
+import com.illiterate.illiterate.security.Filter.JWTFilter;
+import com.illiterate.illiterate.security.Filter.LoginFilter;
 import com.illiterate.illiterate.security.Repository.RefreshRepository;
 import com.illiterate.illiterate.security.Util.JWTUtil;
 import com.illiterate.illiterate.security.Util.MakeCookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,8 +35,6 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomSuccessHandler customSuccessHandler;
     private final MakeCookie makeCookie;
 
     //AuthenticationManager Bean 등록
@@ -48,10 +50,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-
         // 로그인 필터 추가
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, makeCookie);
-        loginFilter.setFilterProcessesUrl("/signin"); // 실제 로그인을 처리할 URL을 입력
+        loginFilter.setFilterProcessesUrl("/login"); // 실제 로그인을 처리할 URL을 입력
 
         http.cors((cors) -> cors
                 .configurationSource(new CorsConfigurationSource() {
@@ -82,24 +83,21 @@ public class SecurityConfig {
         // HTTP Basic 인증을 비활성화 -> 보완성이 낮아서 비활성
         http.httpBasic((auth) -> auth.disable());
 
-        // oauth2
-        http.oauth2Login((oauth2) -> oauth2
-                .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
-                        .userService(customOAuth2UserService))
-                .successHandler(customSuccessHandler));
-
         // 경로별 인가 작업
         http.authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/signin", "/signup", "/check-phone-number", "/send-code", "/check-code").permitAll() // /login, /, /join 경로는 모든 사용자가 접근할 수 있도록 허용
-                        .requestMatchers("reissue").permitAll() // refresh token 재발급 모든 사용자 접근 허용
+                        .requestMatchers("/login", "/join", "/check-phone-number", "/send-code", "/check-code").permitAll() // /login, /, /join 경로는 모든 사용자가 접근할 수 있도록 허용
+                        .requestMatchers("refresh").permitAll() // refresh token 재발급 모든 사용자 접근 허용
                         .requestMatchers("/admin").hasRole("ADMIN") // /admin 경로는 "ADMIN" 역할을 가진 사용자만 접근할 수 있도록 설정
                         .requestMatchers("/").authenticated() // 인증된 유저만 접근 가능
                         .anyRequest().permitAll()); // 나머지 요청은 모두 접근 가능
 
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        // JWT 필터 추가
+        http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
+        // 로그아웃 필터 추가
         http.addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
+        // 로그인 필터 위치 설정
         http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
