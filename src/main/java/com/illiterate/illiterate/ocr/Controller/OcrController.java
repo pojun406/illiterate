@@ -98,9 +98,9 @@ public class OcrController {
             "imagePath": "/images/first-post.jpg",
             "status": "ACTIVE"
      */
-    @PostMapping("/posts/{ocrid}")
-    public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long ocrid) {
-        OcrResponseDto post = ocrService.getPost(ocrid);
+    @PostMapping("/posts/{userid}")
+    public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long userid) {
+        OcrResponseDto post = ocrService.getPost(userid);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
     }
