@@ -17,6 +17,7 @@ const InquiryForm = () => {
             setButtonText('수정하기');
         }
     }, [location.pathname]);
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,9 +33,16 @@ const InquiryForm = () => {
             return;
         }
 
+        const id = localStorage.getItem('id');
+        if (!id) {
+            alert('ID가 없습니다.');
+            return;
+        }
+
         const data = {
             title,
-            content
+            content,
+            id
         };
         
         try {
