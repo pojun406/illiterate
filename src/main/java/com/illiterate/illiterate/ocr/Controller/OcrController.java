@@ -7,12 +7,15 @@ import com.illiterate.illiterate.member.Entity.User;
 import com.illiterate.illiterate.member.Service.UserService;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
+import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
+import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,9 +29,9 @@ import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.CREATE;
 @RequiredArgsConstructor
 @RequestMapping("/ocr")
 public class OcrController {
+    private final OcrRepository ocrRepository;
 
     private final OcrService ocrService;
-    private final UserService userService;
 
     /*
         request :
@@ -42,11 +45,9 @@ public class OcrController {
      */
     @PostMapping(value = "/file", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("file") MultipartFile image) {
-        // 토큰에서 "Bearer " 접두사를 제거
-        String accessToken = token.replace("Bearer ", "");
-        User user = userService.getUserFromToken(accessToken);
+        User user = userDetails.getUser();
 
         OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
         return ResponseEntity.ok(new BfResponse<>(responseDto));

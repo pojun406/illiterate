@@ -11,18 +11,15 @@ import org.springframework.stereotype.Component;
 
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.CHECK_ID_OR_PASSWORD;
 
-/**
- * AuthenticationManager 셋팅
- */
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 	private final PasswordEncoder passwordEncoder;
 	private final MemberUserDetailsService memberUserDetailsService;
 
 	public CustomAuthenticationProvider(
-		PasswordEncoder passwordEncoder,
-		@Qualifier("memberUserDetailsService") MemberUserDetailsService memberUserDetailsService
-	){
+			PasswordEncoder passwordEncoder,
+			@Qualifier("memberUserDetailsService") MemberUserDetailsService memberUserDetailsService
+	) {
 		this.passwordEncoder = passwordEncoder;
 		this.memberUserDetailsService = memberUserDetailsService;
 	}
@@ -33,12 +30,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		String id = authentication.getName();
 		String password = authentication.getCredentials().toString();
 
-		UserDetailsImpl userDetails;
+		UserDetailsImpl userDetails = (UserDetailsImpl) memberUserDetailsService.loadUserByUsername(id);
 
-		userDetails = (UserDetailsImpl)memberUserDetailsService.loadUserByUsername(id);
-
-		// 비밀번호 확인
-		if(!passwordEncoder.matches(password, userDetails.getPassword())) {
+		if (!passwordEncoder.matches(password, userDetails.getPassword())) {
 			throw new CustomSecurityException(CHECK_ID_OR_PASSWORD);
 		}
 
