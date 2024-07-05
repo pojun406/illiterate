@@ -4,7 +4,7 @@ package com.illiterate.illiterate.member.exception;
 import com.illiterate.illiterate.common.enums.BaseErrorCode;
 import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.response.ErrorResponse;
-import com.illiterate.illiterate.security.exception.CustomSecurityException;
+import com.illiterate.illiterate.security.Exception.CustomSecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

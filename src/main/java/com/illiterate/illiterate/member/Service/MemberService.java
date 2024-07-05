@@ -12,9 +12,9 @@ import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.MemberException;
-import com.illiterate.illiterate.security.JWT.JWTProvider;
-import com.illiterate.illiterate.security.exception.CustomSecurityException;
-import com.illiterate.illiterate.security.service.UserDetailsImpl;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
+import com.illiterate.illiterate.security.Util.JWTUtil;
+import com.illiterate.illiterate.security.Util.TokenExpirationTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,10 +41,10 @@ import static com.illiterate.illiterate.common.enums.MemberErrorCode.*;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JWTProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
     private final RedisRepository redisRepository;
     private final JavaMailSender mailSender;
+    private final JWTUtil jwtUtil;
 
 
     /**
@@ -74,23 +75,22 @@ public class MemberService {
         return memberRepository.existsByUserid(userid);
     }
 
-    public LoginTokenDto login(LoginDto memberloginDto) {
+    public LoginTokenDto login(LoginDto memberLoginDto) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                memberloginDto.getUserid(),
-                memberloginDto.getPassword()
+                memberLoginDto.getUserid(),
+                memberLoginDto.getPassword()
         );
 
         Authentication authenticated = authenticationManager.authenticate(authentication);
-
-//        System.out.println("after auth : " + authentication);
+        SecurityContextHolder.getContext().setAuthentication(authenticated);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
         // accessToken, refreshToken 생성
-        String accessToken = jwtProvider.createAccessToken(userDetail);
-        String refreshToken = jwtProvider.createRefreshToken(userDetail);
-
-        //LoginTokenDto loginTokenDto = new LoginTokenDto(accessToken, refreshToken, userDetail.getId());
+        String accessToken = jwtUtil.createJwt("access", userDetail.getUsername(),
+                Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.ACCESS_TIME);
+        String refreshToken = jwtUtil.createJwt("refresh", userDetail.getUsername(),
+                Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.REFRESH_TIME);
 
         LoginTokenDto loginTokenDto = LoginTokenDto.builder()
                 .accessToken(accessToken)
@@ -107,8 +107,8 @@ public class MemberService {
     // 비밀번호 초기화
     public void resetPassword(UserDetailsImpl userDetails, Long memberId, MemberPasswordResetRequestDto resetRequestDto) {
         // 본인 or 관리자 권한 확인
-        if (!userDetails.getAuthorities().contains(RolesType.ROLE_ADMIN)
-                && !userDetails.getUserid().equals(memberId)) {
+        if (!userDetails.getAuthorities().contains(RolesType.ADMIN)
+                && !userDetails.getId().equals(memberId)) {
             throw new MemberException(FORBIDDEN_RESET_PASSWORD);
         }
 
@@ -118,41 +118,6 @@ public class MemberService {
 
         member.resetPassword(passwordEncoder.encode(resetRequestDto.newPassword()));
     }
-
-    // refresh토큰 재발급
-    @Transactional
-    public LoginTokenDto refreshToken(String oldRefreshToken, Long memberId) {
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
-
-        // redis 갱신된 refresh token 유효성 검증
-        if (!redisRepository.hasKey(member.getId())) {
-            throw new MemberException(NOT_FOUND_REFRESH_TOKEN);
-        }
-
-        // redis에 저장된 토큰과 비교
-        if (!redisRepository.getRefreshToken(member.getId()).get("refreshToken").equals(oldRefreshToken)) {
-            throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
-        }
-
-        UserDetailsImpl userDetail = (UserDetailsImpl) UserDetailsImpl.from(member);
-
-        // accessToken, refreshToken 생성
-        String accessToken = jwtProvider.createAccessToken(userDetail);
-        String newRefreshToken = jwtProvider.createRefreshToken(userDetail);
-
-        LoginTokenDto loginTokenDto = LoginTokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(newRefreshToken)
-                .build();
-
-        // redis 토큰 정보 저장
-        redisRepository.saveToken(userDetail.getId(), newRefreshToken);
-
-        return loginTokenDto;
-    }
-
 
     public MemberInfoDto getUserInfo(Long userId) {
         // 회원 조회
@@ -230,24 +195,11 @@ public class MemberService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // 현재 로그인된 유저와 탈퇴하려는 회원이 일치하는지 확인 (관리자는 예외)
-        if (member.getRoles() != RolesType.ROLE_ADMIN
+        if (member.getRoles() != RolesType.ADMIN
                 && !userDetails.getId().equals(memberId)) {
             throw new MemberException(FORBIDDEN_DELETE_MEMBER);
         }
 
         member.inactivateUser();
-    }
-
-    /**
-     * 인증된 사용자 조회
-     */
-    // TODO: custom @Authenticationprincipal 구현
-    private UserDetails getUserDetails() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .filter(Authentication::isAuthenticated)
-                .map(Authentication::getPrincipal)
-                .filter(principal -> principal instanceof UserDetails)
-                .map(UserDetailsImpl.class::cast)
-                .orElseThrow(() -> new CustomSecurityException(CHECK_USER));
     }
 }
