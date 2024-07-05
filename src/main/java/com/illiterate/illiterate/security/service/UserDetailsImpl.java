@@ -21,6 +21,7 @@ public class UserDetailsImpl implements UserDetails {
     private String userid;
     private String password;
     private List<GrantedAuthority> authorities;
+    @Getter
     private User user;
 
     public static UserDetails from(User member) {
@@ -35,11 +36,6 @@ public class UserDetailsImpl implements UserDetails {
                 member
         );
     }
-
-    public User getUser() {
-        return user;
-    }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -3,6 +3,7 @@ package com.illiterate.illiterate.security.config;
 import com.illiterate.illiterate.security.JWT.JWTFilter;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.exception.CustomAccessDeniedHandler;
+import com.illiterate.illiterate.security.service.CustomAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,10 +16,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,38 +29,24 @@ import java.util.List;
 
 import static com.illiterate.illiterate.member.enums.RolesType.ROLE_ADMIN;
 import static com.illiterate.illiterate.member.enums.RolesType.ROLE_USER;
-import static org.springframework.http.HttpMethod.*;
-import static org.springframework.security.config.Customizer.withDefaults;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SpringSecurityConfig {
 
     private final JWTProvider jwtProvider;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
 
-    /**
-     * 패스워드 인코더
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * 로그인 인증 할때 사용함
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    /**
-     * public http
-     */
     @Bean
     @Order(1)
     public SecurityFilterChain permitAllFilterChain(HttpSecurity http) throws Exception {
@@ -71,15 +57,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitAllRequestMatchers()).permitAll()
                         .anyRequest().authenticated()
-                )
-                .cors(withDefaults()); // 기본 CORS 설정 추가
+                );
 
         return http.build();
     }
 
-    /**
-     * 토큰 인증 및 권한이 필요한 http
-     */
     @Bean
     @Order(2)
     public SecurityFilterChain authenticatedFilterChain(HttpSecurity http) throws Exception {
@@ -100,14 +82,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * CORS 설정
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 허용할 Origin(출처)
         configuration.setAllowedOrigins(
                 Arrays.asList(
                         "http://localhost:8080",
@@ -119,8 +96,6 @@ public class SecurityConfig {
                         "http://swagger-ui-integrated:8000"
                 )
         );
-
-        // 허용할 HTTP 메서드
         configuration.setAllowedMethods(
                 Arrays.asList(
                         "GET",
@@ -130,8 +105,6 @@ public class SecurityConfig {
                         "DELETE"
                 )
         );
-
-        // 허용할 헤더
         configuration.setAllowedHeaders(
                 Arrays.asList(
                         "Authorization",
@@ -139,10 +112,7 @@ public class SecurityConfig {
                         "Content-Type"
                 )
         );
-
-        // 쿠키 및 인증 정보 전송
         configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -150,52 +120,38 @@ public class SecurityConfig {
 
     private void httpSecuritySetting(HttpSecurity http) throws Exception {
         http
-                // jwt, OAuth 토큰을 사용 -> OAuth의 경우는 이슈가 발생할 수 있음 OAuth 구성할때 체크
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // cors 정책
-                .formLogin(AbstractHttpConfigurer::disable) // form 기반 로그인을 사용하지 않음.
-                .httpBasic(AbstractHttpConfigurer::disable) // 기본으로 제공하는 http 사용하지 않음
-                .rememberMe(AbstractHttpConfigurer::disable) // 토큰 기반이므로 세션 기반의 인증 사용하지 않음
-                .headers(headers -> headers.frameOptions(
-                        HeadersConfigurer.FrameOptionsConfig::disable)) // x-Frame-Options 헤더 비활성화, 클릭재킹 공격 관련
-                .logout(AbstractHttpConfigurer::disable) // stateful 하지 않기때문에 필요하지 않음
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 생성을 하지 않음
-                )
-                .anonymous(AbstractHttpConfigurer::disable); // 익명 사용자 접근 제한, 모든 요청이 인증 필요
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .rememberMe(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                .logout(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .anonymous(AbstractHttpConfigurer::disable);
     }
 
-    /**
-     * permitAll endpoint
-     */
     private RequestMatcher[] permitAllRequestMatchers() {
-        List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(POST, "/login"),            // 로그인
-                antMatcher(POST, "/join"),        // 회원가입
-                antMatcher(POST, "/email"), // 메일 인증번호 전송
-                antMatcher(GET, "/email"), // 인증 번호 검증
-                antMatcher(GET, "/email/{email}/status"), // 메일 인증 여부 확인
+        return new RequestMatcher[]{
+                antMatcher(POST, "/login"),
+                antMatcher(POST, "/join"),
+                antMatcher(POST, "/email"),
+                antMatcher(POST, "/email"),
+                antMatcher(POST, "/email/{email}/status"),
                 antMatcher(POST, "/checkId"),
                 antMatcher(POST, "/findId")
-                //antMatcher(GET, "/member/health") // aws 상태 체크
-        );
-
-        return requestMatchers.toArray(RequestMatcher[]::new);
+        };
     }
 
-    /**
-     * JWT Authentication, Roles Authorization endpoint
-     */
     private RequestMatcher[] AuthRequestMatchers() {
-        List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(GET, "/user/{userId}"),                  // 회원 정보 조회
-                antMatcher(PATCH, "/user/{userId}"),                // 회원 정보 수정
-                antMatcher(PATCH, "/user/{userId}/password"),       // 비밀번호 재설정
-                antMatcher(DELETE, "/user/{userId}"),               // 회원 탈퇴
-                antMatcher(POST, "/ocr/file"),                      // OCR 조회
+        return new RequestMatcher[]{
+                antMatcher(POST, "/user/{userId}"),
+                antMatcher(POST, "/user/{userId}"),
+                antMatcher(POST, "/user/{userId}/password"),
+                antMatcher(POST, "/user/{userId}"),
+                antMatcher(POST, "/ocr/file"),
                 antMatcher(POST, "/ocr/"),
-                antMatcher(POST, "/refresh")                        // 엑세스 토큰 갱신
-        );
-        return requestMatchers.toArray(RequestMatcher[]::new);
+                antMatcher(POST, "/refresh")
+        };
     }
 }

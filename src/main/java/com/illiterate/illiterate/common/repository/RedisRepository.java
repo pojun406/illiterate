@@ -34,9 +34,7 @@ public class RedisRepository {
     public void saveToken(Long memberId, String refreshToken) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         Duration expireDuration = Duration.ofSeconds(refreshExp);
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put("refreshToken", refreshToken);
-        valueOperations.set(String.valueOf(memberId), tokenMap, expireDuration);
+        valueOperations.set(String.valueOf(memberId), Map.of("refreshToken", refreshToken), expireDuration);
     }
 
     /**
@@ -49,8 +47,8 @@ public class RedisRepository {
     /**
      * refresh token 가져 오기
      */
-    public Map<String, String> getRefreshToken(Long memberId) {
-        return (Map<String, String>) redisTemplate.opsForValue().get(String.valueOf(memberId));
+    public Map getRefreshToken(Long memberId) {
+        return (Map) redisTemplate.opsForValue().get(String.valueOf(memberId));
     }
 
     /**
@@ -65,7 +63,7 @@ public class RedisRepository {
      */
     public void saveCertificationNumber(String phoneNumber, String certificationNumber) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(messageExp);  // 이 부분을 수정했습니다
+        Duration expireDuration = Duration.ofSeconds(refreshExp);
         valueOperations.set(phoneNumber, certificationNumber, expireDuration);
     }
 

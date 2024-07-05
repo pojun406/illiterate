@@ -93,7 +93,8 @@ public class BoardController {
             @RequestPart("image") MultipartFile image,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         requestsDto.setImage(image);
-        BoardResponseDto responseDto = boardService.createPost(requestsDto, userDetails.getUser());
+        User user = userDetails.getUser();
+        BoardResponseDto responseDto = boardService.createPost(requestsDto, user);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
     /*
@@ -121,8 +122,7 @@ public class BoardController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         requestsDto.setImage(image);
-        User user = userDetails.getUser();
-        BoardResponseDto updatedPost = boardService.updatePost(id, requestsDto, user);
+        BoardResponseDto updatedPost = boardService.updatePost(id, requestsDto, userDetails.getId());
         return ResponseEntity.ok(updatedPost);
     }
 
@@ -135,9 +135,7 @@ public class BoardController {
     public ResponseEntity<Void> deletePost(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        User user = userDetails.getUser();
-        boardService.deletePost(id, user);
+        boardService.deletePost(id, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 }

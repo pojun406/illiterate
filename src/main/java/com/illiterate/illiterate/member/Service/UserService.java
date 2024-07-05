@@ -13,6 +13,7 @@ import com.illiterate.illiterate.member.Repository.UserRepository;
 import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
+import com.illiterate.illiterate.security.exception.CustomSecurityException;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.illiterate.illiterate.common.enums.GlobalErrorCode.CHECK_USER;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.*;
 
 @Slf4j
@@ -84,7 +87,7 @@ public class UserService {
 
         Authentication authenticated = authenticationManager.authenticate(authentication);
 
-        System.out.println("after auth : " + authentication);
+//        System.out.println("after auth : " + authentication);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
@@ -240,9 +243,16 @@ public class UserService {
         member.inactivateUser();
     }
 
-    // UserService.java
-    public User getUserFromToken(String token) {
-        Long userId = jwtProvider.getUserIdFromToken(token);
-        return userRepository.findById(userId).orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+    /**
+     * 인증된 사용자 조회
+     */
+    // TODO: custom @Authenticationprincipal 구현
+    private UserDetails getUserDetails() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .filter(Authentication::isAuthenticated)
+                .map(Authentication::getPrincipal)
+                .filter(principal -> principal instanceof UserDetails)
+                .map(UserDetailsImpl.class::cast)
+                .orElseThrow(() -> new CustomSecurityException(CHECK_USER));
     }
 }
