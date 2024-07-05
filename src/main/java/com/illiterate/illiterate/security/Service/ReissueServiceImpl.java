@@ -72,7 +72,7 @@ public class ReissueServiceImpl implements ReissueService {
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
-        String memberId = jwtUtil.getMemberId(refresh);
+        Long memberId = jwtUtil.getMemberId(refresh);
         List<String> role = jwtUtil.getRole(refresh);
 
         //make new JWT

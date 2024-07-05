@@ -2,6 +2,7 @@ package com.illiterate.illiterate.security.Filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.illiterate.illiterate.member.Entity.Member;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import com.illiterate.illiterate.security.Util.JWTUtil;
 import com.illiterate.illiterate.security.Util.MakeCookie;
 import com.illiterate.illiterate.security.Util.TokenExpirationTime;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -50,10 +52,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     //로그인 성공시 실행하는 메소드 (여기서 JWT를 발급하면 됨)
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         //유저 정보
-        String memberId = authentication.getName();
+        Long memberId = userDetails.getId();
 
         // 권한 정보 추출
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
@@ -77,6 +81,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("access", access);
         response.addCookie(makeCookie.createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // 응답 바디에 액세스 토큰 포함
+        response.getWriter().write(new ObjectMapper().writeValueAsString(Map.of(
+                "data", Map.of(
+                        "accessToken", access,
+                        "refreshToken", refresh,
+                        "id", memberId
+                )
+        )));
     }
 
     //로그인 실패시 실행하는 메소드

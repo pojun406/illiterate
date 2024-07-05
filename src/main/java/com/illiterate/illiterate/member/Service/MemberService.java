@@ -87,9 +87,9 @@ public class MemberService {
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
         // accessToken, refreshToken 생성
-        String accessToken = jwtUtil.createJwt("access", userDetail.getUsername(),
+        String accessToken = jwtUtil.createJwt("access", userDetail.getId(),
                 Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.ACCESS_TIME);
-        String refreshToken = jwtUtil.createJwt("refresh", userDetail.getUsername(),
+        String refreshToken = jwtUtil.createJwt("refresh", userDetail.getId(),
                 Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.REFRESH_TIME);
 
         LoginTokenDto loginTokenDto = LoginTokenDto.builder()
@@ -126,6 +126,7 @@ public class MemberService {
 
         return MemberInfoDto.builder()
                 .id(member.getId())
+                .userid(member.getUserid())
                 .email(member.getEmail())
                 .name(member.getUsername())
                 .build();
