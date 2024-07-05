@@ -5,10 +5,8 @@ import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
-import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.common.response.ErrorResponse;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
-import com.illiterate.illiterate.member.Entity.User;
+import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
 
@@ -63,7 +59,7 @@ public class BoardService {
         "status": "ACTIVE"
      */
     @Transactional
-    public BoardResponseDto createPost(BoardRequestDto requestsDto, User user) {
+    public BoardResponseDto createPost(BoardRequestDto requestsDto, Member user) {
         String imagePath = null;
         MultipartFile image = requestsDto.getImage();
 

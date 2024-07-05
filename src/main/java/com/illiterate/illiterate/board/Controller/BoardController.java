@@ -7,8 +7,7 @@ import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.board.Service.BoardService;
 import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.member.Entity.User;
-import com.illiterate.illiterate.security.service.UserDetailsImpl;
+import com.illiterate.illiterate.member.Entity.Member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -93,7 +92,7 @@ public class BoardController {
             @RequestPart("image") MultipartFile image,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         requestsDto.setImage(image);
-        User user = userDetails.getUser();
+        Member user = userDetails.getUser();
         BoardResponseDto responseDto = boardService.createPost(requestsDto, user);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }

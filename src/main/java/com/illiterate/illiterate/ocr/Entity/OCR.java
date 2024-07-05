@@ -1,16 +1,10 @@
 package com.illiterate.illiterate.ocr.Entity;
 
-import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
-import com.illiterate.illiterate.member.Entity.User;
-import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
+import com.illiterate.illiterate.member.Entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 @Entity
 @Getter
@@ -26,7 +20,7 @@ public class OCR {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Member user;
 
     /*@Column
     private String request_img;*/

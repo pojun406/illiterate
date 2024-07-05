@@ -1,18 +1,12 @@
 package com.illiterate.illiterate.ocr.Controller;
 
-import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
-import com.illiterate.illiterate.member.Entity.User;
-import com.illiterate.illiterate.member.Service.UserService;
-import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
+import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
-
-import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.CREATE;
 
 
 @RestController
@@ -47,7 +38,7 @@ public class OcrController {
     public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("file") MultipartFile image) {
-        User user = userDetails.getUser();
+        Member user = userDetails.getUser();
 
         OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
