@@ -26,11 +26,11 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
-    private RolesType roles = RolesType.ROLE_USER;        // 권한
+    private RolesType roles = RolesType.USER;        // 권한
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
-    private StatusType status = StatusType.PENDING; // 상태
+    private StatusType status = StatusType.ACTIVE; // 상태
 
 
     public void resetPassword(String password) {
