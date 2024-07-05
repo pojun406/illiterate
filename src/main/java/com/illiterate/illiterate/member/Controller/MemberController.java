@@ -4,8 +4,8 @@ package com.illiterate.illiterate.member.Controller;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
-import com.illiterate.illiterate.member.DTO.response.UserInfoDto;
-import com.illiterate.illiterate.member.Service.UserService;
+import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
+import com.illiterate.illiterate.member.Service.MemberService;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -23,9 +23,9 @@ import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
-public class UserController {
+public class MemberController {
 
-    private final UserService userService;
+    private final MemberService memberService;
     private final JWTProvider jwtProvider;
 
 
@@ -47,7 +47,7 @@ public class UserController {
     public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BfResponse<>(CREATE,
-                        Map.of("userid", userService.joinUser(joinDTO))));
+                        Map.of("userid", memberService.joinUser(joinDTO))));
     }
     /*
     request :
@@ -64,7 +64,7 @@ public class UserController {
     //로그인
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
-        return ResponseEntity.ok(new BfResponse<>(userService.login(loginDto)));
+        return ResponseEntity.ok(new BfResponse<>(memberService.login(loginDto)));
         //return userService.login(loginDto);
     }
 
@@ -77,9 +77,9 @@ public class UserController {
     public ResponseEntity<BfResponse<?>> resetPassword(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable("userId") Long memberId,
-            @Valid @RequestBody UserPasswordResetRequestDto resetRequestDto
+            @Valid @RequestBody MemberPasswordResetRequestDto resetRequestDto
     ) {
-        userService.resetPassword(userDetails, memberId, resetRequestDto);
+        memberService.resetPassword(userDetails, memberId, resetRequestDto);
         System.out.println(ResponseEntity.noContent().build());
         return ResponseEntity.noContent().build();
     }
@@ -99,7 +99,7 @@ public class UserController {
     public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
             @Valid @RequestBody RefreshTokenRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(new BfResponse<>(userService.refreshToken(dto.refreshToken(), userDetails.getId())));
+        return ResponseEntity.ok(new BfResponse<>(memberService.refreshToken(dto.refreshToken(), userDetails.getId())));
     }
 
     // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
@@ -112,8 +112,8 @@ public class UserController {
     @PostMapping("/findId")
     public ResponseEntity<BfResponse<?>> findId(
             @RequestBody String userEmail){
-        System.out.println(userService.findMemberId(userEmail));
-        return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
+        System.out.println(memberService.findMemberId(userEmail));
+        return ResponseEntity.ok(new BfResponse<>(memberService.findMemberId(userEmail)));
     }
 
     /*
@@ -126,7 +126,7 @@ public class UserController {
     // 중복되는 id찾기
     @PostMapping("checkId")
     public ResponseEntity<BfResponse<?>> checkId(@RequestBody String userId){
-        return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
+        return ResponseEntity.ok(new BfResponse<>(memberService.checkId(userId)));
     }
 
     /*
@@ -139,10 +139,10 @@ public class UserController {
      */
     // 회원정보 조회
     @PostMapping("/userinfo/{userId}")
-    public ResponseEntity<BfResponse<UserInfoDto>> getMemberInfo(
+    public ResponseEntity<BfResponse<MemberInfoDto>> getMemberInfo(
             @PathVariable Long userId
     ) {
-        return ResponseEntity.ok(new BfResponse<>(userService.getUserInfo(userId)));
+        return ResponseEntity.ok(new BfResponse<>(memberService.getUserInfo(userId)));
     }
 
 
@@ -158,9 +158,9 @@ public class UserController {
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId,
-            @Valid @RequestBody UserUpdateRequestDto userUpdateDto
+            @Valid @RequestBody MemberUpdateRequestDto userUpdateDto
     ) {
-        userService.updateUserInfo(userDetails, userId, userUpdateDto);
+        memberService.updateUserInfo(userDetails, userId, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
     }
 
@@ -174,7 +174,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId
     ) {
-        userService.inactiveMember(userDetails, userId);
+        memberService.inactiveMember(userDetails, userId);
         return ResponseEntity.noContent().build();
     }
 }

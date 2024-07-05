@@ -1,6 +1,6 @@
 package com.illiterate.illiterate.member.DTO.request;
 
-public record UserPasswordResetRequestDto(
+public record MemberPasswordResetRequestDto(
         String newPassword
 ) {
 }
