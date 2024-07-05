@@ -89,11 +89,11 @@ public class BoardService {
         "status": "ACTIVE"
      */
     @Transactional
-    public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, User user) {
+    public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, Long userId) {
         Board board = boardRepository.findById(postId)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if (!board.getUser().getId().equals(user.getId())) {
+        if (!board.getUser().getId().equals(userId)) {
             throw new BoardException(BoardErrorCode.FORBIDDEN_UPDATE_WRITING);
         }
 
@@ -116,11 +116,11 @@ public class BoardService {
     // 게시글 삭제
     // return 되는 값 없음
     @Transactional
-    public void deletePost(Long postId, User user) {
+    public void deletePost(Long postId, Long userId) {
         Board board = boardRepository.findById(postId)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if (!board.getUser().getId().equals(user.getId())) {
+        if (!board.getUser().getId().equals(userId)) {
             throw new BoardException(BoardErrorCode.FORBIDDEN_DELETE_WRITING);
         }
 
