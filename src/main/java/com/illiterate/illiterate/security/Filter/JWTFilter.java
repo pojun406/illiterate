@@ -30,7 +30,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         // 헤더에서 access키에 담긴 토큰을 꺼냄
         String accessToken = request.getHeader("access");
 
@@ -68,8 +67,8 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        // username, role 값을 획득
-        String memberId = jwtUtil.getMemberId(accessToken);
+        // userid, role 값을 획득
+        Long memberId = jwtUtil.getMemberId(accessToken);
         String roleStr = jwtUtil.getRole(accessToken).get(0);
         RolesType role = RolesType.valueOf(roleStr);
 
