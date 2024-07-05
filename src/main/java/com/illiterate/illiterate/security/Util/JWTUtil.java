@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,8 +25,8 @@ public class JWTUtil {
         this.refreshRepository = refreshRepository;
     }
 
-    public String getMemberId(String token) {
-        return getClaims(token).get("memberId", String.class);
+    public Long getMemberId(String token) {
+        return getClaims(token).get("memberId", Long.class);
     }
 
     public List<String> getRole(String token) {
@@ -43,7 +42,7 @@ public class JWTUtil {
         return getClaims(token).get("category", String.class);
     }
 
-    public String createJwt(String category, String memberId, List<String> roles, Long expiredMs) {
+    public String createJwt(String category, Long memberId, List<String> roles, Long expiredMs) {
         String rolesStr = String.join(",", roles);
 
         return Jwts.builder()
@@ -56,7 +55,7 @@ public class JWTUtil {
                 .compact();
     }
 
-    public void addRefreshEntity(String memberId, String refresh, Long expiredMs, String ipAddress) {
+    public void addRefreshEntity(Long memberId, String refresh, Long expiredMs, String ipAddress) {
         RefreshEntity refreshEntity = RefreshEntity.builder()
                 .memberId(memberId + ":" + ipAddress)
                 .refresh(refresh)
@@ -74,4 +73,3 @@ public class JWTUtil {
                 .getBody();
     }
 }
-

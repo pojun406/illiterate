@@ -9,14 +9,19 @@ const InquiryForm = () => {
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [buttonText, setButtonText] = useState('문의하기');
+    const [id, setId] = useState<string | null>(null);
 
     useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const idParam = queryParams.get('id');
+        setId(idParam);
+
         if (location.pathname === '/servicecenter/write') {
             setButtonText('문의하기');
         } else if (location.pathname === '/servicecenter/edit') {
             setButtonText('수정하기');
         }
-    }, [location.pathname]);
+    }, [location.pathname, location.search]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,9 +39,10 @@ const InquiryForm = () => {
 
         const data = {
             title,
-            content
+            content,
+            id // id 값을 포함합니다.
         };
-        
+
         try {
             console.log('Sending request to:', location.pathname);
             console.log('Request data:', data);
@@ -47,14 +53,14 @@ const InquiryForm = () => {
                 return;
             }
 
-            if (location.pathname === '/servicecenter/write') {
-                const formData = new FormData();
-                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-                if (image) {
-                    formData.append('image', image);
-                    console.log('Image file:', image);
-                }
+            const formData = new FormData();
+            formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+            if (image) {
+                formData.append('image', image);
+                console.log('Image file:', image);
+            }
 
+            if (location.pathname === '/servicecenter/write') {
                 const response = await axios.post('/post', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -64,16 +70,8 @@ const InquiryForm = () => {
                 console.log('Response received:', response);
                 console.log('문의 사항 저장 성공:', response);
             } else if (location.pathname === '/servicecenter/edit') {
-                const id = new URLSearchParams(location.search).get('id');
                 if (!id) {
                     throw new Error('ID가 없습니다.');
-                }
-
-                const formData = new FormData();
-                formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-                if (image) {
-                    formData.append('image', image);
-                    console.log('Image file:', image);
                 }
 
                 const response = await axios.post(`/fix_post/${id}`, formData, {
@@ -111,17 +109,17 @@ const InquiryForm = () => {
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목" className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="내용" className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" style={{ height: '200px', verticalAlign: 'top' }} />
             <div className="flex items-center space-x-4">
-                <input 
-                    id="fileInput" 
-                    type="file" 
+                <input
+                    id="fileInput"
+                    type="file"
                     accept="image/*"
-                    onChange={handleImageChange} 
-                    className="hidden" 
+                    onChange={handleImageChange}
+                    className="hidden"
                 />
                 <span>{image ? image.name : '선택된 파일 없음'}</span>
-                <button 
-                    type="button" 
-                    onClick={() => document.getElementById('fileInput')?.click()} 
+                <button
+                    type="button"
+                    onClick={() => document.getElementById('fileInput')?.click()}
                     className="px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     파일 선택
