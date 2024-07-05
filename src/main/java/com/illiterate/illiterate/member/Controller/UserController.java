@@ -8,14 +8,11 @@ import com.illiterate.illiterate.member.DTO.response.UserInfoDto;
 import com.illiterate.illiterate.member.Service.UserService;
 import com.illiterate.illiterate.security.JWT.JWTProvider;
 import com.illiterate.illiterate.security.service.UserDetailsImpl;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -113,7 +110,8 @@ public class UserController {
         "data": "testuser" (user의 id값)
      */
     @PostMapping("/findId")
-    public ResponseEntity<BfResponse<?>> findId(@RequestParam String userEmail){
+    public ResponseEntity<BfResponse<?>> findId(
+            @RequestBody String userEmail){
         System.out.println(userService.findMemberId(userEmail));
         return ResponseEntity.ok(new BfResponse<>(userService.findMemberId(userEmail)));
     }
@@ -127,7 +125,7 @@ public class UserController {
 
     // 중복되는 id찾기
     @PostMapping("checkId")
-    public ResponseEntity<BfResponse<?>> CheckId(@RequestParam String userId){
+    public ResponseEntity<BfResponse<?>> checkId(@RequestBody String userId){
         return ResponseEntity.ok(new BfResponse<>(userService.checkId(userId)));
     }
 
@@ -171,7 +169,7 @@ public class UserController {
         "userId" : 1 ( Long )
     */
     // 회원 삭제
-    @DeleteMapping("/deluser/{userId}")
+    @PostMapping("/deluser/{userId}")
     public ResponseEntity<BfResponse<?>> inactivateMember(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long userId

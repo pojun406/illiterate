@@ -2,7 +2,6 @@ package com.illiterate.illiterate.board.Entity;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.enums.StatusType;
-import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +10,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Board")
+@Table(name = "board")
 public class Board {
 
     @Id

@@ -140,4 +140,12 @@ public class JWTProvider {
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
         return claims.get("id", Long.class);
     }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }
