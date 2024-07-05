@@ -1,10 +1,10 @@
 package com.illiterate.illiterate.security.Filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kyungmin.lavanderia.global.auth.util.JWTUtil;
-import com.kyungmin.lavanderia.global.auth.util.MakeCookie;
-import com.kyungmin.lavanderia.global.auth.util.TokenExpirationTime;
-import com.kyungmin.lavanderia.member.data.entity.Member;
+import com.illiterate.illiterate.member.Entity.Member;
+import com.illiterate.illiterate.security.Util.JWTUtil;
+import com.illiterate.illiterate.security.Util.MakeCookie;
+import com.illiterate.illiterate.security.Util.TokenExpirationTime;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,7 +40,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             ObjectMapper objectMapper = new ObjectMapper();
             Member member = objectMapper.readValue(request.getInputStream(), Member.class);
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(member.getMemberId(), member.getMemberPwd());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(member.getUserid(), member.getPassword());
             // AuthenticationManager를 통해 인증 프로세스 시작
             return authenticationManager.authenticate(authToken);
         } catch (IOException e) {

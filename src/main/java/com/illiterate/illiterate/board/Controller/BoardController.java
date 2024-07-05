@@ -8,6 +8,7 @@ import com.illiterate.illiterate.board.Repository.BoardRepository;
 import com.illiterate.illiterate.board.Service.BoardService;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.Entity.Member;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
