@@ -2,7 +2,7 @@ package com.illiterate.illiterate.board.Entity;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.enums.StatusType;
-import com.illiterate.illiterate.member.Entity.User;
+import com.illiterate.illiterate.member.Entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +20,7 @@ public class Board {
 
     @ManyToOne
     @JoinColumn(name = "id", nullable = false)
-    private User user;
+    private Member user;
 
     @Column
     private String title;
@@ -43,14 +43,14 @@ public class Board {
 
 
     @Builder
-    private Board(BoardRequestDto requestsDto, User user, String imagePath) {
+    private Board(BoardRequestDto requestsDto, Member user, String imagePath) {
         this.title = requestsDto.getTitle();
         this.content = requestsDto.getContents();
         this.user = user;
         this.image = imagePath;
     }
 
-    public static Board of(BoardRequestDto requestsDto, User user, String imagePath) {
+    public static Board of(BoardRequestDto requestsDto, Member user, String imagePath) {
         return Board.builder()
                 .requestsDto(requestsDto)
                 .user(user)

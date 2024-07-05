@@ -3,9 +3,7 @@ package com.illiterate.illiterate.ocr.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
-import com.illiterate.illiterate.board.Entity.Board;
-import com.illiterate.illiterate.member.Entity.User;
+import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
@@ -44,7 +41,7 @@ public class OcrService {
 
     private final OcrRepository ocrRepository;
 
-    public OcrResponseDto uploadOCRImage(User user, MultipartFile image) {
+    public OcrResponseDto uploadOCRImage(Member user, MultipartFile image) {
         try {
             // 이미지 저장
             File savedImageFile = saveImage(image, user);
@@ -96,7 +93,7 @@ public class OcrService {
         }
     }
 
-    private File saveImage(MultipartFile image, User user) throws IOException {
+    private File saveImage(MultipartFile image, Member user) throws IOException {
         File uploadDir = new File(imageUploadDir);
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
