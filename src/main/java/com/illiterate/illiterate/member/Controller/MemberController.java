@@ -177,11 +177,11 @@ public class MemberController {
      */
     @PostMapping("/userUpdate/{userId}")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
             @Valid @RequestBody MemberUpdateRequestDto userUpdateDto
     ) {
-        memberService.updateUserInfo(userDetails, userId, userUpdateDto);
+        memberService.updateUserInfo(token, userId, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
     }
 
@@ -192,10 +192,10 @@ public class MemberController {
     // 회원 삭제
     @PostMapping("/deluser/{userId}")
     public ResponseEntity<BfResponse<?>> inactivateMember(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestHeader("Authorization") String token,
             @PathVariable Long userId
     ) {
-        memberService.inactiveMember(userDetails, userId);
+        memberService.inactiveMember(token, userId);
         return ResponseEntity.noContent().build();
     }
 }

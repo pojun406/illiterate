@@ -1,6 +1,5 @@
 package com.illiterate.illiterate.security.Filter;
 
-import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.security.Util.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,8 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -30,54 +27,39 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 헤더에서 access키에 담긴 토큰을 꺼냄
-        String accessToken = request.getHeader("access");
+        String accessToken = resolveToken(request);
 
-        // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
         try {
-            jwtUtil.isExpired(accessToken);
+            if (jwtUtil.isExpired(accessToken)) {
+                handleException(response, "access token expired");
+                return;
+            }
+
+            String category = jwtUtil.getCategory(accessToken);
+            if (!"access".equals(category)) {
+                handleException(response, "invalid access token");
+                return;
+            }
+
+            Long memberId = jwtUtil.getMemberId(accessToken);
+            String roleStr = jwtUtil.getRole(accessToken).get(0);
+            RolesType role = RolesType.valueOf(roleStr);
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.name());
+
+            Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, Collections.singletonList(authority));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (ExpiredJwtException e) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("access token expired");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            handleException(response, "access token expired");
+            return;
+        } catch (Exception e) {
+            handleException(response, "invalid access token");
             return;
         }
-
-        // 토큰이 access인지 확인 (발급시 페이로드에 명시)
-        String category = jwtUtil.getCategory(accessToken);
-
-        if (!category.equals("access")) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("invalid access token");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        // userid, role 값을 획득
-        Long memberId = jwtUtil.getMemberId(accessToken);
-        String roleStr = jwtUtil.getRole(accessToken).get(0);
-        RolesType role = RolesType.valueOf(roleStr);
-
-        // 권한 정보를 GrantedAuthority로 변환
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.name());
-
-        // Member 엔티티 대신 기본적인 UserDetails 인터페이스를 구현하지 않아도 됨
-        Authentication authToken = new UsernamePasswordAuthenticationToken(memberId, null, Collections.singletonList(authority));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
@@ -88,5 +70,13 @@ public class JWTFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private void handleException(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        PrintWriter writer = response.getWriter();
+        writer.print("{\"error\": \"" + message + "\"}");
+        writer.flush();
     }
 }
