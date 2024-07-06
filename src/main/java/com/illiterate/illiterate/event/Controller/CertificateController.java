@@ -1,47 +1,43 @@
-package com.illiterate.illiterate.event.Controller;
+package com.illiterate.illiterate.event.controller;
 
 import com.illiterate.illiterate.common.response.BfResponse;
-import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
-import com.illiterate.illiterate.event.dto.response.CertificateMailResponseDto;
 import com.illiterate.illiterate.event.Service.CertificateService;
+import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
+import com.illiterate.illiterate.event.dto.request.VerifyCertificateRequestDto;
+import com.illiterate.illiterate.event.dto.response.CertificateMailResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
+
 @Controller
 @RequiredArgsConstructor
 public class CertificateController {
+    private final CertificateService certificateService;
 
-    private final CertificateService certificationService;
-
-    // request : "email"
-    @PostMapping(value = "/email", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/sendVerificationEmail", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BfResponse<CertificateMailResponseDto>> sendCertificateMail(
-            @Valid @RequestBody MailCertificateRequestDto mailCertificateRequestDto
-    ) {
-        CertificateMailResponseDto responseDto = certificationService.sendEmailCertificateNumber(
-                mailCertificateRequestDto);
-
-        return ResponseEntity.ok()
-                .body(new BfResponse<>(SUCCESS, responseDto));
+            @Valid @RequestBody MailCertificateRequestDto mailCertificateRequestDto) {
+        CertificateMailResponseDto responseDto = certificateService.sendEmailCertificateNumber(mailCertificateRequestDto.email());
+        return ResponseEntity.ok().body(new BfResponse<>(SUCCESS, responseDto));
     }
 
-    // request : /email?email=example@example.com&certificationNumber=123456
-    @GetMapping(value = "/email", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BfResponse<?>> verifyMailCertificationNumber(@RequestParam String email, @RequestParam String certificationNumber
-    ) {
-        boolean isValid = certificationService.verifyCertificateEmailNumber(email, certificationNumber);
-        return ResponseEntity.ok()
-                .body(new BfResponse<>(SUCCESS, Map.of("isValid", isValid)));
+    @GetMapping(value = "/verify", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<BfResponse<?>> verifyMailCertificationNumber(@Valid @RequestBody VerifyCertificateRequestDto verifyRequestDto) {
+        boolean isValid = certificateService.verifyCertificateEmailNumber(verifyRequestDto.getEmail(), verifyRequestDto.getCertificationNumber());
+        if (isValid) {
+            // 인증 성공 시 JWT 생성 및 반환
+            String token = certificateService.generateToken(verifyRequestDto.getEmail());
+            return ResponseEntity.ok().body(new BfResponse<>(SUCCESS, Map.of("token", token)));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new BfResponse<>(null, "Invalid certification number"));
+        }
     }
-
 }

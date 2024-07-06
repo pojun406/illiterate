@@ -165,7 +165,7 @@ public class BoardController {
     */
     @PostMapping("/del_post/{id}")
     public ResponseEntity<Void> deletePost(
-            @PathVariable Long id,
+            @PathVariable Long boardid,
             @RequestBody BoardRequestDto requestsDto) {
 
         if (requestsDto.getId() == null) {
@@ -175,7 +175,7 @@ public class BoardController {
         Member user = memberRepository.findById(Long.valueOf(requestsDto.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
 
-        boardService.deletePost(id, user.getId());
+        boardService.deletePost(boardid, user.getId());
         return ResponseEntity.noContent().build();
     }
 }
