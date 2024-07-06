@@ -25,9 +25,7 @@ import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WR
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-
-    private static final String IMAGE_SAVE_PATH = "C:/Program Files/Illiterate";
-
+    private final LocalFileUtil localFileUtil;
 
     @Transactional(readOnly = true)
     public List<BoardResponseDto> getPosts() {
@@ -41,23 +39,13 @@ public class BoardService {
         return responseDtoList;
     }
 
-    // 선택된 게시글 조회
     @Transactional(readOnly = true)
     public BoardResponseDto getPost(Long id) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
-
         return BoardResponseDto.from(board);
     }
 
-    // 게시글 작성
-    /*
-        "id": 3,
-        "title": "New Post",
-        "content": "This is the content of the new post.",
-        "imagePath": "/images/new-post.jpg",
-        "status": "ACTIVE"
-     */
     @Transactional
     public BoardResponseDto createPost(BoardRequestDto requestsDto, Member user) {
         String imagePath = null;
@@ -65,7 +53,7 @@ public class BoardService {
 
         if (image != null && !image.isEmpty()) {
             try {
-                imagePath = LocalFileUtil.saveImage(image, IMAGE_SAVE_PATH);
+                imagePath = localFileUtil.saveImage(image);
             } catch (IOException e) {
                 log.error("Image saving failed", e);
                 throw new RuntimeException("이미지 저장에 실패했습니다.", e);
@@ -76,14 +64,6 @@ public class BoardService {
         return BoardResponseDto.from(board);
     }
 
-    // 게시글 수정
-    /*
-        "id": 1,
-        "title": "Updated Post",
-        "content": "This is the updated content of the post.",
-        "imagePath": "/images/updated-post.jpg",
-        "status": "ACTIVE"
-     */
     @Transactional
     public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, Long userId) {
         Board board = boardRepository.findById(postId)
@@ -98,7 +78,7 @@ public class BoardService {
 
         if (image != null && !image.isEmpty()) {
             try {
-                imagePath = LocalFileUtil.saveImage(image, IMAGE_SAVE_PATH);
+                imagePath = localFileUtil.saveImage(image);
             } catch (IOException e) {
                 log.error("Image saving failed", e);
                 throw new RuntimeException("이미지 저장에 실패했습니다.", e);
@@ -109,8 +89,6 @@ public class BoardService {
         return BoardResponseDto.from(board);
     }
 
-    // 게시글 삭제
-    // return 되는 값 없음
     @Transactional
     public void deletePost(Long postId, Long userId) {
         Board board = boardRepository.findById(postId)
