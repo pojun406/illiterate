@@ -44,4 +44,6 @@ public class Member {
     public void updateEmail(String email){ this.email = email; }
 
     public void inactivateUser(){ this.status = StatusType.INACTIVE; }
+
+    public RolesType getRole() { return roles; }
 }
