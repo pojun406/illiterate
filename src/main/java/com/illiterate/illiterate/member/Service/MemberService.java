@@ -45,7 +45,6 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RedisRepository redisRepository;
-    private final JavaMailSender mailSender;
     private final CertificateService certificateService;
     private final JWTUtil jwtUtil;
 
@@ -198,9 +197,15 @@ public class MemberService {
     }
 */
 
-    public void updateUserInfo(UserDetailsImpl userDetails, Long memberId, MemberUpdateRequestDto userUpdateDto) {
-        // 현재 로그인된 유저와 수정하려는 회원이 일치하는지 확인
-        if (!userDetails.getId().equals(memberId)) {
+    @Transactional
+    public void updateUserInfo(String token, Long memberId, MemberUpdateRequestDto userUpdateDto) {
+        // JWT 토큰에서 사용자 ID 추출
+        if (token == null || !jwtUtil.validateToken(token)) {
+            throw new MemberException(BAD_REQUEST);
+        }
+
+        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
+        if (!userIdFromToken.equals(memberId)) {
             throw new MemberException(BAD_REQUEST);
         }
 
@@ -209,26 +214,34 @@ public class MemberService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // 이름 업데이트
-        Optional.ofNullable(userUpdateDto.name()).ifPresent(member::updateName);
+        Optional.ofNullable(userUpdateDto.getName()).ifPresent(member::updateName);
 
         // 이메일 변경
-        Optional.ofNullable(userUpdateDto.email()).ifPresent(member::updateEmail);
+        Optional.ofNullable(userUpdateDto.getEmail()).ifPresent(member::updateEmail);
 
         memberRepository.save(member);
     }
 
-    public void inactiveMember(UserDetailsImpl userDetails, Long memberId) {
+    @Transactional
+    public void inactiveMember(String token, Long memberId) {
+        // JWT 토큰에서 사용자 ID 추출
+        if (token == null || !jwtUtil.validateToken(token)) {
+            throw new MemberException(FORBIDDEN_DELETE_MEMBER);
+        }
+
+        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
+
         // 회원 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // 현재 로그인된 유저와 탈퇴하려는 회원이 일치하는지 확인 (관리자는 예외)
-        if (member.getRoles() != RolesType.ADMIN
-                && !userDetails.getId().equals(memberId)) {
+        if (member.getRole() != RolesType.ADMIN && !userIdFromToken.equals(memberId)) {
             throw new MemberException(FORBIDDEN_DELETE_MEMBER);
         }
 
         member.inactivateUser();
+        memberRepository.save(member);
     }
 
     public void sendEmailVerification(String email) {
