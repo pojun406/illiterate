@@ -7,7 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class BoardRequestDto {
-    private String id;
+    private Long id;
+    private Long bid;
     private String title;
     private String contents;
     private MultipartFile image;

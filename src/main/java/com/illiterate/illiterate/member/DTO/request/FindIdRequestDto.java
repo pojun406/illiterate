@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class MemberPasswordResetRequestDto {
-    private String newPassword;
-    private String certificationNumber;
+public class FindIdRequestDto {
+    private String userEmail;
+    private String userId;
 }
+

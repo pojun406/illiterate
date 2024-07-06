@@ -1,7 +1,9 @@
 package com.illiterate.illiterate.member.Service;
 
+import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.repository.RedisRepository;
 import com.illiterate.illiterate.common.util.ConvertUtil;
+import com.illiterate.illiterate.event.Service.CertificateService;
 import com.illiterate.illiterate.member.DTO.request.JoinDto;
 import com.illiterate.illiterate.member.DTO.request.LoginDto;
 import com.illiterate.illiterate.member.DTO.request.MemberPasswordResetRequestDto;
@@ -44,6 +46,7 @@ public class MemberService {
     private final AuthenticationManager authenticationManager;
     private final RedisRepository redisRepository;
     private final JavaMailSender mailSender;
+    private final CertificateService certificateService;
     private final JWTUtil jwtUtil;
 
 
@@ -104,19 +107,39 @@ public class MemberService {
         return loginTokenDto;
     }
 
-    // 비밀번호 초기화
-    public void resetPassword(UserDetailsImpl userDetails, Long memberId, MemberPasswordResetRequestDto resetRequestDto) {
-        // 본인 or 관리자 권한 확인
-        if (!userDetails.getAuthorities().contains(RolesType.ADMIN)
-                && !userDetails.getId().equals(memberId)) {
-            throw new MemberException(FORBIDDEN_RESET_PASSWORD);
-        }
-
+    // 비밀번호 초기화 ( 로그인중일때 )
+    @Transactional
+    public void resetPassword(Long memberId, MemberPasswordResetRequestDto resetRequestDto) {
         // 회원 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
-        member.resetPassword(passwordEncoder.encode(resetRequestDto.newPassword()));
+        // 인증번호 검증
+        if (!certificateService.verifyCertificateEmailNumber(member.getEmail(), resetRequestDto.getCertificationNumber())) {
+            throw new MemberException(BAD_REQUEST);
+        }
+
+        member.resetPassword(passwordEncoder.encode(resetRequestDto.getNewPassword()));
+        memberRepository.save(member);
+    }
+
+    // 비밀번호 초기화 ( 비로그인중일때 )
+    public boolean resetPassword_Email(String email, MemberPasswordResetRequestDto resetRequestDto) {
+        // 인증번호 검증
+        boolean isValid = certificateService.verifyCertificateEmailNumber(email, resetRequestDto.getCertificationNumber());
+        if (!isValid) {
+            return false;
+        }
+
+        // 회원 조회
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
+
+        // 비밀번호 변경
+        member.resetPassword(passwordEncoder.encode(resetRequestDto.getNewPassword()));
+        memberRepository.save(member);
+
+        return true;
     }
 
     public MemberInfoDto getUserInfo(Long userId) {
@@ -137,6 +160,7 @@ public class MemberService {
                 .map(Member::getUserid)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
     }
+/*
 
     @Transactional
     public void sendPasswordResetLink(String id, String name) {
@@ -156,7 +180,7 @@ public class MemberService {
 
         mailSender.send(message);
     }
-
+*/
     /*@Transactional
     public void resetPassword(String token, String newPassword) {
         User member = userRepository.findByResetToken(token)
@@ -167,9 +191,12 @@ public class MemberService {
         userRepository.save(member);
     }*/
 
+/*
+
     private String generateResetToken() {
         return UUID.randomUUID().toString();
     }
+*/
 
     public void updateUserInfo(UserDetailsImpl userDetails, Long memberId, MemberUpdateRequestDto userUpdateDto) {
         // 현재 로그인된 유저와 수정하려는 회원이 일치하는지 확인
@@ -202,5 +229,9 @@ public class MemberService {
         }
 
         member.inactivateUser();
+    }
+
+    public void sendEmailVerification(String email) {
+        certificateService.sendEmailCertificateNumber(email);
     }
 }
