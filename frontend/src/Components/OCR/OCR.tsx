@@ -17,14 +17,20 @@ const OCR: React.FC<OCRProps> = ({ onDataLoaded, file }) => {
                     throw new Error('No file provided');
                 }
 
+                const id = localStorage.getItem('id');
+                if (!id) {
+                    throw new Error('No id found in localStorage');
+                }
+
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('id', id);
 
                 const response = await fetchWithAuth('/ocr/file', {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'Accept': 'application/json'
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
                     }
                 });
 
