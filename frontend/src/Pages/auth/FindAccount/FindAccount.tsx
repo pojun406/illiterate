@@ -7,6 +7,7 @@ const FindAccount: React.FC = () => {
     const [userid, setUserid] = useState<string>("");
     const [message, setMessage] = useState<string>("");
     const [isFindingUsername, setIsFindingUsername] = useState<boolean>(true);
+    const [verificationCode, setVerificationCode] = useState<string>("");
     const location = useLocation();
 
     useEffect(() => {
@@ -50,10 +51,15 @@ const FindAccount: React.FC = () => {
     const handleFindPasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const endpoint = `/${userid}/password`;
-        const data = { email };
+        const data = { email, verificationCode };
 
         if (!email) {
             setMessage("이메일을 입력해주세요.");
+            return;
+        }
+
+        if (!verificationCode) {
+            setMessage("인증번호를 입력해주세요.");
             return;
         }
 
@@ -72,6 +78,36 @@ const FindAccount: React.FC = () => {
                 setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
             } else {
                 setMessage("비밀번호를 찾을 수 없습니다.");
+            }
+        } catch (error) {
+            setMessage("오류가 발생했습니다. 다시 시도해주세요.");
+        }
+    };
+
+    const handleSendVerificationEmail = async () => {
+        const endpoint = "/sendVerificationEmail";
+        const data = { email };
+
+        if (!email) {
+            setMessage("이메일을 입력해주세요.");
+            return;
+        }
+
+        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                setMessage("인증메일이 전송되었습니다.");
+            } else {
+                setMessage("인증메일 전송에 실패했습니다.");
             }
         } catch (error) {
             setMessage("오류가 발생했습니다. 다시 시도해주세요.");
@@ -110,21 +146,58 @@ const FindAccount: React.FC = () => {
                     {message && <div className="text-center text-red-500 mb-4">{message}</div>}
                     <form onSubmit={isFindingUsername ? handleFindIdSubmit : handleFindPasswordSubmit}>
                         {!isFindingUsername && (
-                            <input
-                                type="text"
-                                placeholder="아이디"
-                                value={userid}
-                                onChange={(e) => setUserid(e.target.value)}
-                                className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
-                            />
+                            <>
+                                <input
+                                    type="text"
+                                    placeholder="아이디"
+                                    value={userid}
+                                    onChange={(e) => setUserid(e.target.value)}
+                                    className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
+                                />
+                                <div className="flex items-center mb-4 space-x-2">
+                                    <input
+                                        type="email"
+                                        placeholder="이메일"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="block w-full px-4 py-2 border rounded-md focus:outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleSendVerificationEmail}
+                                        className="w-1/4 px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
+                                    >
+                                        인증
+                                    </button>
+                                </div>
+                                <div className="flex items-center mb-4 space-x-2">
+                                    <input
+                                        type="text"
+                                        placeholder="인증번호"
+                                        value={verificationCode}
+                                        onChange={(e) => setVerificationCode(e.target.value)}
+                                        className="block w-full px-4 py-2 border rounded-md focus:outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="w-1/4 px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
+                                    >
+                                        확인
+                                    </button>
+                                </div>
+                            </>
                         )}
-                        <input
-                            type="email"
-                            placeholder="이메일"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
-                        />
+                        {isFindingUsername && (
+                            <div className="flex items-center mb-4 space-x-2">
+                                <input
+                                    type="email"
+                                    placeholder="이메일"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="block w-full px-4 py-2 border rounded-md focus:outline-none"
+                                />
+                            </div>
+                        )}
                         <button
                             type="submit"
                             className="w-full px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
