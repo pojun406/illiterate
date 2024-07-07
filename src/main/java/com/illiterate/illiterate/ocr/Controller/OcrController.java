@@ -1,7 +1,10 @@
 package com.illiterate.illiterate.ocr.Controller;
 
+import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.Entity.Member;
+import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
@@ -23,6 +26,7 @@ public class OcrController {
     private final OcrRepository ocrRepository;
 
     private final OcrService ocrService;
+    private final MemberRepository memberRepository;
 
     /*
         request :
@@ -103,5 +107,29 @@ public class OcrController {
         OcrResponseDto post = ocrService.getPost(userid);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
+    }
+
+    // 게시글 삭제
+    /*
+        request:
+        {
+            "memberId": 1
+        }
+        response: 없음 (204 No Content)
+    */
+    @PostMapping("/del_post/{ocrid}")
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long ocrid,
+            @RequestBody OcrRequestDto requestsDto) {
+
+        if (requestsDto.getUserId() == null) {
+            throw new IllegalArgumentException("Member ID must not be null");
+        }
+
+        Member user = memberRepository.findById(requestsDto.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
+
+        ocrService.deletePost(ocrid, user.getId());
+        return ResponseEntity.noContent().build();
     }
 }
