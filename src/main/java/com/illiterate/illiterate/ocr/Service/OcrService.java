@@ -3,6 +3,8 @@ package com.illiterate.illiterate.ocr.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.illiterate.illiterate.board.Entity.Board;
+import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
@@ -295,5 +297,17 @@ public class OcrService {
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         return OcrResponseDto.from(ocr);
+    }
+
+    @Transactional
+    public void deletePost(Long ocrId, Long userId) {
+        OCR ocr = ocrRepository.findById(ocrId)
+                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        if (!ocr.getUser().getId().equals(userId)) {
+            throw new BoardException(BoardErrorCode.FORBIDDEN_DELETE_WRITING);
+        }
+
+        ocrRepository.delete(ocr);
     }
 }
