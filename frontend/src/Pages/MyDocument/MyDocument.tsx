@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import DocumentA from "../../Components/DocumentType/DocumentA/DocumentA";
 import DocumentB from "../../Components/DocumentType/DocumentB/DocumentB";
 import Sidebar from "../../Components/Sidebar/Sidebar";
-import fetchWithAuth from "../../Components/AccessToken/AccessToken";
 
 const MyDocument = () => {
     const [documents, setDocuments] = useState<any[]>([]);
@@ -15,9 +15,60 @@ const MyDocument = () => {
         fetchDocumentsRef.current = true;
 
         const fetchDocuments = async () => {
-            const response = await fetchWithAuth('/ocr/posts');
-            if (typeof response !== 'string' && Array.isArray(response.data.data) && response.data.data.length > 0) {
-                setDocuments(response.data);
+            try {
+                const authToken = localStorage.getItem('authToken');
+                const refreshToken = localStorage.getItem('refreshToken');
+                const userId = localStorage.getItem('id');
+
+                if (!authToken || !refreshToken) {
+                    console.error('인증 토큰이 없습니다.');
+                    fetchDocumentsRef.current = false;
+                    return;
+                }
+
+                const fetchData = async (token: string) => {
+                    return await axios.get('/ocr/posts', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                };
+
+                let response;
+                try {
+                    response = await fetchData(authToken);
+                } catch (error: any) {
+                    if (error.response && error.response.status === 401) {
+                        try {
+                            const refreshResponse = await axios.post('/refresh', { refreshToken, userId }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            console.log(refreshResponse);
+                            const newAccessToken = refreshResponse.data.data.accessToken;
+                            const newRefreshToken = refreshResponse.data.data.refreshToken;
+                            localStorage.setItem('authToken', newAccessToken);
+                            localStorage.setItem('refreshToken', newRefreshToken);
+                            response = await fetchData(newAccessToken);
+                        } catch (refreshError) {
+                            console.error('토큰 갱신 요청 중 오류:', refreshError);
+                            fetchDocumentsRef.current = false;
+                            return;
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
+
+                if (Array.isArray(response.data.data) && response.data.data.length > 0) {
+                    setDocuments(response.data.data);
+                }
+            } catch (error) {
+                console.error('문서를 가져오는 중 오류가 발생했습니다:', error);
+            } finally {
+                fetchDocumentsRef.current = false;
             }
         };
 
