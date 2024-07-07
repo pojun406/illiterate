@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import fetchWithAuth from '../AccessToken/AccessToken';
+import axios from 'axios';
 
 interface Inquiry {
     id: number;
@@ -12,22 +12,63 @@ interface Inquiry {
 
 const InquiryList: React.FC = () => {
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-    const didFetchRef = useRef(false);
+    const isFetching = useRef(false); // 요청 중인지 여부를 추적하는 ref 추가
 
     useEffect(() => {
-        if (didFetchRef.current) return;
-        didFetchRef.current = true;
-
         const fetchInquiries = async () => {
+            if (isFetching.current) return; // 이미 요청 중이면 중복 요청 방지
+            isFetching.current = true; // 요청 시작
+
             try {
-                const response = await fetchWithAuth('/posts');
-                if (typeof response !== 'string') {
-                    setInquiries(response.data.data);
-                } else {
-                    console.error('문의사항을 가져오는 중 오류가 발생했습니다:', response);
+                const authToken = localStorage.getItem('authToken');
+                const refreshToken = localStorage.getItem('refreshToken');
+                const userId = localStorage.getItem('id');
+
+                if (!authToken || !refreshToken) {
+                    console.error('인증 토큰이 없습니다.');
+                    isFetching.current = false; // 요청 종료
+                    return;
                 }
+
+                const fetchData = async (token: string) => {
+                    return await axios.post('/board/posts', {}, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                };
+
+                let response;
+                try {
+                    response = await fetchData(authToken);
+                } catch (error: any) {
+                    if (error.response && error.response.status === 401) {
+                        try {
+                            const refreshResponse = await axios.post('/refresh', { refreshToken, userId }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            console.log(refreshResponse);
+                            const newAccessToken = refreshResponse.data.data.accessToken;
+                            localStorage.setItem('authToken', newAccessToken);
+                            response = await fetchData(newAccessToken);
+                        } catch (refreshError) {
+                            console.error('토큰 갱신 요청 중 오류:', refreshError);
+                            isFetching.current = false; // 요청 종료
+                            return;
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
+
+                setInquiries(response.data.data);
             } catch (error) {
                 console.error('문의사항을 가져오는 중 오류가 발생했습니다:', error);
+            } finally {
+                isFetching.current = false; // 요청 종료
             }
         };
         fetchInquiries();
