@@ -63,7 +63,7 @@ const InquiryForm = () => {
                     console.log('Image file:', image);
                 }
 
-                const response = await axios.post('/post', formData, {
+                const response = await axios.post('/board/post', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${authToken}`
@@ -84,7 +84,7 @@ const InquiryForm = () => {
                     console.log('Image file:', image);
                 }
 
-                const response = await axios.post(`/fix_post/${id}`, formData, {
+                const response = await axios.post(`/board/fix_post/${id}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${authToken}`
