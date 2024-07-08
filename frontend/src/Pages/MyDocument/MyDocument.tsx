@@ -27,7 +27,7 @@ const MyDocument = () => {
                 }
 
                 const fetchData = async (token: string) => {
-                    return await axios.get('/ocr/posts', {
+                    return await axios.post('/ocr/posts', {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
