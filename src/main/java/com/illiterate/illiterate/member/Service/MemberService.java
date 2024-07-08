@@ -198,14 +198,9 @@ public class MemberService {
 */
 
     @Transactional
-    public void updateUserInfo(String token, Long memberId, MemberUpdateRequestDto userUpdateDto) {
-        // JWT 토큰에서 사용자 ID 추출
-        if (token == null || !jwtUtil.validateToken(token)) {
-            throw new MemberException(BAD_REQUEST);
-        }
-
-        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
-        if (!userIdFromToken.equals(memberId)) {
+    public void updateUserInfo(Long authenticatedUserId, Long memberId, MemberUpdateRequestDto userUpdateDto) {
+        // 인증된 사용자 ID와 요청의 사용자 ID가 일치하는지 확인
+        if (!authenticatedUserId.equals(memberId)) {
             throw new MemberException(BAD_REQUEST);
         }
 
@@ -236,7 +231,7 @@ public class MemberService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // 현재 로그인된 유저와 탈퇴하려는 회원이 일치하는지 확인 (관리자는 예외)
-        if (member.getRole() != RolesType.ADMIN && !userIdFromToken.equals(memberId)) {
+        if (member.getRole() != RolesType.ROLE_ADMIN && !userIdFromToken.equals(memberId)) {
             throw new MemberException(FORBIDDEN_DELETE_MEMBER);
         }
 
