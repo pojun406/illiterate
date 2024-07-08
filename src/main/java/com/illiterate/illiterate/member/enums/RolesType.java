@@ -3,8 +3,8 @@ package com.illiterate.illiterate.member.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum RolesType {
-	ADMIN, // 관리자
-	USER; // 일반 회원
+	ROLE_ADMIN, // 관리자
+	ROLE_USER; // 일반 회원
 
 	@JsonCreator
 	public static RolesType fromRequest(String inputString) {

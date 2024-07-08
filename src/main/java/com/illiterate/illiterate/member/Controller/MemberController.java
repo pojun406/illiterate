@@ -177,13 +177,14 @@ public class MemberController {
      */
     @PostMapping("/userUpdate/{userId}")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
-            @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
-            @Valid @RequestBody MemberUpdateRequestDto userUpdateDto
+            @Valid @RequestBody MemberUpdateRequestDto userUpdateDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        memberService.updateUserInfo(token, userId, userUpdateDto);
+        memberService.updateUserInfo(userDetails.getUser().getId(), userId, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
     }
+
 
     /*
     request :
