@@ -22,6 +22,7 @@ const Signup: React.FC = () => {
     const [verificationCode, setVerificationCode] = useState("");
     const [isEmailVerified, setIsEmailVerified] = useState(false);
     const [verificationError, setVerificationError] = useState("");
+    const [isResend, setIsResend] = useState(false);
 
     const usernameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
@@ -133,10 +134,18 @@ const Signup: React.FC = () => {
             return;
         }
 
+        if (isResend) {
+            const confirmResend = window.confirm("인증번호를 다시 요청하시겠습니까?");
+            if (!confirmResend) {
+                return;
+            }
+        }
+
         try {
             const response = await axios.post('/sendVerificationEmail', { email });
             console.log(response.data);
             alert("이메일을 보냈습니다.");
+            setIsResend(true);
         } catch (error) {
             console.error(error);
             alert("인증번호 전송 중 오류가 발생했습니다.");
@@ -322,7 +331,7 @@ const Signup: React.FC = () => {
                                 onClick={handleSendVerificationCode}
                                 className="text-sm text-white bg-blue-500 px-4 py-2 rounded-md whitespace-nowrap ml-2"
                             >
-                                인증번호 전송
+                                {isResend ? "재전송" : "인증번호 전송"}
                             </button>
                         </div>
                         {emailError && (
