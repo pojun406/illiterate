@@ -26,6 +26,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -90,14 +91,23 @@ public class SecurityConfig {
         // HTTP Basic 인증을 비활성화 -> 보완성이 낮아서 비활성
         http.httpBasic(httpBasic -> httpBasic.disable());
 
-        // 경로별 인가 작업
+        /*// 경로별 인가 작업
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/join", "/sendVerificationEmail", "/verify").permitAll() // /login, /, /join, /sendVerificationEmail, /verify 경로는 모든 사용자가 접근할 수 있도록 허용
                 .requestMatchers("/refresh").permitAll() // refresh token 재발급 경로는 모든 사용자가 접근할 수 있도록 허용
                 .requestMatchers("/admin").hasRole("ADMIN") // /admin 경로는 "ADMIN" 역할을 가진 사용자만 접근할 수 있도록 설정
                 .requestMatchers("/ocr/**", "/board/**").authenticated() // OCR 관련 경로는 인증된 사용자만 접근 가능
                 .requestMatchers("/userinfo/**", "/userUpdate/**", "/deluser/**").authenticated() // 사용자 정보 조회, 업데이트 및 삭제는 인증된 사용자만 접근 가능
-                .anyRequest().authenticated()); // 나머지 모든 요청은 인증된 사용자만 접근 가능
+                .anyRequest().authenticated()); // 나머지 모든 요청은 인증된 사용자만 접근 가능*/
+
+
+        // 경로별 인가 작업
+        http.authorizeHttpRequests((auth) -> auth
+                .requestMatchers("/", "/login", "/join", "/sendVerificationEmail", "/verify").permitAll() // /login, /, /join 경로는 모든 사용자가 접근할 수 있도록 허용
+                .requestMatchers("/refresh").permitAll() // refresh token 재발급 모든 사용자 접근 허용
+                .requestMatchers("/admin").hasRole("ADMIN") // /admin 경로는 "ADMIN" 역할을 가진 사용자만 접근할 수 있도록 설정
+                .requestMatchers("/ocr/**", "/board/**").authenticated()
+                .anyRequest().permitAll()); // 나머지 요청은 모두 접근 가능
 
         // JWT 필터 추가
         http.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
