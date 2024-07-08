@@ -26,7 +26,7 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
-    private RolesType roles = RolesType.USER;        // 권한
+    private RolesType roles = RolesType.ROLE_USER;        // 권한
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(255)")
