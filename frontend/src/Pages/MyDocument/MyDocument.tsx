@@ -27,7 +27,7 @@ const MyDocument = () => {
                 }
 
                 const fetchData = async (token: string) => {
-                    return await axios.post('/ocr/posts', {
+                    return await axios.post('/ocr/posts', {}, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -46,7 +46,6 @@ const MyDocument = () => {
                                     'Content-Type': 'application/json'
                                 }
                             });
-                            console.log(refreshResponse);
                             const newAccessToken = refreshResponse.data.data.accessToken;
                             const newRefreshToken = refreshResponse.data.data.refreshToken;
                             localStorage.setItem('authToken', newAccessToken);
