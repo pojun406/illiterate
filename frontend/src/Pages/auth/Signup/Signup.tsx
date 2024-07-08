@@ -136,16 +136,16 @@ const Signup: React.FC = () => {
         try {
             const response = await axios.post('/sendVerificationCode', { email });
             console.log(response.data);
-            // 인증번호 전송 성공 후 처리 로직을 여기에 추가합니다.
+            alert("이메일을 보냈습니다.");
         } catch (error) {
             console.error(error);
-            // 에러 처리 로직을 여기에 추가합니다.
+            alert("인증번호 전송 중 오류가 발생했습니다.");
         }
     };
 
     const handleVerifyCode = async () => {
         try {
-            const response = await axios.post('/verifyCode', { email, verificationCode });
+            const response = await axios.post('/verify', { email, verificationCode });
             if (response.data.success) {
                 setIsEmailVerified(true);
                 setVerificationError("");
