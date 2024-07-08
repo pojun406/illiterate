@@ -1,4 +1,4 @@
-package com.illiterate.illiterate.event.controller;
+package com.illiterate.illiterate.event.Controller;
 
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.event.Service.CertificateService;
