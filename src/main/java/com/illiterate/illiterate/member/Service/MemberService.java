@@ -74,7 +74,8 @@ public class MemberService {
         return id;
     }
     public boolean checkId(String userid){
-        return memberRepository.existsByUserid(userid);
+        log.debug("user id : " + userid);
+        return !memberRepository.existsByUserid(userid);
     }
 
     public LoginTokenDto login(LoginDto memberLoginDto) {
@@ -198,15 +199,37 @@ public class MemberService {
 */
 
     @Transactional
-    public void updateUserInfo(Long authenticatedUserId, Long memberId, MemberUpdateRequestDto userUpdateDto) {
-        // 인증된 사용자 ID와 요청의 사용자 ID가 일치하는지 확인
-        if (!authenticatedUserId.equals(memberId)) {
+    public void updateUserInfo(String token, Long memberId, MemberUpdateRequestDto userUpdateDto) {
+        // 'Bearer ' 접두사 제거
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        // JWT 토큰에서 사용자 ID 추출
+        if (token == null || !jwtUtil.validateToken(token)) {
+            log.error("Token is null or invalid");
+            log.debug("token result in update : " + token);
+            throw new MemberException(BAD_REQUEST);
+        }
+
+        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
+        if (userIdFromToken == null) {
+            log.error("Failed to extract userId from token");
+            throw new MemberException(BAD_REQUEST);
+        }
+
+        log.debug("Token valid. Extracted userId: {}", userIdFromToken);
+
+        if (!userIdFromToken.equals(memberId)) {
+            log.error("UserId from token does not match path variable. Token userId: {}, Path variable userId: {}", userIdFromToken, memberId);
             throw new MemberException(BAD_REQUEST);
         }
 
         // 회원 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+
+        log.debug("Member found: {}", member);
 
         // 이름 업데이트
         Optional.ofNullable(userUpdateDto.getName()).ifPresent(member::updateName);
@@ -215,7 +238,9 @@ public class MemberService {
         Optional.ofNullable(userUpdateDto.getEmail()).ifPresent(member::updateEmail);
 
         memberRepository.save(member);
+        log.debug("Member info updated successfully");
     }
+
 
     @Transactional
     public void inactiveMember(String token, Long memberId) {

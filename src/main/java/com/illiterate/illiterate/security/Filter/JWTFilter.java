@@ -29,6 +29,7 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 요청에서 토큰을 추출
         String accessToken = resolveToken(request);
+        System.out.println("Extracted Token: " + accessToken);  // 디버깅 로그 추가
 
         // 토큰이 없으면 다음 필터로 넘김
         if (accessToken == null) {
@@ -76,6 +77,7 @@ public class JWTFilter extends OncePerRequestFilter {
     // 요청에서 토큰을 추출하는 메서드
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+        System.out.println("Bearer Token: " + bearerToken);  // 로그 추가
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

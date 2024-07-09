@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.common.response;
 
 
+import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.enums.GlobalSuccessCode;
 import lombok.Getter;
 

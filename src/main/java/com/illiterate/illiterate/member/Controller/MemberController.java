@@ -144,10 +144,11 @@ public class MemberController {
         "data": true (boolean)
      */
 
-    // 중복되는 id찾기
-    @PostMapping("checkId")
-    public ResponseEntity<BfResponse<?>> checkId(@RequestBody String userId){
-        return ResponseEntity.ok(new BfResponse<>(memberService.checkId(userId)));
+    @PostMapping("/checkId")
+    public ResponseEntity<BfResponse<?>> checkId(@RequestBody Map<String, String> requestBody) {
+        String userId = requestBody.get("userId");
+        boolean isAvailable = memberService.checkId(userId);
+        return ResponseEntity.ok(new BfResponse<>(isAvailable));
     }
 
     /*
@@ -177,11 +178,11 @@ public class MemberController {
      */
     @PostMapping("/userUpdate/{userId}")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
+            @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
-            @Valid @RequestBody MemberUpdateRequestDto userUpdateDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @Valid @RequestBody MemberUpdateRequestDto userUpdateDto
     ) {
-        memberService.updateUserInfo(userDetails.getUser().getId(), userId, userUpdateDto);
+        memberService.updateUserInfo(token, userId, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
     }
 
