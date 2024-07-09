@@ -1,6 +1,5 @@
 package com.illiterate.illiterate.security.Service;
 
-import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.enums.GlobalSuccessCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.security.Repository.RefreshRepository;
@@ -8,7 +7,6 @@ import com.illiterate.illiterate.security.Util.JWTUtil;
 import com.illiterate.illiterate.security.Util.MakeCookie;
 import com.illiterate.illiterate.security.Util.TokenExpirationTime;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -73,6 +73,10 @@ public class ReissueServiceImpl implements ReissueService {
         response.setHeader("access", newAccess);
         response.addCookie(makeCookie.createCookie("refresh", newRefresh));
 
-        return ResponseEntity.ok(new BfResponse<>(GlobalSuccessCode.SUCCESS, "Token reissued successfully"));
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", newAccess);
+        tokens.put("refreshToken", newRefresh);
+
+        return ResponseEntity.ok(new BfResponse<>(GlobalSuccessCode.SUCCESS, tokens));
     }
 }
