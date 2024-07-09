@@ -125,12 +125,21 @@ const Profile: React.FC = () => {
         e.preventDefault();
         try {
             const userId = localStorage.getItem('id');
-            const token = localStorage.getItem('accessToken');
+            const token = localStorage.getItem('authToken');
+
+            if (!token) {
+                setModalMessage('인증 토큰이 없습니다. 다시 로그인 해주세요.');
+                setIsModalOpen(true);
+                return;
+            }
+
+            console.log('Token:', token);  // 토큰 값 로그로 출력하여 확인
+
             const response = await fetch(`/userUpdate/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`  // 'Bearer '을 포함한 올바른 토큰 설정
                 },
                 body: JSON.stringify(editUserInfo)
             });
@@ -224,7 +233,7 @@ const Profile: React.FC = () => {
                 { newPassword }, 
                 {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
                     }
                 });
