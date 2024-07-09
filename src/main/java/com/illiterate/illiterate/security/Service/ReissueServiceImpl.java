@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.security.Service;
 
+import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.enums.GlobalSuccessCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.security.Repository.RefreshRepository;
@@ -20,71 +21,55 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReissueServiceImpl implements ReissueService {
-    private Long accessExpiredMs = TokenExpirationTime.ACCESS_TIME;
-    private Long refreshExpiredMs = TokenExpirationTime.REFRESH_TIME;
-
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     private final MakeCookie makeCookie;
 
     @Override
-    public ResponseEntity<BfResponse<?>> reissue(HttpServletRequest request, HttpServletResponse response) {
-
-        // refresh 토큰 쿠키에서 추출
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
-            }
-        }
-
-        // refresh 없으면 오류 리턴
-        if (refresh == null) {
+    public ResponseEntity<BfResponse<?>> reissue(String refreshToken, Long userId, HttpServletRequest request, HttpServletResponse response) {
+        if (refreshToken == null || userId == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BfResponse<>(null, "refresh token null"));
+                    .body(new BfResponse<>(GlobalSuccessCode.BAD_REQUEST, "refresh token or user id null"));
         }
 
-        // 유효시간 검사
         try {
-            jwtUtil.isExpired(refresh);
+            jwtUtil.isExpired(refreshToken);
         } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BfResponse<>(null, "refresh token expired"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BfResponse<>(GlobalSuccessCode.BAD_REQUEST, "refresh token expired"));
         }
 
-        // 토큰이 refresh인지 확인
-        String category = jwtUtil.getCategory(refresh);
+        String category = jwtUtil.getCategory(refreshToken);
         if (!category.equals("refresh")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BfResponse<>(null, "invalid refresh token"));
+                    .body(new BfResponse<>(GlobalSuccessCode.BAD_REQUEST, "invalid refresh token"));
         }
 
-        // DB에 저장되어 있는지 확인
-        Boolean isExist = refreshRepository.existsByRefresh(refresh);
+        Boolean isExist = refreshRepository.existsByRefresh(refreshToken);
         if (!isExist) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new BfResponse<>(null, "invalid refresh token"));
+                    .body(new BfResponse<>(GlobalSuccessCode.BAD_REQUEST, "invalid refresh token"));
         }
 
-        Long memberId = jwtUtil.getMemberId(refresh);
-        List<String> role = jwtUtil.getRole(refresh);
+        Long memberId = jwtUtil.getMemberId(refreshToken);
+        if (!memberId.equals(userId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new BfResponse<>(GlobalSuccessCode.BAD_REQUEST, "user id mismatch"));
+        }
 
-        // 새로운 JWT 생성
-        String newAccess = jwtUtil.createJwt("access", memberId, role, accessExpiredMs);
-        String newRefresh = jwtUtil.createJwt("refresh", memberId, role, refreshExpiredMs);
+        List<String> role = jwtUtil.getRole(refreshToken);
+        String newAccess = jwtUtil.createJwt("access", memberId, role, TokenExpirationTime.ACCESS_TIME);
+        String newRefresh = jwtUtil.createJwt("refresh", memberId, role, TokenExpirationTime.REFRESH_TIME);
 
-        // 기존 Refresh 토큰 삭제 후 새 토큰 저장
-        refreshRepository.delete(refreshRepository.findByRefresh(refresh));
+        refreshRepository.delete(refreshRepository.findByRefresh(refreshToken));
 
         String ipAddress = request.getHeader("X-FORWARDED-FOR");
         if (ipAddress == null) {
             ipAddress = request.getRemoteAddr();
         }
 
-        jwtUtil.addRefreshEntity(memberId, newRefresh, refreshExpiredMs, ipAddress);
+        jwtUtil.addRefreshEntity(memberId, newRefresh, TokenExpirationTime.REFRESH_TIME, ipAddress);
 
-        // 응답 설정
         response.setHeader("access", newAccess);
         response.addCookie(makeCookie.createCookie("refresh", newRefresh));
 

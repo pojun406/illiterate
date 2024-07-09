@@ -67,7 +67,7 @@ public class JWTUtil {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -82,11 +82,16 @@ public class JWTUtil {
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            System.out.println("Error parsing claims: " + e.getMessage());  // 에러 메시지 출력
+            throw e;
+        }
     }
 
     public String resolveToken(HttpServletRequest request) {
@@ -99,7 +104,7 @@ public class JWTUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -107,12 +112,12 @@ public class JWTUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
-        return claims.get("id", Long.class);
+        Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        return claims.get("memberId", Long.class);
     }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(String.valueOf(secretKey)));
+        return secretKey;
     }
 
     public String getEmailFromToken(String token) {

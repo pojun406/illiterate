@@ -31,5 +31,5 @@ public enum GlobalErrorCode implements BaseErrorCode {
     public ErrorResponse getErrorResponse() {
         return new ErrorResponse(this.errorCode, this.errorMessage);
     }
-
+    
 }

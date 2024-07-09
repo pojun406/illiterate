@@ -6,5 +6,5 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface ReissueService {
-    public ResponseEntity<BfResponse<?>> reissue(HttpServletRequest request, HttpServletResponse response);
+    ResponseEntity<BfResponse<?>> reissue(String refreshToken, Long userId, HttpServletRequest request, HttpServletResponse response);
 }
