@@ -138,7 +138,7 @@ public class BoardController {
             }
         }
     */
-    @PostMapping("/fix_post/{id}")
+    /*@PostMapping("/fix_post/{id}")
     public ResponseEntity<BoardResponseDto> updatePost(
             @PathVariable Long id,
             @RequestPart("data") BoardRequestDto requestsDto,
@@ -154,7 +154,7 @@ public class BoardController {
         requestsDto.setImage(image);
         BoardResponseDto updatedPost = boardService.updatePost(id, requestsDto, user.getId());
         return ResponseEntity.ok(updatedPost);
-    }
+    }*/
 
     // 게시글 삭제
     /*
@@ -164,7 +164,7 @@ public class BoardController {
         }
         response: 없음 (204 No Content)
     */
-    @PostMapping("/del_post/{id}")
+    /*@PostMapping("/del_post/{id}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long boardid,
             @RequestBody BoardRequestDto requestsDto) {
@@ -178,5 +178,5 @@ public class BoardController {
 
         boardService.deletePost(boardid, user.getId());
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }

@@ -9,21 +9,20 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "ocr_result")
 public class OCR {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "ocr_index")
+    private Long ocrIndex;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_index", nullable = false)
     private Member user;
 
-    /*@Column
-    private String request_img;*/
     @Lob
     @Column(name = "image_path")
     private String imagePath;
@@ -32,19 +31,9 @@ public class OCR {
     @Column(name = "processed_image_path")
     private String processedImagePath;
 
-    @Column(name = "result", columnDefinition = "json")
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "result", columnDefinition = "json", nullable = false)
     private String result;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private String createdAt;
-
-    /*@Builder
-    private OCR(OcrRequestDto requestsDto, User user, String imagePath) {
-        this.title = requestsDto.getTitle();
-        this.content = requestsDto.getContents();
-        this.user = user;
-        this.image = imagePath;
-    }*/
 }

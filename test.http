@@ -1,17 +1,13 @@
+
 POST http://localhost:8080/login
 Content-Type: application/json
 
 {
-  "username" : "po",
-  "password" : "examplePasswordHash"
+  "userId" : "test",
+  "password" : "1234"
 }
-###
-POST http://localhost:8080/api/join
-Content-Type: application/json
 
-{
-  "id" : "po",
-  "password" : "123a",
-  "phonenum": "01029284502",
-  "username": "이병"
-}
+###
+
+GET http://localhost:8080/userinfo
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MSwic3ViIjoidGVzdCIsImlhdCI6MTcyNTM3Mzg2MywiZXhwIjoxNzI1Mzc3NDYzLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.KibaOSh1DyTGgarp3GOwDqXLwQf5OY7OPEXaMier05HCHll8emSMiF1g0XfsTOWkR6pfRvydLjIFIv9tZHYdCw

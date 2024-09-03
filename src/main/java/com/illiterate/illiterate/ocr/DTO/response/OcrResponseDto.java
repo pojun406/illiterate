@@ -19,14 +19,4 @@ public class OcrResponseDto {
     private String ocrResults;
     private String imageUrl; // 이미지 경로
     private String createdAt;
-
-    public static OcrResponseDto from(OCR ocr) {
-        return OcrResponseDto.builder()
-                .id(ocr.getId())
-                .userId(ocr.getUser().getId())
-                .imageUrl(ocr.getImagePath())
-                .ocrResults(ocr.getResult())
-                .createdAt(ocr.getCreatedAt())
-                .build();
-    }
 }

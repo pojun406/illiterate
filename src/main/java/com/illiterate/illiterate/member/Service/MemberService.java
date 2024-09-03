@@ -15,8 +15,7 @@ import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
-import com.illiterate.illiterate.security.Util.JWTUtil;
-import com.illiterate.illiterate.security.Util.TokenExpirationTime;
+import com.illiterate.illiterate.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -46,7 +45,7 @@ public class MemberService {
     private final AuthenticationManager authenticationManager;
     private final RedisRepository redisRepository;
     private final CertificateService certificateService;
-    private final JWTUtil jwtUtil;
+    private final JwtProvider jwtProvider;
 
 
     /**
@@ -55,7 +54,7 @@ public class MemberService {
     @Transactional
     public Long joinUser(JoinDto joinDto) {
         // 아이디 중복 체크
-        if (memberRepository.existsByUserid(joinDto.getUserid())) {
+        if (memberRepository.existsByUserId(joinDto.getUserid())) {
             System.out.println("중복된 아이디입니다: " + joinDto.getUserid());
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
         } else if (memberRepository.existsByEmail(joinDto.getEmail())) {
@@ -64,36 +63,38 @@ public class MemberService {
         }
 
         Member member = ConvertUtil.toDtoOrEntity(joinDto, Member.class);
-        member.setUserid(joinDto.getUserid());
+        member.setUserId(joinDto.getUserid());
         member.setPassword(passwordEncoder.encode(joinDto.getPassword()));
         member.setEmail(joinDto.getEmail());
-        member.setUsername(joinDto.getUsername());
+        member.setUserName(joinDto.getUsername());
 
-        Long id = memberRepository.save(member).getId();
+        memberRepository.save(member);
 
-        return id;
+        return member.getId();
     }
     public boolean checkId(String userid){
         log.debug("user id : " + userid);
-        return !memberRepository.existsByUserid(userid);
+        return !memberRepository.existsByUserId(userid);
     }
 
     public LoginTokenDto login(LoginDto memberLoginDto) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                memberLoginDto.getUserid(),
+                memberLoginDto.getUserId(),
                 memberLoginDto.getPassword()
         );
 
+        System.out.println("authentication : " + authentication);
+
         Authentication authenticated = authenticationManager.authenticate(authentication);
+
+        System.out.println("authenticated : " + authenticated);
         SecurityContextHolder.getContext().setAuthentication(authenticated);
 
         UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
         // accessToken, refreshToken 생성
-        String accessToken = jwtUtil.createJwt("access", userDetail.getId(),
-                Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.ACCESS_TIME);
-        String refreshToken = jwtUtil.createJwt("refresh", userDetail.getId(),
-                Collections.singletonList(userDetail.getAuthorities().toString()), TokenExpirationTime.REFRESH_TIME);
+        String accessToken = jwtProvider.createAccessToken(userDetail);
+        String refreshToken = jwtProvider.createRfreshToken(userDetail);
 
         LoginTokenDto loginTokenDto = LoginTokenDto.builder()
                 .accessToken(accessToken)
@@ -107,7 +108,7 @@ public class MemberService {
         return loginTokenDto;
     }
 
-    // 비밀번호 초기화 ( 로그인중일때 )
+    /*// 비밀번호 초기화 ( 로그인중일때 )
     @Transactional
     public void resetPassword(Long memberId, MemberPasswordResetRequestDto resetRequestDto) {
         // 회원 조회
@@ -121,9 +122,9 @@ public class MemberService {
 
         member.resetPassword(passwordEncoder.encode(resetRequestDto.getNewPassword()));
         memberRepository.save(member);
-    }
+    }*/
 
-    // 비밀번호 초기화 ( 비로그인중일때 )
+    /*// 비밀번호 초기화 ( 비로그인중일때 )
     public boolean resetPassword_Email(String email, MemberPasswordResetRequestDto resetRequestDto) {
         // 인증번호 검증
         boolean isValid = certificateService.verifyCertificateEmailNumber(email, resetRequestDto.getCertificationNumber());
@@ -140,24 +141,17 @@ public class MemberService {
         memberRepository.save(member);
 
         return true;
+    }*/
+
+    public Member getUserInfo(UserDetailsImpl userDetails) {
+        System.out.println("userDetail : " + userDetails);
+        return memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
     }
 
-    public MemberInfoDto getUserInfo(Long userId) {
-        // 회원 조회
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
-
-        return MemberInfoDto.builder()
-                .id(member.getId())
-                .userid(member.getUserid())
-                .email(member.getEmail())
-                .name(member.getUsername())
-                .build();
-    }
-
-    public String findMemberId(String email) {
-        return memberRepository.findByEmail(email)
-                .map(Member::getUserid)
+    public String findMemberId(String userId) {
+        return memberRepository.findByUserId(userId)
+                .map(Member::getUserId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
     }
 /*
@@ -198,7 +192,7 @@ public class MemberService {
     }
 */
 
-    @Transactional
+    /*@Transactional
     public void updateUserInfo(String token, Long memberId, MemberUpdateRequestDto userUpdateDto) {
         // 'Bearer ' 접두사 제거
         if (token != null && token.startsWith("Bearer ")) {
@@ -239,10 +233,10 @@ public class MemberService {
 
         memberRepository.save(member);
         log.debug("Member info updated successfully");
-    }
+    }*/
 
 
-    @Transactional
+    /*@Transactional
     public void inactiveMember(String token, Long memberId) {
         // JWT 토큰에서 사용자 ID 추출
         if (token == null || !jwtUtil.validateToken(token)) {
@@ -262,7 +256,7 @@ public class MemberService {
 
         member.inactivateUser();
         memberRepository.save(member);
-    }
+    }*/
 
     public void sendEmailVerification(String email) {
         certificateService.sendEmailCertificateNumber(email);

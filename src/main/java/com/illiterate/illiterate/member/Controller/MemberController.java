@@ -10,7 +10,6 @@ import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.Service.MemberService;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
-import com.illiterate.illiterate.security.Util.JWTUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,22 +33,8 @@ public class MemberController {
 
     private static final Logger log = LoggerFactory.getLogger(MemberController.class);
     private final MemberService memberService;
-    private final JWTUtil jwtUtil;
 
 
-    /*
-    request :
-    "userid": "testuser",
-    "username": "Test User",
-    "password": "password123",
-    "email": "testuser@example.com"
-
-    response :
-    "status": "CREATE",
-    "data": {
-        "userid": "testuser"
-    }
-     */
     //회원가입
     @PostMapping("/join")
     public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
@@ -57,33 +42,19 @@ public class MemberController {
                 .body(new BfResponse<>(CREATE,
                         Map.of("userid", memberService.joinUser(joinDTO))));
     }
-    /*
-    request :
-        "userid": "testuser",
-        "password": "password123"
-    response :
-        "status": "SUCCESS",
-        "data": {
-            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-            "id": 1
-    }
-     */
+
     //로그인
     @PostMapping("/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
+        System.out.println("loginDTO : " + loginDto);
         return ResponseEntity.ok(new BfResponse<>(memberService.login(loginDto)));
         //return userService.login(loginDto);
     }
 
-    /*
-    {userId}는 유저번호 로컬에서 받아서 넘기는걸로 일단 로직 구성함
-        "newPassword": "newpassword123"
-     */
-    //리셋 패스워드(패스워드 리셋을 위한 페이지)
+    /*//리셋 패스워드(패스워드 리셋을 위한 페이지)
     @PostMapping("/resetpassword_num/{userId}")
     public ResponseEntity<BfResponse<?>> resetPassword(
-            HttpServletRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetail,
             @PathVariable("userId") Long memberId,
             @Valid @RequestBody MemberPasswordResetRequestDto resetRequestDto
     ) {
@@ -100,12 +71,12 @@ public class MemberController {
 
         memberService.resetPassword(memberId, resetRequestDto);
         return ResponseEntity.noContent().build();
-    }
+    }*/
 
-    //리셋 패스워드(패스워드 리셋을 위한 페이지)
+    /*//리셋 패스워드(패스워드 리셋을 위한 페이지)
     @PostMapping("/resetpassword_email")
     public ResponseEntity<BfResponse<?>> resetPassword(
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal UserDetailsImpl userDetail,
             @Valid @RequestBody MemberPasswordResetRequestDto resetRequestDto
     ) {
         if (token == null || !jwtUtil.validateToken(token)) {
@@ -120,15 +91,8 @@ public class MemberController {
         }
 
         return ResponseEntity.noContent().build();
-    }
+    }*/
 
-    // id 찾기 ( email을 입력하면 id를 찾을 수 있게 로직을 구성 )
-    /*
-    request :
-        "userEmail": "testuser@example.com"
-    response :
-        "data": "testuser" (user의 id값)
-     */
     @PostMapping("/findId")
     public ResponseEntity<BfResponse<?>> findId(
             @RequestBody FindIdRequestDto request){
@@ -137,13 +101,6 @@ public class MemberController {
         return ResponseEntity.ok(new BfResponse<>(memberService.findMemberId(userEmail)));
     }
 
-    /*
-    request :
-        "userId": "testuser"
-    response :
-        "data": true (boolean)
-     */
-
     @PostMapping("/checkId")
     public ResponseEntity<BfResponse<?>> checkId(@RequestBody Map<String, String> requestBody) {
         String userId = requestBody.get("userId");
@@ -151,20 +108,12 @@ public class MemberController {
         return ResponseEntity.ok(new BfResponse<>(isAvailable));
     }
 
-    /*
-    request :
-        "userId" : 1 ( Long )
-    response :
-        "id": 1,
-        "email": "testuser@example.com",
-        "name": "Test User"
-     */
     // 회원정보 조회
-    @PostMapping("/userinfo/{userId}")
-    public ResponseEntity<BfResponse<MemberInfoDto>> getMemberInfo(
-            @PathVariable Long userId
+    @GetMapping("/userinfo")
+    public ResponseEntity<BfResponse<Member>> getMemberInfo(
+            @AuthenticationPrincipal UserDetailsImpl userDetail
     ) {
-        return ResponseEntity.ok(new BfResponse<>(memberService.getUserInfo(userId)));
+        return ResponseEntity.ok(new BfResponse<>(memberService.getUserInfo(userDetail)));
     }
 
 
@@ -176,7 +125,7 @@ public class MemberController {
     response :
     X
      */
-    @PostMapping("/userUpdate/{userId}")
+    /*@PostMapping("/userUpdate/{userId}")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
             @RequestHeader("Authorization") String token,
             @PathVariable Long userId,
@@ -184,7 +133,7 @@ public class MemberController {
     ) {
         memberService.updateUserInfo(token, userId, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
-    }
+    }*/
 
 
     /*
@@ -192,12 +141,12 @@ public class MemberController {
         "userId" : 1 ( Long )
     */
     // 회원 삭제
-    @PostMapping("/deluser/{userId}")
+    /*@PostMapping("/deluser/{userId}")
     public ResponseEntity<BfResponse<?>> inactivateMember(
             @RequestHeader("Authorization") String token,
             @PathVariable Long userId
     ) {
         memberService.inactiveMember(token, userId);
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }

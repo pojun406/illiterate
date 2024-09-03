@@ -6,7 +6,6 @@ import com.illiterate.illiterate.common.repository.RedisRepository;
 import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
 import com.illiterate.illiterate.event.dto.response.CertificateMailResponseDto;
 import com.illiterate.illiterate.event.exception.CertificateException;
-import com.illiterate.illiterate.security.Util.JWTUtil;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import java.util.Random;
 public class CertificateService {
     private final RedisRepository redisRepository;
     private final MailService mailService;
-    private final JWTUtil jwtUtil;
 
     private boolean validateCertificationEmailNumber(String email, String certificationNumber) {
         return (redisRepository.hashEmailKey(email) && redisRepository.getCertificationEmailNumber(email).equals(certificationNumber));
@@ -59,9 +57,6 @@ public class CertificateService {
         return validateCertificationEmailNumber(email, certificationNumber);
     }
 
-    public String generateToken(String email) {
-        return jwtUtil.generateToken(email);
-    }
 
     private HashMap<String, String> getCertificationMailContent(String certificateNumber) {
         return new HashMap<>() {{

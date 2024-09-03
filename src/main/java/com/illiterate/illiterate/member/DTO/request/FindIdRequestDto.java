@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FindIdRequestDto {
     private String userEmail;
-    private String userId;
 }
 

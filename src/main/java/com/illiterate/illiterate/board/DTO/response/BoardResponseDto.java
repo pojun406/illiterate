@@ -13,14 +13,4 @@ public class BoardResponseDto {
     private String content;
     private String imagePath;
     private StatusType status;
-
-    public static BoardResponseDto from(Board board) {
-        return BoardResponseDto.builder()
-                .id(board.getBid())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .imagePath(board.getImage())
-                .status(board.getStatus())
-                .build();
-    }
 }

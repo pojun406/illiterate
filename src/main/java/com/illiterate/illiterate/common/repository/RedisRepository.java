@@ -1,19 +1,21 @@
 package com.illiterate.illiterate.common.repository;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Repository
 @RequiredArgsConstructor
 public class RedisRepository {
+
     @Value("${jwt.refresh-token-expiration}")
     private int refreshExp;
 
@@ -27,6 +29,15 @@ public class RedisRepository {
     String mailKeyPrefix;
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    /**
+     * RedisTemplate 초기화
+     */
+    @PostConstruct
+    private void init() {
+        // redisTemplate의 ValueSerializer를 Jackson2JsonRedisSerializer로 설정
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+    }
 
     /**
      * refresh token 저장
@@ -47,8 +58,8 @@ public class RedisRepository {
     /**
      * refresh token 가져 오기
      */
-    public Map getRefreshToken(Long memberId) {
-        return (Map) redisTemplate.opsForValue().get(String.valueOf(memberId));
+    public Map<String, String> getRefreshToken(Long memberId) {
+        return (Map<String, String>) redisTemplate.opsForValue().get(String.valueOf(memberId));
     }
 
     /**

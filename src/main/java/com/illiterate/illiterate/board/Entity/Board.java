@@ -8,6 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "board")
@@ -16,53 +17,29 @@ public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "board_id")
-    private Long bid;
+    private Long boardId;
 
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "user_index", nullable = false)
     private Member user;
 
-    @Column
+    @Column(nullable = false)
     private String title;
-    @Column
+
+    @Column(nullable = false)
     private String content;
-    /*@Column
-    private String request_img;*/
+
     @Lob
     @Column(name = "request_img")
-    private String image;
+    private String requestImg;
 
-    @Column(name = "reg_date")
-    private String regdate;
+    @Column(name = "reg_date", nullable = false)
+    private String regDate;
+
     @Column(name = "del_date")
-    private String deldate;
+    private String delDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(255)")
-    private StatusType status = StatusType.WAIT; // 상태
-
-
-    @Builder
-    private Board(BoardRequestDto requestsDto, Member user, String imagePath) {
-        this.title = requestsDto.getTitle();
-        this.content = requestsDto.getContents();
-        this.user = user;
-        this.image = imagePath;
-    }
-
-    public static Board of(BoardRequestDto requestsDto, Member user, String imagePath) {
-        return Board.builder()
-                .requestsDto(requestsDto)
-                .user(user)
-                .imagePath(imagePath)
-                .build();
-    }
-
-    public void updateBoard(BoardRequestDto requestsDto, String imagePath) {
-        this.title = requestsDto.getTitle();
-        this.content = requestsDto.getContents();
-        this.image = imagePath;
-    }
-
-
+    @Column(nullable = false)
+    private StatusType status = StatusType.WAIT;
 }

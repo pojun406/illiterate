@@ -29,7 +29,7 @@ public class CertificateController {
         return ResponseEntity.ok().body(new BfResponse<>(SUCCESS, responseDto));
     }
 
-    @GetMapping(value = "/verify", produces = MediaType.APPLICATION_JSON_VALUE)
+    /*@GetMapping(value = "/verify", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<BfResponse<?>> verifyMailCertificationNumber(@Valid @RequestBody VerifyCertificateRequestDto verifyRequestDto) {
         boolean isValid = certificateService.verifyCertificateEmailNumber(verifyRequestDto.getEmail(), verifyRequestDto.getCertificationNumber());
         if (isValid) {
@@ -39,5 +39,5 @@ public class CertificateController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new BfResponse<>(null, "Invalid certification number"));
         }
-    }
+    }*/
 }

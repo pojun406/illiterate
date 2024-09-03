@@ -267,7 +267,7 @@ public class OcrService {
         ocrRepository.save(ocrResult);
 
         OcrResponseDto responseDto = OcrResponseDto.builder()
-                .id(ocrResult.getId())
+                .id(ocrResult.getOcrIndex())
                 .text(text)
                 .build();
 
@@ -284,7 +284,7 @@ public class OcrService {
         List<OcrResponseDto> responseDtoList = new ArrayList<>();
 
         for (OCR ocr : ocrList) {
-            responseDtoList.add(OcrResponseDto.from(ocr));
+//            responseDtoList.add(OcrResponseDto.from(ocr));
         }
 
         return responseDtoList;
@@ -296,7 +296,8 @@ public class OcrService {
         OCR ocr = ocrRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        return OcrResponseDto.from(ocr);
+//        return OcrResponseDto.from(ocr);
+        return null;
     }
 
     @Transactional

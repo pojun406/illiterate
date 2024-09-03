@@ -38,7 +38,7 @@ public class OcrController {
                 "/경로/result.json" <- 백단 내에서만 사용되고 삭제될거임
             ]
      */
-    @PostMapping(value = "/file", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    /*@PostMapping(value = "/file", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("file") MultipartFile image) {
@@ -46,7 +46,7 @@ public class OcrController {
 
         OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
-    }
+    }*/
 
     /*
         request :

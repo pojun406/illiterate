@@ -33,7 +33,7 @@ public class BoardService {
         List<BoardResponseDto> responseDtoList = new ArrayList<>();
 
         for (Board board : boardList) {
-            responseDtoList.add(BoardResponseDto.from(board));
+            //responseDtoList.add(BoardResponseDto.from(board));
         }
 
         return responseDtoList;
@@ -43,7 +43,8 @@ public class BoardService {
     public BoardResponseDto getPost(Long id) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
-        return BoardResponseDto.from(board);
+        //return BoardResponseDto.from(board);
+        return null;
     }
 
     @Transactional
@@ -60,11 +61,12 @@ public class BoardService {
             }
         }
 
-        Board board = boardRepository.save(Board.of(requestsDto, user, imagePath));
-        return BoardResponseDto.from(board);
+//        Board board = boardRepository.save(Board.of(requestsDto, user, imagePath));
+//        return BoardResponseDto.from(board);
+        return null;
     }
 
-    @Transactional
+    /*@Transactional
     public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, Long userId) {
         Board board = boardRepository.findById(postId)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
@@ -99,5 +101,5 @@ public class BoardService {
         }
 
         boardRepository.delete(board);
-    }
+    }*/
 }
