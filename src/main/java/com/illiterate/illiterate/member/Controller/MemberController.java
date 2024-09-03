@@ -30,13 +30,11 @@ import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_M
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
-
-    private static final Logger log = LoggerFactory.getLogger(MemberController.class);
     private final MemberService memberService;
 
 
     //회원가입
-    @PostMapping("/join")
+    @PostMapping("/public/join")
     public ResponseEntity<BfResponse<?>> registerUser(@RequestBody JoinDto joinDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BfResponse<>(CREATE,
@@ -44,64 +42,48 @@ public class MemberController {
     }
 
     //로그인
-    @PostMapping("/login")
+    @PostMapping("/public/login")
     public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("loginDTO : " + loginDto);
         return ResponseEntity.ok(new BfResponse<>(memberService.login(loginDto)));
         //return userService.login(loginDto);
     }
 
-    /*//리셋 패스워드(패스워드 리셋을 위한 페이지)
-    @PostMapping("/resetpassword_num/{userId}")
+    //리셋 패스워드(패스워드 리셋을 위한 페이지)
+    @PostMapping("/user/resetPassword/{userId}")
     public ResponseEntity<BfResponse<?>> resetPassword(
             @AuthenticationPrincipal UserDetailsImpl userDetail,
             @PathVariable("userId") Long memberId,
             @Valid @RequestBody MemberPasswordResetRequestDto resetRequestDto
     ) {
-        // JWT 토큰에서 사용자 ID 추출
-        String token = jwtUtil.resolveToken(request);
-        if (token == null || !jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(401).body(new BfResponse<>(null, "Unauthorized"));
-        }
 
-        Long userIdFromToken = jwtUtil.getUserIdFromToken(token);
-        if (!userIdFromToken.equals(memberId)) {
-            return ResponseEntity.status(403).body(new BfResponse<>(null, "Forbidden"));
-        }
-
-        memberService.resetPassword(memberId, resetRequestDto);
+        memberService.resetPassword(userDetail, memberId, resetRequestDto);
         return ResponseEntity.noContent().build();
-    }*/
+    }
 
-    /*//리셋 패스워드(패스워드 리셋을 위한 페이지)
-    @PostMapping("/resetpassword_email")
-    public ResponseEntity<BfResponse<?>> resetPassword(
-            @AuthenticationPrincipal UserDetailsImpl userDetail,
+    //리셋 패스워드(패스워드 리셋을 위한 페이지)
+    @PostMapping("/public/findPassword")
+    public ResponseEntity<BfResponse<?>> findPassword(
             @Valid @RequestBody MemberPasswordResetRequestDto resetRequestDto
     ) {
-        if (token == null || !jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(401).body(new BfResponse<>(null, "Unauthorized"));
-        }
 
-        String email = jwtUtil.getEmailFromToken(token);
-        boolean isValid = memberService.resetPassword_Email(email, resetRequestDto);
+        boolean isValid = memberService.findPassword(resetRequestDto);
 
         if (!isValid) {
             return ResponseEntity.status(400).body(new BfResponse<>(null, "Invalid certification number"));
         }
 
         return ResponseEntity.noContent().build();
-    }*/
+    }
 
-    @PostMapping("/findId")
+    @PostMapping("/public/findId")
     public ResponseEntity<BfResponse<?>> findId(
             @RequestBody FindIdRequestDto request){
         String userEmail = request.getUserEmail();
-        log.debug(memberService.findMemberId(userEmail));
         return ResponseEntity.ok(new BfResponse<>(memberService.findMemberId(userEmail)));
     }
 
-    @PostMapping("/checkId")
+    @PostMapping("/public/checkId")
     public ResponseEntity<BfResponse<?>> checkId(@RequestBody Map<String, String> requestBody) {
         String userId = requestBody.get("userId");
         boolean isAvailable = memberService.checkId(userId);
@@ -109,44 +91,36 @@ public class MemberController {
     }
 
     // 회원정보 조회
-    @GetMapping("/userinfo")
+    @GetMapping("/user/userinfo")
     public ResponseEntity<BfResponse<Member>> getMemberInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetail
     ) {
         return ResponseEntity.ok(new BfResponse<>(memberService.getUserInfo(userDetail)));
     }
 
-
-    /*
-    request :
-        "userId" : 1 ( Long )
-        "name": "Updated User",
-        "email": "updateduser@example.com"
-    response :
-    X
-     */
-    /*@PostMapping("/userUpdate/{userId}")
+    @PostMapping("/user/userUpdate")
     public ResponseEntity<BfResponse<?>> updateMemberInfo(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Long userId,
+            @AuthenticationPrincipal UserDetailsImpl userDetail,
             @Valid @RequestBody MemberUpdateRequestDto userUpdateDto
     ) {
-        memberService.updateUserInfo(token, userId, userUpdateDto);
+        memberService.updateUserInfo(userDetail, userUpdateDto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS));
-    }*/
+    }
 
-
-    /*
-    request :
-        "userId" : 1 ( Long )
-    */
     // 회원 삭제
-    /*@PostMapping("/deluser/{userId}")
+    @PostMapping("/user/deluser/{userIndex}")
     public ResponseEntity<BfResponse<?>> inactivateMember(
-            @RequestHeader("Authorization") String token,
-            @PathVariable Long userId
+            @AuthenticationPrincipal UserDetailsImpl userDetail, @PathVariable("userIndex") Long userIndex
+
     ) {
-        memberService.inactiveMember(token, userId);
+        memberService.inactiveMember(userDetail, userIndex);
         return ResponseEntity.noContent().build();
-    }*/
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<BfResponse<LoginTokenDto>> refreshAccessToken(
+            @Valid @RequestBody RefreshTokenRequestDto dto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(new BfResponse<>(memberService.refreshToken(dto.refreshToken(), userDetails.getId())));
+    }
 }

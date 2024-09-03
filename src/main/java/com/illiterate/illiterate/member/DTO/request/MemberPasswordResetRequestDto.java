@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public final class MemberPasswordResetRequestDto {
+    private String email;
     private String newPassword;
     private String certificationNumber;
 }
