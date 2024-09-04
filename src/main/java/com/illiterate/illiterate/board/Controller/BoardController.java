@@ -3,17 +3,23 @@ package com.illiterate.illiterate.board.Controller;
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Service.BoardService;
+import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,159 +30,47 @@ public class BoardController {
     private final MemberRepository memberRepository;
 
     // 게시글 전체 목록 조회
-    /*
-        request: 없음
-        response:
-        {
-            "data": [
-                {
-                    "id": 1,
-                    "title": "First Post",
-                    "content": "This is the content of the first post.",
-                    "imagePath": "/images/first-post.jpg",
-                    "status": "ACTIVE"
-                },
-                {
-                    "id": 2,
-                    "title": "Second Post",
-                    "content": "This is the content of the second post.",
-                    "imagePath": "/images/second-post.jpg",
-                    "status": "ACTIVE"
-                }
-            ]
-        }
-    */
-    @PostMapping("/posts")
+    @PostMapping("/public/posts")
     public ResponseEntity<BfResponse<List<BoardResponseDto>>> getPosts() {
         List<BoardResponseDto> posts = boardService.getPosts();
         BfResponse<List<BoardResponseDto>> response = new BfResponse<>(posts);
         return ResponseEntity.ok(response);
     }
 
-    // 특정 게시글 조회
-    /*
-        request:
-        {
-            "id": 1
-        }
-        response:
-        {
-            "data": {
-                "id": 1,
-                "title": "First Post",
-                "content": "This is the content of the first post.",
-                "imagePath": "/images/first-post.jpg",
-                "status": "ACTIVE"
-            }
-        }
-    */
-    @PostMapping("/posts/{id}")
-    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@PathVariable Long id) {
-        BoardResponseDto post = boardService.getPost(id);
+    @PostMapping("/user/posts/{id}")
+    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long id) {
+        BoardResponseDto post = boardService.getPost(userDetails, id);
         BfResponse<BoardResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
     }
 
-    // 게시글 작성
-    /*
-        request:
-        {
-            "request": {
-                "memberId": 1,
-                "title": "New Post",
-                "content": "This is the content of the new post."
-            },
-            "image": <MultipartFile>
-        }
-        response:
-        {
-            "data": {
-                "id": 3,
-                "title": "New Post",
-                "content": "This is the content of the new post.",
-                "imagePath": "/images/new-post.jpg",
-                "status": "ACTIVE"
-            }
-        }
-    */
-    @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<BfResponse<BoardResponseDto>> createPost(
-            @Valid @RequestPart("request") BoardRequestDto requestsDto,
-            @RequestPart("image") MultipartFile image) {
+    @PostMapping(value = "/user/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<BfResponse<?>> createPost(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody BoardRequestDto requestDto) {
 
-        if (requestsDto.getId() == null) {
-            throw new IllegalArgumentException("Member ID must not be null");
-        }
-
-        Member user = memberRepository.findById(Long.valueOf(requestsDto.getId()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-
-        requestsDto.setImage(image);
-        BoardResponseDto responseDto = boardService.createPost(requestsDto, user);
-        return ResponseEntity.ok(new BfResponse<>(responseDto));
+        boardService.createPost(userDetails, requestDto);
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
     }
 
     // 게시글 수정
-    /*
-        request:
-        {
-            "data": {
-                "memberId": 1,
-                "title": "Updated Post",
-                "content": "This is the updated content of the post."
-            },
-            "image": <MultipartFile>
-        }
-        response:
-        {
-            "data": {
-                "id": 1,
-                "title": "Updated Post",
-                "content": "This is the updated content of the post.",
-                "imagePath": "/images/updated-post.jpg",
-                "status": "ACTIVE"
-            }
-        }
-    */
-    /*@PostMapping("/fix_post/{id}")
-    public ResponseEntity<BoardResponseDto> updatePost(
-            @PathVariable Long id,
-            @RequestPart("data") BoardRequestDto requestsDto,
-            @RequestPart("image") MultipartFile image) {
+    @PostMapping("/user/fix_post/{board_index}")
+    public ResponseEntity<BfResponse<?>> updatePost(
+            @PathVariable Long board_index,
+            @RequestBody BoardRequestDto requestsDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        if (requestsDto.getId() == null) {
-            throw new IllegalArgumentException("Member ID must not be null");
-        }
-
-        Member user = memberRepository.findById(Long.valueOf(requestsDto.getId()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-
-        requestsDto.setImage(image);
-        BoardResponseDto updatedPost = boardService.updatePost(id, requestsDto, user.getId());
-        return ResponseEntity.ok(updatedPost);
-    }*/
+        boardService.updatePost(board_index, requestsDto, userDetails);
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "modify success!"));
+    }
 
     // 게시글 삭제
-    /*
-        request:
-        {
-            "memberId": 1
-        }
-        response: 없음 (204 No Content)
-    */
-    /*@PostMapping("/del_post/{id}")
+    @PostMapping("/user/del_post/{board_index}")
     public ResponseEntity<Void> deletePost(
-            @PathVariable Long boardid,
-            @RequestBody BoardRequestDto requestsDto) {
+            @PathVariable Long board_index,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        if (requestsDto.getId() == null) {
-            throw new IllegalArgumentException("Member ID must not be null");
-        }
-
-        Member user = memberRepository.findById(Long.valueOf(requestsDto.getId()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-
-        boardService.deletePost(boardid, user.getId());
+        boardService.deletePost(board_index, userDetails);
         return ResponseEntity.noContent().build();
-    }*/
+    }
 }

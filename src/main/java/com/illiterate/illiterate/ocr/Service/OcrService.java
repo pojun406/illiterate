@@ -38,7 +38,7 @@ public class OcrService {
     @Value("${python.executable.path}")
     private String pythonExecutable;
 
-    @Value("${image.upload.dir}")
+    @Value("${file.upload-dir}")
     private String imageUploadDir;
 
     private final OcrRepository ocrRepository;

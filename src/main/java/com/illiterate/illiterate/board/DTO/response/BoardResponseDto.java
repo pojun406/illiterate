@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class BoardResponseDto {
-    private Long id;
+    private Long id; // user_index
     private String title;
     private String content;
     private String imagePath;

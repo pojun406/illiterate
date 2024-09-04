@@ -4,10 +4,15 @@ import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
+import com.illiterate.illiterate.board.enums.StatusType;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
+import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
+import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.exception.MemberException;
+import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,16 +20,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
+import static com.illiterate.illiterate.common.enums.BoardErrorCode.*;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.BAD_REQUEST;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
+    private final MemberRepository memberRepository;
     private final LocalFileUtil localFileUtil;
 
     @Transactional(readOnly = true)
@@ -33,73 +42,94 @@ public class BoardService {
         List<BoardResponseDto> responseDtoList = new ArrayList<>();
 
         for (Board board : boardList) {
-            //responseDtoList.add(BoardResponseDto.from(board));
+            responseDtoList.add(
+                    BoardResponseDto.builder()
+                            .id(board.getUser().getId())
+                            .title(board.getTitle())
+                            .content(board.getContent())
+                            .imagePath(board.getRequestImg())
+                            .status(board.getStatus())
+                            .build());
         }
 
         return responseDtoList;
     }
 
     @Transactional(readOnly = true)
-    public BoardResponseDto getPost(Long id) {
+    public BoardResponseDto getPost(UserDetailsImpl userDetails, Long id) {
+        if (!userDetails.getId().equals(id)) {
+            throw new BoardException(NOT_MATCHING_INFO);
+        }
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
-        //return BoardResponseDto.from(board);
-        return null;
+
+        return BoardResponseDto.builder()
+                .id(board.getUser().getId())
+                .title(board.getTitle())
+                .content(board.getContent())
+                .imagePath(board.getRequestImg())
+                .status(board.getStatus())
+                .build();
     }
 
     @Transactional
-    public BoardResponseDto createPost(BoardRequestDto requestsDto, Member user) {
+    public void createPost(UserDetailsImpl userDetails, BoardRequestDto requestsDto) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        Board board = new Board();
+
         String imagePath = null;
         MultipartFile image = requestsDto.getImage();
 
         if (image != null && !image.isEmpty()) {
-            try {
-                imagePath = localFileUtil.saveImage(image);
-            } catch (IOException e) {
-                log.error("Image saving failed", e);
-                throw new RuntimeException("이미지 저장에 실패했습니다.", e);
-            }
+            imagePath = localFileUtil.saveImage(image);
         }
 
-//        Board board = boardRepository.save(Board.of(requestsDto, user, imagePath));
-//        return BoardResponseDto.from(board);
-        return null;
-    }
+        board.setUser(member);
+        board.setContent(requestsDto.getContents());
+        board.setTitle(requestsDto.getTitle());
+        board.setStatus(StatusType.WAIT);
+        board.setRequestImg(imagePath);
+        board.setRegDate(String.valueOf(Date.from(Instant.now())));
 
-    /*@Transactional
-    public BoardResponseDto updatePost(Long postId, BoardRequestDto requestsDto, Long userId) {
-        Board board = boardRepository.findById(postId)
-                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
-
-        if (!board.getUser().getId().equals(userId)) {
-            throw new BoardException(BoardErrorCode.FORBIDDEN_UPDATE_WRITING);
-        }
-
-        String imagePath = board.getImage();
-        MultipartFile image = requestsDto.getImage();
-
-        if (image != null && !image.isEmpty()) {
-            try {
-                imagePath = localFileUtil.saveImage(image);
-            } catch (IOException e) {
-                log.error("Image saving failed", e);
-                throw new RuntimeException("이미지 저장에 실패했습니다.", e);
-            }
-        }
-
-        board.updateBoard(requestsDto, imagePath);
-        return BoardResponseDto.from(board);
+        boardRepository.save(board);
+        //return null;
     }
 
     @Transactional
-    public void deletePost(Long postId, Long userId) {
-        Board board = boardRepository.findById(postId)
+    public void updatePost(Long board_index, BoardRequestDto requestsDto, UserDetailsImpl userDetails) {
+        Member member = memberRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new BoardException(NOT_FOUND_USER));
+
+        Board board = boardRepository.findByBoardId(board_index)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if (!board.getUser().getId().equals(userId)) {
-            throw new BoardException(BoardErrorCode.FORBIDDEN_DELETE_WRITING);
+        String imagePath = null;
+        MultipartFile image = requestsDto.getImage();
+
+        if (image != null && !image.isEmpty()) {
+            imagePath = localFileUtil.saveImage(image);
         }
 
+        board.setUser(member);
+        board.setContent(requestsDto.getContents());
+        board.setTitle(requestsDto.getTitle());
+        board.setStatus(StatusType.WAIT);
+        board.setRequestImg(imagePath);
+        board.setRegDate(String.valueOf(Date.from(Instant.now())));
+
+        boardRepository.save(board);
+    }
+    @Transactional
+    public void deletePost(Long board_index, UserDetailsImpl userDetails) {
+
+        Board board = boardRepository.findByBoardId(board_index)
+                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        if ((!(board.getUser().getId().equals(userDetails.getId())))) {
+            throw new MemberException(BAD_REQUEST);
+        }
         boardRepository.delete(board);
-    }*/
+    }
 }

@@ -9,31 +9,41 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Component
 public class LocalFileUtil {
 
     @Value("${file.upload-dir}")
-    private String uploadDir;
+    private String filePath;
 
-    public String saveImage(MultipartFile file) throws IOException {
-        return saveImage(file, uploadDir);
+    public String upLoadImage(MultipartFile file){
+        return saveImage(file);
     }
 
-    public static String saveImage(MultipartFile file, String directory) throws IOException {
-        // 디렉토리가 존재하지 않으면 생성
-        File dir = new File(directory);
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new IOException("디렉토리 생성에 실패했습니다: " + directory);
-            }
+    // 이미지 저장
+    public String saveImage(MultipartFile file){
+        if(file.isEmpty()){
+            return null;
         }
+        String originalFileName = file.getOriginalFilename();
+        //확장자 추출
+        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        String uuid = UUID.randomUUID().toString();
+        String saveFileName = uuid + extension;
+        String savePath = filePath + saveFileName;
 
-        // 파일 저장
-        String filePath = directory + "/" + file.getOriginalFilename();
-        File dest = new File(filePath);
-        file.transferTo(dest);
-
-        return filePath;
+        try {
+            Path path = Paths.get(savePath).normalize();
+            Files.createDirectories(path.getParent());
+            Files.copy(file.getInputStream(), path);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+        System.out.println("fileName: " + saveFileName);
+        return saveFileName;
+        // DB에 저장되는 값이 경로이려면 savePath 이름값이려면 saveFileName
+        //return savePath;
     }
 }
