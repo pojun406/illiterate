@@ -149,9 +149,9 @@ public class SecurityConfig {
      */
     private RequestMatcher[] AuthRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher(POST, "/ocr/**"),
-                antMatcher(POST, "/board/**"),
-                antMatcher(GET, "/userinfo")
+                antMatcher("/ocr/**"),
+                antMatcher("/board/**"),
+                antMatcher("/userinfo")
 
         );
 

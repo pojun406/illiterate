@@ -28,16 +28,6 @@ public class OcrController {
     private final OcrService ocrService;
     private final MemberRepository memberRepository;
 
-    /*
-        request :
-            "file": "imageFile"
-        response :
-            "id": 123,
-            "imageUrl": "/경로/image.png", <- DB에 저장할 이미지의 경로와 이름
-            "ocrResults": [
-                "/경로/result.json" <- 백단 내에서만 사용되고 삭제될거임
-            ]
-     */
     /*@PostMapping(value = "/file", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -48,42 +38,15 @@ public class OcrController {
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }*/
 
-    /*
-        request :
-            "id": 123,
-            "text": "저장된 텍스트 내용"
-        response :
-            "id": 123,
-            "text": "저장된 텍스트 내용"
-     */
-    @PostMapping(value = "/saveText")
+    /*@PostMapping(value = "/saveText")
     public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
             @RequestParam Long ocrId,
             @RequestParam String text) {
         OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
         return ResponseEntity.ok(new BfResponse<>(responseDto));
     }
-    /*
-        request :
-            userId : (Long)
-        response :
-            "data": [
-            {
-                "id": 1,
-                "title": "출생신고서",
-                "content": "This is the content of the first post.",
-                "imagePath": "/images/first-post.jpg",
-                "status": "ACTIVE"
-            },
-            {
-                "id": 2,
-                "title": "전입신고서",
-                "content": "This is the content of the second post.",
-                "imagePath": "/images/second-post.jpg",
-                "status": "ACTIVE"
-            }
-        ]
-             */
+
+
     @PostMapping("/posts")
     public ResponseEntity<BfResponse<List<OcrResponseDto>>> getPosts() {
         List<OcrResponseDto> posts = ocrService.getPosts();
@@ -91,17 +54,7 @@ public class OcrController {
         return ResponseEntity.ok(response);
     }
 
-    /*
-        request :
-            "board_id" : 1(Long)
-        response :
-            "id": 1,
-            "board_id" : 1(Long),
-            "title": "First Post",
-            "content": "This is the content of the first post.",
-            "imagePath": "/images/first-post.jpg",
-            "status": "ACTIVE"
-     */
+
     @PostMapping("/posts/{userid}")
     public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long userid) {
         OcrResponseDto post = ocrService.getPost(userid);
@@ -110,13 +63,6 @@ public class OcrController {
     }
 
     // 게시글 삭제
-    /*
-        request:
-        {
-            "memberId": 1
-        }
-        response: 없음 (204 No Content)
-    */
     @PostMapping("/del_post/{ocrid}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long ocrid,
@@ -131,5 +77,5 @@ public class OcrController {
 
         ocrService.deletePost(ocrid, user.getId());
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }
