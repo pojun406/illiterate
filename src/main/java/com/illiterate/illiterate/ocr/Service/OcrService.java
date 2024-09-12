@@ -43,7 +43,7 @@ public class OcrService {
 
     private final OcrRepository ocrRepository;
 
-    public OcrResponseDto uploadOCRImage(Member user, MultipartFile image) {
+    /*public OcrResponseDto uploadOCRImage(Member user, MultipartFile image) {
         try {
             // 이미지 저장
             File savedImageFile = saveImage(image, user);
@@ -310,5 +310,5 @@ public class OcrService {
         }
 
         ocrRepository.delete(ocr);
-    }
+    }*/
 }
