@@ -133,7 +133,12 @@ public class SecurityConfig {
      */
     private RequestMatcher[] permitAllRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("/public/**")
+                antMatcher(POST, "/"),
+                antMatcher(POST, "/login"), // 로그인
+                antMatcher(GET, "/join"), // 회원가입
+                antMatcher(GET, "/sendVerificationEmail"), // 이메일 인증 전송
+                antMatcher(POST, "/verify"), // 이메일 검증
+                antMatcher(GET, "/checkId") // 아이디 확인
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
@@ -144,8 +149,9 @@ public class SecurityConfig {
      */
     private RequestMatcher[] AuthRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("/user/**"),
-                antMatcher(POST, "/refresh")
+                antMatcher("/ocr/**"),
+                antMatcher("/board/**"),
+                antMatcher("/userinfo")
 
         );
 

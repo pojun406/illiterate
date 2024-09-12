@@ -30,18 +30,18 @@ public class Member {
     @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "roles", nullable = false)
     private RolesType roles = RolesType.ROLE_USER;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private StatusType status = StatusType.ACTIVE;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
