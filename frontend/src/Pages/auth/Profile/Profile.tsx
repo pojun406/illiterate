@@ -39,13 +39,12 @@ const Profile: React.FC = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const userid = localStorage.getItem("id");
-                const response = await fetchWithAuth(`/userinfo/${userid}`);
+                const response = await fetchWithAuth(`/user/userinfo`);
                 if (typeof response !== 'string' && response.status === 200) {
                     const data = response.data;
                     console.log(data); // 콘솔에 출력
                     setUserInfo({
-                        id: data.data.id,
+                        id: data.data.userid,
                         name: data.data.name,
                         email: data.data.email,
                         password: '' 

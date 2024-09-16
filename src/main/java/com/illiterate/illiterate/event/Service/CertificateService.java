@@ -22,17 +22,24 @@ public class CertificateService {
     private final MailService mailService;
 
     private boolean validateCertificationEmailNumber(String email, String certificationNumber) {
-        return (redisRepository.hashEmailKey(email) && redisRepository.getCertificationEmailNumber(email).equals(certificationNumber));
+        // Redis에서 이메일로 저장된 인증번호 가져오기
+        String storedCertificationNumber = redisRepository.getCertificationEmailNumber(email);
+
+        // Redis에 값이 없거나 가져온 값이 null인 경우 처리
+        if (storedCertificationNumber == null || storedCertificationNumber.isEmpty()) {
+            log.error("인증번호가 Redis에 존재하지 않거나 이미 만료되었습니다.");
+            return false;
+        }
+
+        // 입력된 인증번호와 Redis에 저장된 인증번호를 비교할 때 trim()을 적용하여 공백 문제를 해결
+        return storedCertificationNumber.trim().equals(certificationNumber.trim());
     }
 
-    public static String createRandomNum(int length) {
-        Random random = new Random(System.currentTimeMillis());
-        return String.valueOf(random.nextInt(9 * (int) Math.pow(10, length - 1)) + (int) Math.pow(10, length - 1));
-    }
+    public CertificateMailResponseDto sendEmailCertificateNumber(MailCertificateRequestDto mailCertificateRequestDto) {
+        String email = mailCertificateRequestDto.email();
 
-    public CertificateMailResponseDto sendEmailCertificateNumber(String email) {
         // 랜덤 번호 발급
-        String randomNumber = createRandomNum(6);
+        String randomNumber = createRandomNum(6); // 6자리 임의의 숫자 생성
 
         // 메일 내용 설정
         HashMap<String, String> content = getCertificationMailContent(randomNumber);
@@ -47,21 +54,31 @@ public class CertificateService {
         // 임시 발급 번호 redis에 저장
         redisRepository.saveCertificationEmailNumber(email, randomNumber);
 
-        return CertificateMailResponseDto.builder()
+        CertificateMailResponseDto response = CertificateMailResponseDto.builder()
                 .mailExpirationSeconds(redisRepository.getMailExp())
                 .certificationNumber(randomNumber)
                 .build();
+
+        return response;
     }
 
     public boolean verifyCertificateEmailNumber(String email, String certificationNumber) {
+        // 유효 번호 검증
         return validateCertificationEmailNumber(email, certificationNumber);
     }
 
-
-    private HashMap<String, String> getCertificationMailContent(String certificateNumber) {
+    public HashMap<String, String> getCertificationMailContent(String certificateNumber) {
         return new HashMap<>() {{
-            put("subject", "이메일 인증");
-            put("text", "인증코드: " + certificateNumber);
+            put("subject", "메일 제목");
+            put("text", "인증코드 = " + certificateNumber);
         }};
+    }
+
+    private static String createRandomNum(int length) { // length는 자릿수
+
+        Random random = new Random(System.currentTimeMillis()); // 시드 설정
+
+        return String.valueOf(
+                random.nextInt(9 * (int) Math.pow(10, length - 1)) + (int) Math.pow(10, length - 1));
     }
 }

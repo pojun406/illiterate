@@ -79,7 +79,7 @@ const Signup: React.FC = () => {
         setIdError(""); // 정규식 통과
 
         try {
-            const response = await axios.post('/checkId', { userId: userid });
+            const response = await axios.post('/public/checkId', { userId: userid });
             const isAvailable = response.data.data; // 서버에서 반환된 중복 체크 결과
             console.log("response.data.data : "+response.data.data);
             if (isAvailable) {
@@ -142,7 +142,7 @@ const Signup: React.FC = () => {
         }
 
         try {
-            const response = await axios.post('/sendVerificationEmail', { email });
+            const response = await axios.post('/public/sendVerificationEmail', { email });
             console.log(response.data);
             alert("이메일을 보냈습니다.");
             setIsResend(true);
@@ -154,8 +154,10 @@ const Signup: React.FC = () => {
 
     const handleVerifyCode = async () => {
         try {
-            const response = await axios.post('/verify', { email, verificationCode });
-            if (response.data.success) {
+            const response = await axios.post('/public/verify', { email, verificationCode });
+
+            // 서버에서 반환된 응답이 success 필드를 갖는지 확인
+            if (response.data.code === 200 && response.data.data.isValid) {
                 setIsEmailVerified(true);
                 setVerificationError("");
             } else {
@@ -210,7 +212,7 @@ const Signup: React.FC = () => {
                 email
             };
             console.log("회원가입 요청 데이터:", signupData);
-            const response = await axios.post('/join', signupData);
+            const response = await axios.post('/public/join', signupData);
             console.log(response.data);
             // 회원가입 성공 후 처리 로직을 여기에 추가합니다.
         } catch (error) {

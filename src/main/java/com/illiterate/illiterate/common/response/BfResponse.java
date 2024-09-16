@@ -31,4 +31,10 @@ public class BfResponse<T> {
         this.code = statusCode.getCode();
         this.message = statusCode.getMessage();
     }
+
+    // 에러 응답을 위한 생성자
+    public BfResponse(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 }

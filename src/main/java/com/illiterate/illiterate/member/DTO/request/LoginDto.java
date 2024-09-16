@@ -13,6 +13,6 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginDto {
-    private String userId;
+    private String userid;
     private String password;
 }

@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VerifyCertificateRequestDto{
         private String email;
-        private String certificationNumber;
+        private String verificationCode;
 }

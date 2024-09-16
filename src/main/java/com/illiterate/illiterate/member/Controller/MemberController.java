@@ -1,7 +1,9 @@
 package com.illiterate.illiterate.member.Controller;
 
 
+import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
+import com.illiterate.illiterate.common.response.ErrorResponseHandler;
 import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
@@ -31,6 +33,7 @@ import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_M
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
+    private final ErrorResponseHandler errorResponseHandler;
 
 
     //회원가입
@@ -43,9 +46,15 @@ public class MemberController {
 
     //로그인
     @PostMapping("/public/login")
-    public ResponseEntity<BfResponse<LoginTokenDto>> login(@Valid @RequestBody LoginDto loginDto) {
-        System.out.println("loginDTO : " + loginDto);
-        return ResponseEntity.ok(new BfResponse<>(memberService.login(loginDto)));
+    public ResponseEntity<BfResponse<?>> login(@Valid @RequestBody LoginDto loginDto) {
+        try{
+            return ResponseEntity.ok(new BfResponse<>(memberService.login(loginDto)));
+        } catch (MemberException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        } catch (Exception e){
+            return errorResponseHandler.handleErrorResponse(GlobalErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
         //return userService.login(loginDto);
     }
 
@@ -91,8 +100,8 @@ public class MemberController {
     }
 
     // 회원정보 조회
-    @GetMapping("/user/userinfo")
-    public ResponseEntity<BfResponse<Member>> getMemberInfo(
+    @PostMapping("/user/userinfo")
+    public ResponseEntity<BfResponse<MemberInfoDto>> getMemberInfo(
             @AuthenticationPrincipal UserDetailsImpl userDetail
     ) {
         return ResponseEntity.ok(new BfResponse<>(memberService.getUserInfo(userDetail)));

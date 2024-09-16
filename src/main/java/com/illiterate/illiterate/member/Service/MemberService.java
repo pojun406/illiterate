@@ -71,33 +71,34 @@ public class MemberService {
 
     public LoginTokenDto login(LoginDto memberLoginDto) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                memberLoginDto.getUserId(),
+                memberLoginDto.getUserid(),
                 memberLoginDto.getPassword()
         );
 
-        System.out.println("authentication : " + authentication);
+        try{
+            Authentication authenticated = authenticationManager.authenticate(authentication);
 
-        Authentication authenticated = authenticationManager.authenticate(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authenticated);
 
-        System.out.println("authenticated : " + authenticated);
-        SecurityContextHolder.getContext().setAuthentication(authenticated);
+            UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
-        UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
+            // accessToken, refreshToken 생성
+            String accessToken = jwtProvider.createAccessToken(userDetail);
+            String refreshToken = jwtProvider.createRfreshToken(userDetail);
 
-        // accessToken, refreshToken 생성
-        String accessToken = jwtProvider.createAccessToken(userDetail);
-        String refreshToken = jwtProvider.createRfreshToken(userDetail);
+            LoginTokenDto loginTokenDto = LoginTokenDto.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .id(userDetail.getId())
+                    .build();
 
-        LoginTokenDto loginTokenDto = LoginTokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .id(userDetail.getId())
-                .build();
+            // redis 토큰 정보 저장
+            redisRepository.saveToken(userDetail.getId(), refreshToken);
 
-        // redis 토큰 정보 저장
-        redisRepository.saveToken(userDetail.getId(), refreshToken);
-
-        return loginTokenDto;
+            return loginTokenDto;
+        } catch (Exception e){
+            throw new MemberException(CHECK_ID_OR_PASSWORD);
+        }
     }
 
     // 비밀번호 초기화
@@ -151,10 +152,18 @@ public class MemberService {
         return true;
     }
 
-    public Member getUserInfo(UserDetailsImpl userDetails) {
+    public MemberInfoDto getUserInfo(UserDetailsImpl userDetails) {
         System.out.println("userDetail : " + userDetails);
-        return memberRepository.findById(userDetails.getId())
+        Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
+
+        MemberInfoDto memberInfoDto = MemberInfoDto.builder()
+                .email(member.getEmail())
+                .name(member.getUserName())
+                .userid(member.getUserId())
+                .build();
+
+        return memberInfoDto;
     }
 
     public String findMemberId(String userId) {
