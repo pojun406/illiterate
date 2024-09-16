@@ -24,6 +24,7 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private String password;
     private List<GrantedAuthority> authorities;
+    private Member member;
 
     public static UserDetails from(Member member) {
         List<GrantedAuthority> authorities = member.getRoles() != null ?
@@ -33,7 +34,8 @@ public class UserDetailsImpl implements UserDetails {
                 member.getId(),
                 member.getUserId(),
                 member.getPassword(),
-                authorities
+                authorities,
+                member
         );
     }
 

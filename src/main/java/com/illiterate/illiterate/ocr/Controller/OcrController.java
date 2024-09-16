@@ -28,15 +28,27 @@ public class OcrController {
     private final OcrService ocrService;
     private final MemberRepository memberRepository;
 
-    /*@PostMapping(value = "/file", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<BfResponse<OcrResponseDto>> uploadWantImg(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestPart("file") MultipartFile image) {
-        Member user = userDetails.getUser();
+    /**
+     * 이미지 업로드 및 OCR 작업 처리
+     *
+     * @param file 업로드된 이미지 파일
+     * @param userDetails 로그인된 사용자 정보 (SecurityContextHolder에서 제공)
+     * @return OCR 작업 결과
+     */
+    @PostMapping("/upload")
+    public ResponseEntity<BfResponse<OcrResponseDto>> uploadImageForOcr(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        // 로그인된 사용자 정보에서 Member 엔티티 가져오기
+        Member member = userDetails.getMember();
 
-        OcrResponseDto responseDto = ocrService.uploadOCRImage(user, image);
-        return ResponseEntity.ok(new BfResponse<>(responseDto));
-    }*/
+        // OCR 처리 및 결과 반환
+        OcrResponseDto ocrResult = ocrService.uploadImageAndProcessOcr(file, member);
+
+        // OCR 결과를 클라이언트에게 반환
+        return ResponseEntity.ok(new BfResponse<>(ocrResult));
+    }
 
     /*@PostMapping(value = "/saveText")
     public ResponseEntity<BfResponse<OcrResponseDto>> saveText(

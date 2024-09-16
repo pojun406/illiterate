@@ -13,10 +13,5 @@ import java.util.List;
 @Setter
 @Builder
 public class OcrResponseDto {
-    private Long id;
-    private Long userId;
-    private String text;
-    private String ocrResults;
-    private String imageUrl; // 이미지 경로
-    private String createdAt;
+    private String ocrText;
 }
