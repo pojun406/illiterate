@@ -44,7 +44,7 @@ public class BoardService {
         for (Board board : boardList) {
             responseDtoList.add(
                     BoardResponseDto.builder()
-                            .id(board.getUser().getId())
+                            .id(board.getMember().getId())
                             .title(board.getTitle())
                             .content(board.getContent())
                             .imagePath(board.getRequestImg())
@@ -64,7 +64,7 @@ public class BoardService {
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         return BoardResponseDto.builder()
-                .id(board.getUser().getId())
+                .id(board.getMember().getId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .imagePath(board.getRequestImg())
@@ -86,7 +86,7 @@ public class BoardService {
             imagePath = localFileUtil.saveImage(image);
         }
 
-        board.setUser(member);
+        board.setMember(member);
         board.setContent(requestsDto.getContents());
         board.setTitle(requestsDto.getTitle());
         board.setStatus(StatusType.WAIT);
@@ -112,7 +112,7 @@ public class BoardService {
             imagePath = localFileUtil.saveImage(image);
         }
 
-        board.setUser(member);
+        board.setMember(member);
         board.setContent(requestsDto.getContents());
         board.setTitle(requestsDto.getTitle());
         board.setStatus(StatusType.WAIT);
@@ -127,7 +127,7 @@ public class BoardService {
         Board board = boardRepository.findByBoardId(board_index)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if ((!(board.getUser().getId().equals(userDetails.getId())))) {
+        if ((!(board.getMember().getId().equals(userDetails.getId())))) {
             throw new MemberException(BAD_REQUEST);
         }
         boardRepository.delete(board);

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
-import com.illiterate.illiterate.image.ImageService;
+import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
@@ -45,7 +45,7 @@ public class OcrService {
 
     private final OcrRepository ocrRepository;
     private final PaperInfoRepository paperInfoRepository;  // PaperInfo와 상호작용하기 위한 리포지토리
-    private final ImageService imageService;
+    private final LocalFileUtil localFileUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();  // JSON 처리용 ObjectMapper
 
     /**
@@ -53,7 +53,7 @@ public class OcrService {
      */
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
-        String imagePath = imageService.upLoadImage(file);
+        String imagePath = localFileUtil.saveImageTmp(file);
         if (imagePath == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");

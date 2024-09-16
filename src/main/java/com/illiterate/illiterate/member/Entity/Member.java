@@ -44,9 +44,9 @@ public class Member {
     @Column(name = "status", nullable = false)
     private StatusType status = StatusType.ACTIVE;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)  // 'member'로 수정
     private List<Board> boards;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)  // 'user' -> 'member'로 수정
     private List<OCR> ocrResults;
 }
