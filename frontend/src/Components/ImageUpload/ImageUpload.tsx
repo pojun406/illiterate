@@ -59,9 +59,9 @@ const ImageUpload: React.FC = () => {
     };
 
     return (
-        <div className="p-4 flex flex-col justify-center items-center sm:px-12 md:px-24">
+        <div className="w-full">
             {!filePath && (
-                <div className="w-full">
+                <div>
                     <div
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}

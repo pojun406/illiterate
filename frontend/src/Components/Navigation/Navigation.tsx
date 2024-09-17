@@ -1,150 +1,47 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import Logo from "../Logo/Logo";
-import { FcMenu } from "react-icons/fc";
-import { IoCloseSharp } from "react-icons/io5";
-import AccessToken from "../AccessToken/AccessToken";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Logo from '../Logo/Logo';
 
-const Navigation = ({ isSidebarPage }: { isSidebarPage: boolean }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isDropdownOpen, setDropdownOpen] = useState(false);
-    const location = useLocation();
-    const navigate = useNavigate();
+const Navigation = () => {
+    const [isLogin, setIsLogin] = useState(false);
+    const accessToken = localStorage.getItem('authToken');
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-        setDropdownOpen(false);
-    };
-
-    const toggleDropdown = () => {
-        setDropdownOpen(!isDropdownOpen);
-    };
+    useEffect(() => {
+        if (accessToken) {
+            setIsLogin(true);
+        }
+    }, [accessToken]);
 
     const handleLogout = () => {
-        if (window.confirm("정말 로그아웃 하시겠습니까?")) {
-            setIsLoggedIn(false);
-            localStorage.clear();
-            closeDropdown();
-            navigate("/");
-        }
+        localStorage.removeItem('authToken');
+        setIsLogin(false);
+        window.location.href = '/';
     };
-
-    useEffect(() => {
-        const checkToken = () => {
-            const token = localStorage.getItem('authToken');
-            setIsLoggedIn(!!token);
-        };
-
-        checkToken();
-    }, [location.pathname]);
-
-    const closeDropdown = () => {
-        setDropdownOpen(false);
-    };
-
-    useEffect(() => {
-        closeDropdown();
-        setIsMenuOpen(false); // 메뉴도 닫기
-    }, [location.pathname]);
-
-    const isHomePage = location.pathname === "/";
-
     return (
-        <header className={`${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
-            <div className="flex lg:flex-row items-center justify-between w-full lg:px-0" style={{ height: '80px' }}>
-                <div className="m-4">
-                    <Link to="/" className="flex-shrink-0" onClick={closeDropdown}>
-                        <Logo />
-                    </Link>
-                </div>
-                <div className="lg:hidden flex items-center justify-center m-4">
-                    <button
-                        onClick={toggleMenu}
-                        className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700"
-                    >
-                        {isMenuOpen ? (
-                            <IoCloseSharp className="h-6 w-6" />
-                        ) : (
-                            <FcMenu className="h-6 w-6" />
-                        )}
-                    </button>
-                </div>
-                <div className={`w-full lg:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-0 lg:mt-0 absolute top-20 ${isHomePage ? 'bg-black' : 'bg-white'}`}>
-                    <ul className="flex flex-col px-4 w-full">
-                        {isLoggedIn ? (
-                            <>
-                                <li>
-                                    <Link to="/profile"
-                                        className="block py-2 border-t border-b hover:bg-gray-100" onClick={closeDropdown}>닉네임</Link>
-                                </li>
-                            </>
-                        ) : (
-                            <>
-                                <li>
-                                    <Link to="/auth/login" className="block py-2 border-t border-b hover:bg-gray-100" onClick={closeDropdown}>로그인</Link>
-                                </li>
-                                <li>
-                                    <Link to="/auth/signup" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>회원가입</Link>
-                                </li>
-                            </>
-                        )}
-                        <li>
-                            <Link to="/application" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>등록하기</Link>
-                        </li>
-                        <li>
-                            <Link to="/servicecenter/list" className="block py-2 border-b hover:bg-gray-100" onClick={closeDropdown}>고객센터</Link>
-                        </li>
-                        {isLoggedIn && (<li>
-                            <button onClick={handleLogout}
-                                className="w-full text-left py-2 text-red-500 hover:bg-gray-100">로그아웃
-                            </button>
-                        </li>)}
-                    </ul>
-                </div>
-                <div className={`hidden lg:flex lg:items-center lg:ml-auto lg:w-auto space-x-8 px-4 ${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                    {!isSidebarPage && (
-                        <ul className="flex space-x-4">
-                            <li>
-                                <Link to="/application" className="block py-2" onClick={closeDropdown}>등록하기</Link>
-                            </li>
-                            {isHomePage ? null : (
-                                <li>
-                                    <Link to="/servicecenter/list" className="block py-2" onClick={closeDropdown}>고객센터</Link>
-                                </li>
-                            )}
-                        </ul>
-                    )}
-                    <ul className="flex space-x-4">
-                        {isLoggedIn ? (
-                            <li className="relative">
-                                <button onClick={toggleDropdown} className="block py-2 focus:outline-none">프로필</button>
-                                {isDropdownOpen && (
-                                    <div
-                                        className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg py-1 z-20">
-                                        <Link to="/profile"
-                                            className="block px-4 py-2 text-gray-800 hover:bg-gray-100" onClick={closeDropdown}>닉네임</Link>
-                                        <Link to="/mydocument" className="block px-4 py-2 text-gray-800 hover:bg-gray-100" onClick={closeDropdown}>내
-                                            문서 보기</Link>
-                                        <button onClick={handleLogout}
-                                            className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100">로그아웃</button>
-                                    </div>
-                                )}
-                            </li>
-                        ) : (
-                            <>
-                                <li>
-                                    <Link to="/auth/login" className="block py-2" onClick={closeDropdown}>로그인</Link>
-                                </li>
-                                <li>
-                                    <Link to="/auth/signup" className="block py-2" onClick={closeDropdown}>회원가입</Link>
-                                </li>
-                            </>
-                        )}
-                    </ul>
+        <div className="flex flex-col justify-center items-center p-4">
+            <div className="flex items-center w-[1260px] justify-between">
+                <Link to="/">
+                    <Logo />
+                </Link>
+                {!isLogin ? (
+                    <div className="flex items-center">
+                        <Link to="/auth/login" className="ml-4">로그인</Link>
+                    <Link to="/auth/signup" className="ml-4">회원가입</Link>
+                </div>) : (
+                    <div className="flex items-center">
+                        <Link to="/profile" className="ml-4">마이페이지</Link>
+                        <Link to="/" className="ml-4" onClick={handleLogout}>로그아웃</Link>
+                    </div>
+                )}
+            </div>
+            <div className="flex flex-col items-center w-[1260px] mt-4">
+                <div className="flex items-center w-full">
+                    <Link to="/application" className="text-center mx-4">문서등록</Link>
+                    <Link to="/mydocument" className="text-center mx-4">문서목록</Link>
+                    <Link to="/servicecenter" className="text-center mx-4">고객센터</Link>
                 </div>
             </div>
-        </header>
+        </div>
     );
 };
 
