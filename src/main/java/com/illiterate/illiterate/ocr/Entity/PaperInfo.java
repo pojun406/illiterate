@@ -19,8 +19,8 @@ public class PaperInfo {
     @Column(name = "title_vector", nullable = false)
     private String titleVector;
 
-    @Column(name = "title_text",nullable = false)
-    private String titleText;
+    @Column(name = "title_img",nullable = false)
+    private String titleImg;
 
     @Column(name = "img_info", columnDefinition = "JSON")
     private String imgInfo;

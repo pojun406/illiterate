@@ -37,7 +37,7 @@ import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WR
 @RequiredArgsConstructor
 public class OcrService {
 
-    @Value("${python.script.path}")
+    @Value("${python.ocr.script.path}")
     private String pythonScriptPath;
 
     @Value("${python.executable.path}")
