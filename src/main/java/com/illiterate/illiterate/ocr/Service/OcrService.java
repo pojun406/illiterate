@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
@@ -42,6 +43,8 @@ public class OcrService {
 
     @Value("${python.executable.path}")
     private String pythonExecutable;
+
+    private String TestPath = "C:/Users/pojun/Desktop/Project/illiterate/src/main/python/Test/test.py";
 
     private final OcrRepository ocrRepository;
     private final PaperInfoRepository paperInfoRepository;  // PaperInfo와 상호작용하기 위한 리포지토리
@@ -168,4 +171,31 @@ public class OcrService {
         return ocrRepository.save(ocrEntity);
     }
 
+    /*public String executeTestPythonScript() {
+        // 명령어 구성
+        CommandLine commandLine = new CommandLine("python");
+        commandLine.addArgument(TestPath);  // 파이썬 스크립트 경로
+        commandLine.addArgument("테슷테슷테슷트"); // 임의의 인자 전달
+
+        // 명령어 실행을 위한 Executor 설정
+        DefaultExecutor executor = new DefaultExecutor();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        executor.setStreamHandler(new PumpStreamHandler(outputStream));
+
+        try {
+            // 파이썬 스크립트 실행
+            int exitCode = executor.execute(commandLine);
+            System.out.println("Python script executed with exit code: " + exitCode);
+            System.out.println("Output: " + outputStream.toString());
+
+            return "Python script executed successfully with output:\n" + outputStream.toString();
+
+        } catch (ExecuteException e) {
+            // 파이썬 스크립트 실행 중 발생한 오류 처리
+            return "Execution failed: " + e.getMessage();
+        } catch (IOException e) {
+            // 입출력 오류 처리
+            return "IO error: " + e.getMessage();
+        }
+    }*/
 }
