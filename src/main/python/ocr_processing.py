@@ -1,8 +1,9 @@
+import sys
 import os
 import json
 import cv2
+from MyFinalPPOCR import MyFinalPPOCR  # SSIM 방식이 적용된 MyFinalPPOCR 클래스
 from db_connection import get_title_vector, get_images_from_db, get_vectors_by_type
-from MyFinalPPOCR import MyFinalPPOCR  # 변경된 클래스 이름
 from image_preprocessing import crop_image_by_vector
 
 
@@ -95,7 +96,7 @@ def send_json_to_backend(json_file):
         json_file (str): 전송할 JSON 파일 경로
     """
     import requests
-    url = "http://backend-server.com/api/ocr_result"  # 백엔드 서버 URL
+    url = "http://your-backend-url.com/api/ocr_result"  # 백엔드 서버 URL
     with open(json_file, 'rb') as f:
         files = {'file': f}
         response = requests.post(url, files=files)
@@ -106,29 +107,43 @@ def send_json_to_backend(json_file):
         print(f"전송 중 오류 발생: {response.status_code}")
 
 
-def main(image_path):
+def process_image(image_path):
     """
-    메인 실행 흐름:
-    1. DB에서 제목 부분의 벡터값을 가져와 이미지 자르기
-    2. 자른 이미지와 DB의 이미지를 비교하여 문서 타입 결정
-    3. 결정된 문서 타입에 맞춰 OCR을 실행하고 결과 저장 및 전송
+    이미지 경로를 받아 OCR 처리하고 문서 타입을 결정하는 함수.
     """
-    # 1-1. DB에서 제목 벡터 가져오기
+    # MyFinalPPOCR 인스턴스 생성
+    ocr = MyFinalPPOCR()
+
+    # DB에서 제목 벡터 가져오기
     title_vector = get_title_vector()
+
+    # 제목 부분을 자르고 저장
     cropped_image_path = save_cropped_title_image(image_path, title_vector)
 
-    # 2-2. DB 이미지와 비교하여 가장 유사한 문서 타입 결정
-    db_image_paths = get_images_from_db()  # DB에서 title_text 이미지들 가져오기
-    selected_type = compare_and_select_image("save_title", db_image_paths)
-    print(f"선정된 문서 타입: {selected_type}")
+    # DB에 저장된 이미지 경로들 가져오기
+    db_image_paths = get_images_from_db()
 
-    # 3. 선정된 이미지 타입에 맞춰 벡터값 가져와 OCR 실행
+    # 가장 유사한 제목 이미지 결정
+    selected_type = compare_and_select_image("save_title", db_image_paths)
+
+    # 결정된 이미지 타입에 맞춰 OCR 실행
     ocr_results = process_image_by_type(image_path, selected_type)
 
-    # 4. OCR 결과 및 벡터값을 JSON으로 저장하고 전송
-    save_and_send_results(ocr_results)
+    # OCR 결과 반환
+    return ocr_results
 
 
 if __name__ == "__main__":
-    image_path = 'src/main/resources/image_save/sample_image.png'
-    main(image_path)
+    # Command Line에서 이미지 경로 받기
+    if len(sys.argv) > 1:
+        image_path = sys.argv[1]
+        print(f"이미지 경로: {image_path}")
+
+        # 이미지 경로로 OCR 처리 실행
+        ocr_results = process_image(image_path)
+
+        # OCR 결과 출력
+        print("OCR 처리 결과:")
+        print(ocr_results)
+    else:
+        print("이미지 경로가 제공되지 않았습니다.")
