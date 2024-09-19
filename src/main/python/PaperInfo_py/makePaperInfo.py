@@ -1,10 +1,12 @@
+import sys
 import cv2
 from tkinter import *
 from PIL import Image, ImageTk
 import json
 
 # 이미지 파일 경로 설정
-image_path = 'C:/Users/byung/Desktop/img/22.png'
+#image_path = sys.argv[1]
+image_path = 'C:/Users/pojun/Desktop/image.png'
 
 # OpenCV로 이미지 로드
 image = cv2.imread(image_path)
@@ -133,7 +135,7 @@ else:
         root.quit()  # 프로그램 종료
 
     # JSON 저장 및 종료 버튼 추가
-    save_button = Button(root, text="Save to JSON and Exit", command=save_and_exit)
+    save_button = Button(root, text="JSON 저장 및 프로그램 종료", command=save_and_exit)
     save_button.pack(side=BOTTOM)
 
     root.mainloop()
