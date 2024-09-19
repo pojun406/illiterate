@@ -90,4 +90,11 @@ public class OcrController {
         ocrService.deletePost(ocrid, user.getId());
         return ResponseEntity.noContent().build();
     }*/
+
+    /*@GetMapping("/run-python")
+    public ResponseEntity<String> runPythonTest() {
+        // 파이썬 스크립트 실행하고 결과 반환
+        String result = ocrService.executeTestPythonScript();
+        return ResponseEntity.ok(result);
+    }*/
 }
