@@ -33,9 +33,9 @@ public class AdminController {
 
             String image_path = board.getRequestImg();
 
-            PaperInfo paperInfo = adminService.makePaperInfo(image_path);
+            PaperInfo paperInfo = adminService.makePaperInfo(image_path, title);
 
-            return ResponseEntity.ok(new BfResponse<>(SUCCESS, "ok"));
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, paperInfo));
         } catch (Exception e){
             e.printStackTrace();
             return errorResponseHandler.handleErrorResponse(GlobalErrorCode.INTERNAL_SERVER_ERROR);

@@ -26,13 +26,14 @@ public class AdminService {
     private final PaperInfoRepository paperInfoRepository;
 
     @Value("${python.paperinfo.script.path}")
-    private String pythonScriptPath;
+    private String makepaperinfo;
 
-    public PaperInfo makePaperInfo(String imagePath) {
+    public PaperInfo makePaperInfo(String imagePath, String title) {
         // 명령어 구성
         CommandLine commandLine = new CommandLine("python");
-        commandLine.addArgument(pythonScriptPath); // 파이썬 스크립트 경로
+        commandLine.addArgument(makepaperinfo); // 파이썬 스크립트 경로
         commandLine.addArgument(imagePath);  // 이미지 경로
+        commandLine.addArgument(title);  // JSON 파일 이름 전달
 
         // 명령어 실행을 위한 Executor 설정
         DefaultExecutor executor = new DefaultExecutor();
@@ -48,9 +49,13 @@ public class AdminService {
             System.out.println("Output: " + outputStream.toString());
 
             // JSON 파일 읽기
-            String jsonFileName = "result.json"; // 스크립트가 생성한 json 파일 이름
-            jsonContent = new String(Files.readAllBytes(Paths.get(jsonFileName)));
-            System.out.println("JSON content: " + jsonContent);
+            String jsonFileName = getJsonFileName(title);  // JSON 파일명 추출
+            if (Files.exists(Paths.get(jsonFileName))) {
+                jsonContent = new String(Files.readAllBytes(Paths.get(jsonFileName)));
+                System.out.println("JSON content: " + jsonContent);
+            } else {
+                System.err.println("JSON file not found: " + jsonFileName);
+            }
         } catch (ExecuteException e) {
             // 파이썬 스크립트 실행 중 발생한 오류 처리
             System.err.println("Execution failed: " + e.getMessage());
@@ -59,16 +64,16 @@ public class AdminService {
             System.err.println("IO error: " + e.getMessage());
         }
 
-        // PaperInfo 엔티티에 저장
+        /*// PaperInfo 엔티티에 저장 (여기서는 예시로 제목 벡터를 지정)
         PaperInfo paperInfo = new PaperInfo();
-        paperInfo.setTitleVector("Some_Vector_Data"); // 제목 벡터는 별도 로직으로 설정
-        //paperInfo.setTitleImg(saveTitleImg);
-        paperInfo.setImgInfo(jsonContent);
+        paperInfo.setTitleText(title);
+        paperInfo.setImgInfo(jsonContent); // JSON 내용을 imgInfo 필드에 저장
         paperInfo.setCreatedAt(new Date());
         paperInfo.setUpdatedAt(new Date());
 
         // DB에 저장
-        return paperInfoRepository.save(paperInfo);
+        return paperInfoRepository.save(paperInfo);*/
+        return null;
     }
 
     // 이미지 경로에서 JSON 파일명 생성

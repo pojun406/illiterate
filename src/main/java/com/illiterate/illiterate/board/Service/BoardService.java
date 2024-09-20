@@ -73,17 +73,15 @@ public class BoardService {
     }
 
     @Transactional
-    public void createPost(UserDetailsImpl userDetails, BoardRequestDto requestsDto) {
+    public void createPost(UserDetailsImpl userDetails, BoardRequestDto requestsDto, MultipartFile requestImg) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         Board board = new Board();
-
         String imagePath = null;
-        MultipartFile image = requestsDto.getImage();
 
-        if (image != null && !image.isEmpty()) {
-            imagePath = localFileUtil.saveImage(image);
+        if (requestImg != null && !requestImg.isEmpty()) {
+            imagePath = localFileUtil.saveImage(requestImg);
         }
 
         board.setMember(member);
@@ -98,7 +96,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void updatePost(Long board_index, BoardRequestDto requestsDto, UserDetailsImpl userDetails) {
+    public void updatePost(Long board_index, BoardRequestDto requestsDto, UserDetailsImpl userDetails, MultipartFile requestImg) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new BoardException(NOT_FOUND_USER));
 
@@ -106,10 +104,9 @@ public class BoardService {
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         String imagePath = null;
-        MultipartFile image = requestsDto.getImage();
 
-        if (image != null && !image.isEmpty()) {
-            imagePath = localFileUtil.saveImage(image);
+        if (requestImg != null && !requestImg.isEmpty()) {
+            imagePath = localFileUtil.saveImage(requestImg);
         }
 
         board.setMember(member);

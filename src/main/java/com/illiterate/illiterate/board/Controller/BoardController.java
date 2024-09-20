@@ -47,9 +47,10 @@ public class BoardController {
     @PostMapping(value = "/user/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<?>> createPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestBody BoardRequestDto requestDto) {
+            @RequestBody BoardRequestDto requestDto,
+            @RequestPart("image") MultipartFile requestImg) {
 
-        boardService.createPost(userDetails, requestDto);
+        boardService.createPost(userDetails, requestDto, requestImg);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
     }
 
@@ -58,9 +59,10 @@ public class BoardController {
     public ResponseEntity<BfResponse<?>> updatePost(
             @PathVariable Long board_index,
             @RequestBody BoardRequestDto requestsDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestPart("image") MultipartFile requestImg) {
 
-        boardService.updatePost(board_index, requestsDto, userDetails);
+        boardService.updatePost(board_index, requestsDto, userDetails, requestImg);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "modify success!"));
     }
 
