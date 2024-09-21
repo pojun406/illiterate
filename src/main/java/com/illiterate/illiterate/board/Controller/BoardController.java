@@ -27,7 +27,6 @@ import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 public class BoardController {
 
     private final BoardService boardService;
-    private final MemberRepository memberRepository;
 
     // 게시글 전체 목록 조회
     @PostMapping("/public/posts")
@@ -37,11 +36,10 @@ public class BoardController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/user/posts/{id}")
-    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long id) {
-        BoardResponseDto post = boardService.getPost(userDetails, id);
-        BfResponse<BoardResponseDto> response = new BfResponse<>(post);
-        return ResponseEntity.ok(response);
+    @PostMapping("/user/posts/{board_Index}")
+    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long board_Index) {
+        BoardResponseDto post = boardService.getPost(userDetails, board_Index);
+        return ResponseEntity.ok(new BfResponse<>(post));
     }
 
     @PostMapping(value = "/user/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})

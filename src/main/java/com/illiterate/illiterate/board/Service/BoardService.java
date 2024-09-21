@@ -10,6 +10,7 @@ import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
@@ -62,6 +63,10 @@ public class BoardService {
         }
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        if(userDetails.getMember().getRoles().equals(RolesType.ROLE_ADMIN)){
+            board.setStatus(StatusType.READ);
+        }
 
         return BoardResponseDto.builder()
                 .id(board.getMember().getId())
