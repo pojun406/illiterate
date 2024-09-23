@@ -64,3 +64,21 @@ def get_vectors_by_type(image_type):
     vectors = cursor.fetchall()
     conn.close()
     return [json.loads(vector[0]) for vector in vectors]
+
+
+def get_document_info(index):
+    """
+    paper_info 테이블에서 주어진 id에 해당하는 document_index와 img_info를 가져옵니다.
+
+    Args:
+        index (int): 문서 id
+
+    Returns:
+        tuple: document_index와 img_info
+    """
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT document_index, img_info FROM paper_info WHERE id = {index}")
+    result = cursor.fetchone()
+    conn.close()
+    return result

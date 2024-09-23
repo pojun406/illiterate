@@ -125,9 +125,10 @@ public class OcrService {
      * @return OCR 결과 텍스트
      */
     private String executePythonOcrScript(String imagePath) {
-        CommandLine commandLine = new CommandLine(pythonExecutable);
-        commandLine.addArgument(pythonScriptPath);
-        commandLine.addArgument(imagePath);  // 이미지 경로를 인자로 추가
+        CommandLine commandLine = new CommandLine("/bin/bash");
+        commandLine.addArgument("-c");
+        commandLine.addArgument("source /path/to/anaconda3/bin/activate your_env_name && " +
+                                pythonExecutable + " " + pythonScriptPath + " " + imagePath, false);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
