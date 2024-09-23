@@ -57,7 +57,7 @@ public class LocalFileUtil {
         return savedPath + saveFileName;
     }
 
-    // 이미지 tmp파일에 저장
+    // 이미지파일 image 폴더에 저장
     public String saveImage(MultipartFile file){
         if(file.isEmpty()){
             logger.error("not images");

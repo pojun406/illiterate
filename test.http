@@ -15,3 +15,12 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MSwic3ViIjoidGVzdCIsImlhdCI6M
 ###
 GET http://localhost:8080/ocr/run-python
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJpZCI6MSwic3ViIjoidGVzdCIsImlhdCI6MTcyNjczNTQ0NiwiZXhwIjoxNzI2NzM5MDQ2LCJyb2xlcyI6IlJPTEVfVVNFUiJ9.4tjk-F4YCdft2Kxp6s5GRr-FH3hGbi8f0ta694fRzcEKG9AlYNRODwcpR5k340CNa0aV0r3KBCD2xSSpp2D1rw
+
+###
+
+POST http://localhost:8080/admin/process/1
+Content-Type: application/json
+
+{
+  "title": "개인회생"
+}

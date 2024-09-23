@@ -133,7 +133,7 @@ public class SecurityConfig {
      */
     private RequestMatcher[] permitAllRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("public/**")
+                antMatcher("/public/**")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
@@ -147,8 +147,8 @@ public class SecurityConfig {
                 antMatcher("/ocr/**"),
                 antMatcher("/board/**"),
                 antMatcher("/user/**"),
-                antMatcher("/userinfo")
-
+                antMatcher("/userinfo"),
+                antMatcher("/admin/**")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
