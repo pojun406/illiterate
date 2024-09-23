@@ -50,10 +50,21 @@ def process_image(image_path):
     for vector in json.loads(img_info):
         cropped_image = crop_image_by_vector(cv2.imread(image_path), vector)
         ocr_result = ocr.run_ocr(cropped_image)
-        results.append({"vector": vector, "ocr_result": ocr_result})
+        results.append({
+            "vector": vector,
+            "ocr_result": ocr_result
+        })
     
-    # 7. 결과 반환
-    return {"document_index": document_index, "results": results}
+    # 7. 결과를 JSON 형식으로 변환하고 파일로 저장
+    final_result = {
+        "document_index": document_index,
+        "results": results
+    }
+    
+    with open('ocr_result.json', 'w', encoding='utf-8') as f:
+        json.dump(final_result, f, ensure_ascii=False, indent=2)
+    
+    return final_result
 
 
 if __name__ == "__main__":
@@ -63,10 +74,9 @@ if __name__ == "__main__":
         print(f"이미지 경로: {image_path}")
 
         # 이미지 경로로 OCR 처리 실행
-        ocr_results = process_image(image_path)
+        result = process_image(image_path)
 
-        # OCR 결과 출력
-        print("OCR 처리 결과:")
-        print(ocr_results)
+        # OCR 결과를 JSON 파일로 저장
+        print("OCR 처리 결과가 ocr_result.json 파일에 저장되었습니다.")
     else:
         print("이미지 경로가 제공되지 않았습니다.")
