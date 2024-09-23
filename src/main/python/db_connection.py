@@ -32,9 +32,16 @@ def get_title_vector():
     conn.close()
     
     if vector and vector[0]:
-        return json.loads(vector[0])  # JSON 형식으로 반환
+        try:
+            json_data = json.loads(vector[0])
+            print(f"JSON data: {json_data}")  # 디버깅을 위한 출력
+            return json_data
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e}")
+            return []
     else:
-        return []  # 빈 리스트 반환
+        print("No data found or empty string")  # 디버깅을 위한 출력
+        return []
 
 
 def get_images_from_db():
