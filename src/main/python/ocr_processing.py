@@ -20,7 +20,9 @@ def process_image(image_path):
     cropped_images = []
     for vector in title_vectors:
         image = cv2.imread(image_path)
-        cropped_image = crop_image_by_vector(image, vector)
+        # 벡터를 올바르게 언패킹
+        (x1, y1), (x2, y2), (x3, y3), (x4, y4) = vector
+        cropped_image = crop_image_by_vector(image, [(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
         cropped_images.append(cropped_image)
     
     # 4. DB에서 title_img 가져오기

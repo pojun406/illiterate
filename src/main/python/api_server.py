@@ -9,7 +9,7 @@ def ocr_api():
     data = request.get_json()
     if 'image_path' not in data:
         return jsonify({"error": "No image path provided"}), 400
-    image_path = data['image_path']
+    image_path = data['image_path']  # 'absolute' 대신 'image_path' 사용
     if not os.path.exists(image_path):
         return jsonify({"error": "Image path does not exist"}), 400
     try:
