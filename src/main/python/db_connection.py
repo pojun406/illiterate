@@ -23,14 +23,14 @@ def get_title_vector():
     paper_info 테이블에서 title_vector를 가져옵니다.
 
     Returns:
-        dict: title_vector 정보
+        list: title_vector 정보
     """
     conn = get_database_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT title_vector FROM paper_info WHERE document_index=1")
     vector = cursor.fetchone()
     conn.close()
-    return vector[0]
+    return json.loads(vector[0])  # JSON 형식으로 반환
 
 
 def get_images_from_db():
