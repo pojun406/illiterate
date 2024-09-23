@@ -458,38 +458,40 @@ const Profile: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <div className="container mx-auto py-10 flex">
-                <div className="w-1/4 flex-shrink-0 bg-white shadow-md rounded-lg p-6 mr-6" style={{ height: 'fit-content' }}>
-                    <ul>
-                        <li
-                            className={`cursor-pointer py-2 ${activeTab === 'profile' ? 'font-bold' : ''}`}
-                            onClick={() => handleTabChange('profile')}
-                        >
-                            프로필
-                        </li>
-                        <li
-                            className={`cursor-pointer py-2 ${activeTab === 'edit' ? 'font-bold' : ''}`}
-                            onClick={() => handleTabChange('edit')}
-                        >
-                            정보 수정
-                        </li>
-                        <li
-                            className={`cursor-pointer py-2 ${activeTab === 'changePassword' ? 'font-bold' : ''}`}
-                            onClick={() => handleTabChange('changePassword')}
-                        >
-                            비밀번호 변경
-                        </li>
-                        <li
-                            className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}
-                            onClick={() => handleTabChange('delete')}
-                        >
-                            회원 탈퇴
-                        </li>
-                    </ul>
-                </div>
-                <div className="w-3/4 bg-white shadow-md rounded-lg p-6">
-                    {renderContent()}
+        <div className="bg-gray-100 h-[calc(100vh-64px)]">
+            <div className="container mx-auto py-10 px-2 sm:px-6 lg:px-2 w-[1260px]">
+                <div className="flex flex-col md:flex-row">
+                    <div className="w-full md:w-1/4 flex-shrink-0 bg-white shadow-md rounded-lg p-6 mb-6 md:mb-0 md:mr-6" style={{ height: 'fit-content' }}>
+                        <ul>
+                            <li
+                                className={`cursor-pointer py-2 ${activeTab === 'profile' ? 'font-bold' : ''}`}
+                                onClick={() => handleTabChange('profile')}
+                            >
+                                프로필
+                            </li>
+                            <li
+                                className={`cursor-pointer py-2 ${activeTab === 'edit' ? 'font-bold' : ''}`}
+                                onClick={() => handleTabChange('edit')}
+                            >
+                                정보 수정
+                            </li>
+                            <li
+                                className={`cursor-pointer py-2 ${activeTab === 'changePassword' ? 'font-bold' : ''}`}
+                                onClick={() => handleTabChange('changePassword')}
+                            >
+                                비밀번호 변경
+                            </li>
+                            <li
+                                className={`cursor-pointer py-2 ${activeTab === 'delete' ? 'font-bold' : ''}`}
+                                onClick={() => handleTabChange('delete')}
+                            >
+                                회원 탈퇴
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="w-full md:w-3/4 bg-white shadow-md rounded-lg p-6">
+                        {renderContent()}
+                    </div>
                 </div>
             </div>
             {isModalOpen && (
