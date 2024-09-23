@@ -99,7 +99,7 @@ public class OcrService {
 
             // 경로 정보를 JSON으로 감싸서 전송
             Map<String, String> body = new HashMap<>();
-            body.put("file_path", imagePath);
+            body.put("image_path", imagePath);
 
             // 요청 엔티티 생성
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
