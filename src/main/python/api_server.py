@@ -16,6 +16,8 @@ def ocr_api():
         result = process_image(image_path)
         return jsonify(result)
     except Exception as e:
+        # 예외 발생 시, 자세한 오류 메시지 출력
+        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
