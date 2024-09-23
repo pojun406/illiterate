@@ -61,13 +61,15 @@ public class OcrService {
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
         String imagePath = localFileUtil.saveImageTmp(file);
-        if (imagePath == null) {
+        String absolute = "D:/Project/illiterate/src/main/resources" + imagePath;
+
+        if (absolute == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
         }
 
         // 2. Python API 호출하여 OCR 수행
-        String ocrResult = callPythonOcrApi(imagePath);
+        String ocrResult = callPythonOcrApi(absolute);
         if (ocrResult == null) {
             log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
@@ -90,25 +92,23 @@ public class OcrService {
      * @return OCR 결과 텍스트
      */
     private String callPythonOcrApi(String imagePath) {
-        File imageFile = new File(imagePath);
-
-        if (!imageFile.exists()) {
-            log.error("Image file not found: " + imagePath);
-            return null;
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("file", imageFile);  // 업로드한 파일
-
-        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
         try {
-            // Python 서버에 이미지 파일을 POST로 전송
+            // 헤더 설정: Content-Type을 application/json로 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // 경로 정보를 JSON으로 감싸서 전송
+            Map<String, String> body = new HashMap<>();
+            body.put("file_path", imagePath);
+
+            // 요청 엔티티 생성
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+            // Python 서버에 파일 경로를 POST로 전송
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
+
             return response.getBody();  // OCR 결과를 반환
+
         } catch (Exception e) {
             log.error("Error calling Python OCR API", e);
             return null;
