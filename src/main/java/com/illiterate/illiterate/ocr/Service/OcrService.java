@@ -21,9 +21,15 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -38,18 +44,16 @@ import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WR
 @RequiredArgsConstructor
 public class OcrService {
 
-    @Value("${python.ocr.script.path}")
-    private String pythonScriptPath;
+    @Autowired
+    private RestTemplate restTemplate;
 
-    @Value("${python.executable.path}")
-    private String pythonExecutable;
-
-    private String TestPath = "C:/Users/pojun/Desktop/Project/illiterate/src/main/python/Test/test.py";
+    @Value("${python.ocr.api.url}")
+    private String pythonOcrApiUrl;  // Python 서버의 OCR API URL
 
     private final OcrRepository ocrRepository;
-    private final PaperInfoRepository paperInfoRepository;  // PaperInfo와 상호작용하기 위한 리포지토리
+    private final PaperInfoRepository paperInfoRepository;
     private final LocalFileUtil localFileUtil;
-    private final ObjectMapper objectMapper = new ObjectMapper();  // JSON 처리용 ObjectMapper
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 이미지 업로드 및 OCR 처리 후 결과 저장
@@ -62,85 +66,51 @@ public class OcrService {
             throw new RuntimeException("Image upload failed.");
         }
 
-        // 2. 업로드된 이미지가 어떤 문서인지 판별
-        PaperInfo matchedPaperInfo = findMatchingPaperInfo(imagePath);
-        if (matchedPaperInfo == null) {
-            log.error("Document type could not be determined.");
-            throw new RuntimeException("Document type could not be determined.");
-        }
-
-        // 3. Python 스크립트를 실행하여 OCR 수행
-        String ocrResult = executePythonOcrScript(imagePath);
+        // 2. Python API 호출하여 OCR 수행
+        String ocrResult = callPythonOcrApi(imagePath);
         if (ocrResult == null) {
             log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
         }
 
-        // 4. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
+        // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
+        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);  // 이 부분은 추후 확장 가능
         OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
 
-        // 5. 결과 반환
+        // 4. 결과 반환
         return OcrResponseDto.builder()
                 .ocrText(ocrEntity.getOcrData())  // OCR 데이터를 반환
                 .build();
     }
 
     /**
-     * 업로드된 이미지와 PaperInfo의 타이틀 이미지/벡터값을 비교하여 문서 유형을 판별
-     *
-     * @param imagePath 업로드된 이미지 경로
-     * @return 매칭된 PaperInfo 엔티티
-     */
-    private PaperInfo findMatchingPaperInfo(String imagePath) {
-        List<PaperInfo> paperInfoList = paperInfoRepository.findAll();  // 모든 PaperInfo 데이터를 가져옴
-
-        for (PaperInfo paperInfo : paperInfoList) {
-            // 1. 타이틀 이미지와 업로드된 이미지 비교 (이미지 판별 로직 필요)
-            boolean isTitleImageMatch = compareImages(paperInfo.getTitleVector(), imagePath);
-
-            // 2. 벡터 값과도 비교 가능
-            if (isTitleImageMatch) {
-                return paperInfo;  // 문서가 매칭되면 해당 PaperInfo 반환
-            }
-        }
-
-        return null;  // 매칭되는 문서가 없을 경우 null 반환
-    }
-
-    /**
-     * 이미지 비교 로직 (타이틀 이미지와 업로드된 이미지 비교)
-     * python코드를 사용해서 이미지 분석을 시행할 예정
-     */
-    private boolean compareImages(String titleVector, String imagePath) {
-        // TODO: 타이틀 이미지 벡터와 업로드된 이미지의 벡터 비교 로직 구현
-        // 예시: 이미지 벡터 유사도를 측정하여 true/false 반환
-        return true;  // 간단히 true로 처리 (실제 구현 필요)
-    }
-
-    /**
-     * Python 스크립트를 실행하여 OCR 작업을 수행
-     * Python 코드 자체는 아직 준비가 되지 않았음 추후 로직수정
+     * Python OCR API를 호출하여 이미지에 대해 OCR 작업을 수행
      *
      * @param imagePath 업로드한 이미지 경로
      * @return OCR 결과 텍스트
      */
-    private String executePythonOcrScript(String imagePath) {
-        CommandLine commandLine = new CommandLine("/bin/bash");
-        commandLine.addArgument("-c");
-        commandLine.addArgument("source /path/to/anaconda3/bin/activate your_env_name && " +
-                                pythonExecutable + " " + pythonScriptPath + " " + imagePath, false);
+    private String callPythonOcrApi(String imagePath) {
+        File imageFile = new File(imagePath);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        if (!imageFile.exists()) {
+            log.error("Image file not found: " + imagePath);
+            return null;
+        }
 
-        DefaultExecutor executor = new DefaultExecutor();
-        executor.setStreamHandler(streamHandler);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("file", imageFile);  // 업로드한 파일
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         try {
-            executor.execute(commandLine);  // Python 스크립트 실행
-            return outputStream.toString();  // OCR 결과 반환
-        } catch (IOException e) {
-            log.error("Error executing Python OCR script.", e);
+            // Python 서버에 이미지 파일을 POST로 전송
+            ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
+            return response.getBody();  // OCR 결과를 반환
+        } catch (Exception e) {
+            log.error("Error calling Python OCR API", e);
             return null;
         }
     }
@@ -172,31 +142,16 @@ public class OcrService {
         return ocrRepository.save(ocrEntity);
     }
 
-    /*public String executeTestPythonScript() {
-        // 명령어 구성
-        CommandLine commandLine = new CommandLine("python");
-        commandLine.addArgument(TestPath);  // 파이썬 스크립트 경로
-        commandLine.addArgument("테슷테슷테슷트"); // 임의의 인자 전달
-
-        // 명령어 실행을 위한 Executor 설정
-        DefaultExecutor executor = new DefaultExecutor();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        executor.setStreamHandler(new PumpStreamHandler(outputStream));
-
-        try {
-            // 파이썬 스크립트 실행
-            int exitCode = executor.execute(commandLine);
-            System.out.println("Python script executed with exit code: " + exitCode);
-            System.out.println("Output: " + outputStream.toString());
-
-            return "Python script executed successfully with output:\n" + outputStream.toString();
-
-        } catch (ExecuteException e) {
-            // 파이썬 스크립트 실행 중 발생한 오류 처리
-            return "Execution failed: " + e.getMessage();
-        } catch (IOException e) {
-            // 입출력 오류 처리
-            return "IO error: " + e.getMessage();
-        }
-    }*/
+    /**
+     * OCR 결과로 PaperInfo 엔티티를 찾는 로직 (추후 필요에 따라 수정 가능)
+     *
+     * @param ocrResult OCR 결과 텍스트
+     * @return 매칭된 PaperInfo 엔티티
+     */
+    private PaperInfo findMatchingPaperInfo(String ocrResult) {
+        // TODO: OCR 결과를 바탕으로 PaperInfo와 매칭하는 로직 구현
+        return paperInfoRepository.findAll().stream()
+                .findFirst()  // 예시로 첫 번째 PaperInfo를 반환, 실제 로직 필요
+                .orElse(null);
+    }
 }

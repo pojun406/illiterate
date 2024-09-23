@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -52,6 +53,15 @@ public class SecurityConfig {
         this.customAccessDeniedHandler = customAccessDeniedHandler;
         this.memberUserDetailsService = bringUserDetailsService;
     }
+
+    /**
+     * RestTemplate
+     */
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+
 
     /**
      * 패스워드 인코더
