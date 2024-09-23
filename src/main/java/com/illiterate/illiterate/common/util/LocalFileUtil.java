@@ -29,35 +29,43 @@ public class LocalFileUtil {
     private String savedPath;
 
     // 이미지 tmp파일에 저장
-    public String saveImageTmp(MultipartFile file){
-        if(file.isEmpty()){
-            logger.error("not images");
+    public String saveImageTmp(MultipartFile file) {
+        if (file.isEmpty()) {
+            logger.error("File is empty.");
             return null;
         }
+
         String originalFileName = file.getOriginalFilename();
-        //확장자 추출
+        // 확장자 추출
         String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         String uuid = UUID.randomUUID().toString();
         String saveFileName = uuid + extension;
-        String savePath = filePath + saveFileName;
+        String savePath = Paths.get(tmpfilePath, saveFileName).toAbsolutePath().toString();
 
         try {
             Path path = Paths.get(savePath).normalize();
-            Files.createDirectories(path.getParent());
+            Files.createDirectories(path.getParent());  // 디렉토리가 없을 경우 생성
             Files.copy(file.getInputStream(), path);
-        } catch (Exception e){
-            logger.error("error save images");
+
+            // 파일 존재 여부 확인
+            if (!Files.exists(path)) {
+                logger.error("File not found after saving: " + savePath);
+                return null;
+            }
+
+            logger.debug("File saved successfully: " + savePath);
+
+        } catch (Exception e) {
+            logger.error("Error saving image: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
-        System.out.println("fileName: " + saveFileName);
-        //return saveFileName;
-        // DB에 저장되는 값이 경로이려면 savePath 이름값이려면 saveFileName
-        //return savePath;
-        return savedPath + saveFileName;
+
+        // DB에 저장되는 값이 경로이려면 savePath, 이름값이려면 saveFileName
+        return savedPath + saveFileName;  // 필요에 따라 변경 가능
     }
 
-    // 이미지 tmp파일에 저장
+    // 이미지파일 image 폴더에 저장
     public String saveImage(MultipartFile file){
         if(file.isEmpty()){
             logger.error("not images");

@@ -10,5 +10,4 @@ public class BoardRequestDto {
     private Long bid;
     private String title;
     private String contents;
-    private MultipartFile image;
 }

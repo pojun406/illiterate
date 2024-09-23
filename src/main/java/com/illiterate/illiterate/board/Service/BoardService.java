@@ -10,6 +10,7 @@ import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.member.enums.RolesType;
 import com.illiterate.illiterate.member.exception.BoardException;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
@@ -63,6 +64,10 @@ public class BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
+        if(userDetails.getMember().getRoles().equals(RolesType.ROLE_ADMIN)){
+            board.setStatus(StatusType.READ);
+        }
+
         return BoardResponseDto.builder()
                 .id(board.getMember().getId())
                 .title(board.getTitle())
@@ -73,17 +78,15 @@ public class BoardService {
     }
 
     @Transactional
-    public void createPost(UserDetailsImpl userDetails, BoardRequestDto requestsDto) {
+    public void createPost(UserDetailsImpl userDetails, BoardRequestDto requestsDto, MultipartFile requestImg) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         Board board = new Board();
-
         String imagePath = null;
-        MultipartFile image = requestsDto.getImage();
 
-        if (image != null && !image.isEmpty()) {
-            imagePath = localFileUtil.saveImage(image);
+        if (requestImg != null && !requestImg.isEmpty()) {
+            imagePath = localFileUtil.saveImage(requestImg);
         }
 
         board.setMember(member);
@@ -98,7 +101,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void updatePost(Long board_index, BoardRequestDto requestsDto, UserDetailsImpl userDetails) {
+    public void updatePost(Long board_index, BoardRequestDto requestsDto, UserDetailsImpl userDetails, MultipartFile requestImg) {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new BoardException(NOT_FOUND_USER));
 
@@ -106,10 +109,9 @@ public class BoardService {
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         String imagePath = null;
-        MultipartFile image = requestsDto.getImage();
 
-        if (image != null && !image.isEmpty()) {
-            imagePath = localFileUtil.saveImage(image);
+        if (requestImg != null && !requestImg.isEmpty()) {
+            imagePath = localFileUtil.saveImage(requestImg);
         }
 
         board.setMember(member);

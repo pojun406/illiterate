@@ -5,8 +5,8 @@ from PIL import Image, ImageTk
 import json
 
 # 이미지 파일 경로 설정
-#image_path = sys.argv[1]
-image_path = 'C:/Users/pojun/Desktop/image.png'
+image_path = sys.argv[1]
+json_name = sys.argv[2]
 
 # OpenCV로 이미지 로드
 image = cv2.imread(image_path)
@@ -127,11 +127,21 @@ else:
     # JSON 저장 및 프로그램 종료 함수
     def save_and_exit():
         if roi_data:
-            with open('roi_data.json', 'w', encoding='utf-8') as json_file:
+            # JSON 파일에 저장
+            with open(json_name, 'w', encoding='utf-8') as json_file:
                 json.dump(roi_data, json_file, ensure_ascii=False, indent=4)
-            print("ROI data saved to roi_data.json")
+            print(f"ROI data saved to {json_name}")
         else:
             print("No ROI data to save")
+
+        # "제목"에 해당하는 벡터값 추출
+        if roi_data:
+            title_vectors = [k for k, v in roi_data.items() if v == "제목"]
+            if title_vectors:
+                print(f"Title vector(s): {title_vectors}")
+                return title_vectors
+            else:
+                print("No vector with '제목' found.")
         root.quit()  # 프로그램 종료
 
     # JSON 저장 및 종료 버튼 추가

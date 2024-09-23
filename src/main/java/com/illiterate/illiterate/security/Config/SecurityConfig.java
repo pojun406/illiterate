@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -52,6 +53,15 @@ public class SecurityConfig {
         this.customAccessDeniedHandler = customAccessDeniedHandler;
         this.memberUserDetailsService = bringUserDetailsService;
     }
+
+    /**
+     * RestTemplate
+     */
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+
 
     /**
      * 패스워드 인코더
@@ -133,7 +143,7 @@ public class SecurityConfig {
      */
     private RequestMatcher[] permitAllRequestMatchers() {
         List<RequestMatcher> requestMatchers = List.of(
-                antMatcher("public/**")
+                antMatcher("/public/**")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);
@@ -147,8 +157,8 @@ public class SecurityConfig {
                 antMatcher("/ocr/**"),
                 antMatcher("/board/**"),
                 antMatcher("/user/**"),
-                antMatcher("/userinfo")
-
+                antMatcher("/userinfo"),
+                antMatcher("/admin/**")
         );
 
         return requestMatchers.toArray(RequestMatcher[]::new);

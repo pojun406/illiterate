@@ -47,7 +47,25 @@ const ImageUpload: React.FC = () => {
     const handleConfirm = () => {
         if (file) {
             setShowModal(false);
-            navigate('/result', { state: { fromImageUpload: true, file, filePath } });
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/ocr/upload', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('OCR 결과:', data);
+                navigate('/result', { state: { fromImageUpload: true, file, filePath, ocrResult: data } });
+            })
+            .catch(error => {
+                console.error('OCR 요청 오류:', error);
+            });
+            
         } else {
             console.error('파일이 선택되지 않았습니다.');
         }
