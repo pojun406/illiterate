@@ -21,9 +21,12 @@ def process_image(image_path):
     for vector in title_vectors:
         image = cv2.imread(image_path)
         # 벡터를 올바르게 언패킹
-        (x1, y1), (x2, y2), (x3, y3), (x4, y4) = vector
-        cropped_image = crop_image_by_vector(image, [(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
-        cropped_images.append(cropped_image)
+        if len(vector) == 4:
+            (x1, y1), (x2, y2), (x3, y3), (x4, y4) = vector
+            cropped_image = crop_image_by_vector(image, [(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
+            cropped_images.append(cropped_image)
+        else:
+            print(f"Invalid vector format: {vector}")
     
     # 4. DB에서 title_img 가져오기
     db_images = get_images_from_db()

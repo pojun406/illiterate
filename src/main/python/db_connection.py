@@ -30,7 +30,11 @@ def get_title_vector():
     cursor.execute("SELECT title_vector FROM paper_info WHERE document_index=1")
     vector = cursor.fetchone()
     conn.close()
-    return json.loads(vector[0])  # JSON 형식으로 반환
+    
+    if vector and vector[0]:
+        return json.loads(vector[0])  # JSON 형식으로 반환
+    else:
+        return []  # 빈 리스트 반환
 
 
 def get_images_from_db():
