@@ -4,16 +4,15 @@ import os
 
 app = Flask(__name__)
 
+BASE_PATH = "C:/Users/404ST011/Documents/GitHub/illiterate/src/main/resources"
+
 @app.route('/ocr', methods=['POST'])
 def ocr_api():
     data = request.get_json()
     if 'image_path' not in data:
         return jsonify({"error": "No image path provided"}), 400
     
-    # 상대 경로로 변경
-    relative_path = data['image_path']
-    base_path = os.path.join(os.path.dirname(__file__), '..', '..', 'resources')
-    image_path = os.path.join(base_path, relative_path)
+    image_path = os.path.join(BASE_PATH, data['image_path'])
     
     if not os.path.isfile(image_path):
         return jsonify({"error": f"Image file does not exist: {image_path}"}), 400
