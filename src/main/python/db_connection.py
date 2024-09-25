@@ -30,7 +30,7 @@ def get_title_vector():
     cursor.execute("SELECT title_vector FROM paper_info WHERE document_index=1")
     vector = cursor.fetchone()
     conn.close()
-    
+
     if vector and vector[0]:
         try:
             # 문자열로 저장된 튜플을 실제 튜플로 변환
