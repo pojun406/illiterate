@@ -29,7 +29,6 @@ class MyFinalPPOCR:
         Returns:
             dict: 가장 높은 정확도의 OCR 결과.
         """
-        preprocessed_img = enhance_image(img)
         best_result = None
         highest_confidence = 0
 
@@ -63,11 +62,10 @@ class MyFinalPPOCR:
         print(f"Received image path: {image_path}")
         print(f"Image exists: {os.path.exists(image_path)}")
         img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-        if img is not None:
-            return self.run_ocr(img)
-        else:
+        if img is None:
             print(f"Failed to read image: {image_path}")
             return {"error": f"Failed to read image: {image_path}"}
+        return self.run_ocr(img)
 
     def compare_images_ssim(self, img1, img2):
         """
