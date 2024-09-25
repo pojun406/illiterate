@@ -22,6 +22,8 @@ def process_image(image_path):
         image = cv2.imread(image_path)
         if image is None:
             print(f"Failed to read image: {image_path}")
+            print(f"File exists: {os.path.exists(image_path)}")
+            print(f"File size: {os.path.getsize(image_path) if os.path.exists(image_path) else 'N/A'}")
             continue
         # 벡터를 올바르게 언패킹
         if len(vector) == 4:
