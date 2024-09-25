@@ -61,12 +61,11 @@ public class OcrService {
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
         String imagePath = localFileUtil.saveImageTmp(file);
-//        String absolute = "C:/Users/404ST011/Documents/GitHub/illiterate/src/main/resources" + imagePath;
-
         if (imagePath == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
         }
+        log.info("Image path: {}", imagePath);
 
         // 2. Python API 호출하여 OCR 수행
         String ocrResult = callPythonOcrApi(imagePath);
@@ -76,12 +75,15 @@ public class OcrService {
         }
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
-        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);  // 이 부분은 추후 확장 가능
+        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);
         OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
 
-        // 4. 결과 반환
+        // 4. 임시 파일 삭제
+        localFileUtil.deleteImageTmp(imagePath);
+
+        // 5. 결과 반환
         return OcrResponseDto.builder()
-                .ocrText(ocrEntity.getOcrData())  // OCR 데이터를 반환
+                .ocrText(ocrEntity.getOcrData())
                 .build();
     }
 
@@ -93,22 +95,25 @@ public class OcrService {
      */
     private String callPythonOcrApi(String imagePath) {
         try {
-            // 헤더 설정: Content-Type을 application/json로 설정
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // 경로 정보를 JSON으로 감싸서 전송
             Map<String, String> body = new HashMap<>();
             body.put("image_path", imagePath);
 
-            // 요청 엔티티 생성
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
 
-            // Python 서버에 파일 경로를 POST로 전송
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
 
-            return response.getBody();  // OCR 결과를 반환
+            log.info("Sending request to Python OCR API. Image path: {}", imagePath);
+            log.info("Python OCR API response: {}", response.getBody());
 
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                log.error("Python OCR API returned non-successful status code: {}", response.getStatusCodeValue());
+                return null;
+            }
         } catch (Exception e) {
             log.error("Error calling Python OCR API", e);
             return null;

@@ -93,4 +93,16 @@ public class LocalFileUtil {
         //return savePath;
         return savedPath + saveFileName;
     }
+
+    public boolean deleteImageTmp(String imagePath) {
+        try {
+            Path path = Paths.get(imagePath).normalize();
+            Files.deleteIfExists(path);
+            logger.debug("Temporary file deleted successfully: " + imagePath);
+            return true;
+        } catch (IOException e) {
+            logger.error("Error deleting temporary file: " + e.getMessage());
+            return false;
+        }
+    }
 }

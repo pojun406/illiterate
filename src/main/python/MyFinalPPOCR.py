@@ -1,7 +1,10 @@
+import os
+
 import cv2
 from paddleocr import PaddleOCR
 from image_preprocessing import enhance_image, crop_image_by_vector
 from skimage.metrics import structural_similarity as ssim
+import numpy as np
 
 
 class MyFinalPPOCR:
@@ -57,12 +60,14 @@ class MyFinalPPOCR:
         Returns:
             dict: 가장 높은 정확도의 OCR 결과.
         """
-        img = cv2.imread(image_path)
+        print(f"Received image path: {image_path}")
+        print(f"Image exists: {os.path.exists(image_path)}")
+        img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         if img is not None:
             return self.run_ocr(img)
         else:
             print(f"Failed to read image: {image_path}")
-            return None
+            return {"error": f"Failed to read image: {image_path}"}
 
     def compare_images_ssim(self, img1, img2):
         """
