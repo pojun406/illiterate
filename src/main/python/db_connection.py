@@ -33,13 +33,12 @@ def get_title_vector():
     
     if vector and vector[0]:
         try:
-            # VARCHAR 형식의 문자열을 JSON으로 변환
-            json_str = vector[0].replace("'", '"')  # 작은따옴표를 큰따옴표로 변경
-            json_data = json.loads(json_str)
-            print(f"JSON data: {json_data}")  # 디버깅을 위한 출력
-            return json_data
-        except json.JSONDecodeError as e:
-            print(f"JSON decode error: {e}")
+            # 문자열로 저장된 튜플을 실제 튜플로 변환
+            title_vector = eval(vector[0])
+            print(f"Title vector: {title_vector}")  # 디버깅을 위한 출력
+            return [title_vector]  # 리스트로 감싸서 반환
+        except Exception as e:
+            print(f"Error processing vector: {e}")
             print(f"Original data: {vector[0]}")  # 원본 데이터 출력
             return []
     else:

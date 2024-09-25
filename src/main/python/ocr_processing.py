@@ -20,6 +20,9 @@ def process_image(image_path):
     cropped_images = []
     for vector in title_vectors:
         image = cv2.imread(image_path)
+        if image is None:
+            print(f"Failed to read image: {image_path}")
+            continue
         # 벡터를 올바르게 언패킹
         if len(vector) == 4:
             (x1, y1), (x2, y2), (x3, y3), (x4, y4) = vector
