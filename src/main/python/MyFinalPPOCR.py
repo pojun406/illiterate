@@ -61,6 +61,7 @@ class MyFinalPPOCR:
         if img is not None:
             return self.run_ocr(img)
         else:
+            print(f"Failed to read image: {image_path}")
             return None
 
     def compare_images_ssim(self, img1, img2):
