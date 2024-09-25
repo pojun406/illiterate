@@ -33,11 +33,14 @@ def get_title_vector():
     
     if vector and vector[0]:
         try:
-            json_data = json.loads(vector[0])
+            # VARCHAR 형식의 문자열을 JSON으로 변환
+            json_str = vector[0].replace("'", '"')  # 작은따옴표를 큰따옴표로 변경
+            json_data = json.loads(json_str)
             print(f"JSON data: {json_data}")  # 디버깅을 위한 출력
             return json_data
         except json.JSONDecodeError as e:
             print(f"JSON decode error: {e}")
+            print(f"Original data: {vector[0]}")  # 원본 데이터 출력
             return []
     else:
         print("No data found or empty string")  # 디버깅을 위한 출력
