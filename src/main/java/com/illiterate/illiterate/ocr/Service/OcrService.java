@@ -61,15 +61,15 @@ public class OcrService {
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
         String imagePath = localFileUtil.saveImageTmp(file);
-        String absolute = "C:/Users/404ST011/Documents/GitHub/illiterate/src/main/resources" + imagePath;
+//        String absolute = "C:/Users/404ST011/Documents/GitHub/illiterate/src/main/resources" + imagePath;
 
-        if (absolute == null) {
+        if (imagePath == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
         }
 
         // 2. Python API 호출하여 OCR 수행
-        String ocrResult = callPythonOcrApi(absolute);
+        String ocrResult = callPythonOcrApi(imagePath);
         if (ocrResult == null) {
             log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
