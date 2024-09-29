@@ -33,7 +33,7 @@ class MyFinalPPOCR:
         highest_confidence = 0
 
         for lang, ocr_model in self.ocr_models.items():
-            ocr_result = ocr_model.ocr(img, cls=False)
+            ocr_result = ocr_model.ocr(preprocessed_img, cls=False)
 
             # 각 결과에서 가장 높은 정확도를 가진 결과만 선택
             for line in ocr_result:
