@@ -30,12 +30,16 @@ def enhance_image(image):
     """
     denoised_image = cv2.fastNlMeansDenoisingColored(image, None, 10, 10, 7, 21)
     enhanced_image = cv2.detailEnhance(denoised_image, sigma_s=10, sigma_r=0.15)
-    lab = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
+
+    # 그레이스케일로 변환
+    gray = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2GRAY)
+
+    # CLAHE 적용
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    cl = clahe.apply(l)
-    limg = cv2.merge((cl, a, b))
-    return cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    cl = clahe.apply(gray)
+
+    # 다시 BGR로 변환
+    return cv2.cvtColor(cl, cv2.COLOR_GRAY2BGR)
 
 
 def crop_image_by_vector(image, vector):
@@ -49,14 +53,24 @@ def crop_image_by_vector(image, vector):
     Returns:
         numpy.ndarray: 잘라낸 이미지 배열.
     """
-    (top_left, top_right, bottom_left, bottom_right) = vector
-    x1, y1 = top_left
-    x2, y2 = top_right
-    x3, y3 = bottom_left
-    x4, y4 = bottom_right
-    start_x = int(min(x1, x3))
-    start_y = int(min(y1, y3))
-    end_x = int(max(x2, x4))
-    end_y = int(max(y2, y4))
-    cropped_image = image[start_y:end_y, start_x:end_x]
-    return cropped_image
+    try:
+        (top_left, top_right, bottom_left, bottom_right) = vector
+        x1, y1 = map(int, top_left)
+        x2, y2 = map(int, top_right)
+        x3, y3 = map(int, bottom_left)
+        x4, y4 = map(int, bottom_right)
+        start_x = max(0, min(x1, x3))
+        start_y = max(0, min(y1, y3))
+        end_x = min(image.shape[1], max(x2, x4))
+        end_y = min(image.shape[0], max(y2, y4))
+        if start_x >= end_x or start_y >= end_y:
+            raise ValueError(f"Invalid crop coordinates: start_x={start_x}, end_x={end_x}, start_y={start_y}, end_y={end_y}")
+        cropped_image = image[start_y:end_y, start_x:end_x]
+        if cropped_image.size == 0:
+            raise ValueError(f"Cropped image is empty: shape={cropped_image.shape}")
+        return cropped_image
+    except Exception as e:
+        print(f"Error in crop_image_by_vector: {str(e)}")
+        print(f"Vector: {vector}")
+        print(f"Image shape: {image.shape}")
+        raise

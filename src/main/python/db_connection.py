@@ -1,5 +1,6 @@
 import json
 import mysql.connector
+import os
 
 
 def get_database_connection():
@@ -48,17 +49,22 @@ def get_title_vector():
 
 def get_images_from_db():
     """
-    paper_info 테이블에서 title_text 이미지 경로를 가져옵니다.
+    paper_info 테이블에서 title_img 이미지 경로를 가져옵니다.
 
     Returns:
         list: 이미지 경로 리스트
     """
     conn = get_database_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT title_text FROM paper_info")
+    cursor.execute("SELECT title_img FROM paper_info")
     images = cursor.fetchall()
     conn.close()
-    return [img[0] for img in images]
+    base_path = "C:/Users/user/Documents/Github/illiterate/src/main/resources"
+
+    for img in images:
+        print(f"Image path from DB: {img[0]}")  # 각 이미지 경로 출력
+
+    return [os.path.join(base_path, img[0]) for img in images]
 
 
 def get_vectors_by_type(image_type):

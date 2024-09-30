@@ -4,13 +4,14 @@ import os
 
 app = Flask(__name__)
 
-BASE_PATH = "C:/Users/404ST011/Documents/GitHub/illiterate/src/main/resources"
+BASE_PATH = "C:/Users/user/Documents/Github/illiterate/src/main/resources"
 
 @app.route('/ocr', methods=['POST'])
 def ocr_api():
     data = request.get_json()
     relative_image_path = data['image_path']
-    full_image_path = os.path.join(BASE_PATH, relative_image_path.lstrip('/'))
+    full_image_path = os.path.normpath(os.path.join(BASE_PATH, relative_image_path.lstrip('/')))
+    full_image_path = full_image_path.replace('\\', '/')
 
     print(f"Relative image path: {relative_image_path}")
     print(f"Full image path: {full_image_path}")

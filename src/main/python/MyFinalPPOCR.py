@@ -62,8 +62,13 @@ class MyFinalPPOCR:
         """
         print(f"Received image path: {image_path}")
         print(f"Image exists: {os.path.exists(image_path)}")
+        image_path = os.path.normpath(image_path)
         img = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
         if img is not None:
+            if len(img.shape) == 2:
+                img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+            elif img.shape[2] == 4:
+                img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
             return self.run_ocr(img)
         else:
             print(f"Failed to read image: {image_path}")
@@ -80,6 +85,14 @@ class MyFinalPPOCR:
         Returns:
             float: 두 이미지 간의 SSIM 유사도 (0~1, 1에 가까울수록 유사).
         """
+        # 이미지 크기를 맞춤
+        h1, w1 = img1.shape[:2]
+        h2, w2 = img2.shape[:2]
+        h = min(h1, h2)
+        w = min(w1, w2)
+        img1 = cv2.resize(img1, (w, h))
+        img2 = cv2.resize(img2, (w, h))
+
         gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
@@ -100,7 +113,7 @@ class MyFinalPPOCR:
         Returns:
             str: 가장 유사한 문서 타입 (유사한 문서가 없으면 "Unknown" 반환).
         """
-        image = cv2.imread(image_path)
+        image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR)
         if image is None:
             return "Image not found"
 
