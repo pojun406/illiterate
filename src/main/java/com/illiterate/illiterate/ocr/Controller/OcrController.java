@@ -1,9 +1,11 @@
 package com.illiterate.illiterate.ocr.Controller;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
+import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
 
 
 @RestController
@@ -41,10 +45,13 @@ public class OcrController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         // 로그인된 사용자 정보에서 Member 엔티티 가져오기
-        Member member = userDetails.getMember();
+        Member member = memberRepository.findByIndex(userDetails.getId())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // OCR 처리 및 결과 반환
         OcrResponseDto ocrResult = ocrService.uploadImageAndProcessOcr(file, member);
+
+        System.out.println(ocrResult);
 
         // OCR 결과를 클라이언트에게 반환
         return ResponseEntity.ok(new BfResponse<>(ocrResult));

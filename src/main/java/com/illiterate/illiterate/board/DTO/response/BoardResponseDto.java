@@ -9,6 +9,7 @@ import lombok.Getter;
 @Builder
 public class BoardResponseDto {
     private Long id; // user_index
+    private String userId; // 유저 ID
     private String title;
     private String content;
     private String imagePath;

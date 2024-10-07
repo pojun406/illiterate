@@ -75,18 +75,21 @@ public class OcrService {
             log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
         }
+/*
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
         PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);
         OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+*/
 
         // 4. 임시 파일 삭제
         localFileUtil.deleteImageTmp(imagePath);
-
+/*
         // 5. 결과 반환
         return OcrResponseDto.builder()
                 .ocrText(ocrEntity.getOcrData())
-                .build();
+                .build();*/
+        return null;
     }
 
     /**
@@ -148,18 +151,5 @@ public class OcrService {
         }
 
         return ocrRepository.save(ocrEntity);
-    }
-
-    /**
-     * OCR 결과로 PaperInfo 엔티티를 찾는 로직 (추후 필요에 따라 수정 가능)
-     *
-     * @param ocrResult OCR 결과 텍스트
-     * @return 매칭된 PaperInfo 엔티티
-     */
-    private PaperInfo findMatchingPaperInfo(String ocrResult) {
-        // TODO: OCR 결과를 바탕으로 PaperInfo와 매칭하는 로직 구현
-        return paperInfoRepository.findAll().stream()
-                .findFirst()  // 예시로 첫 번째 PaperInfo를 반환, 실제 로직 필요
-                .orElse(null);
     }
 }
