@@ -96,7 +96,7 @@ def process_image(image_path):
                 vector = parse_vector(vector_str)
 
                 # 벡터에 맞춰 이미지를 자른 후 저장
-                # cropped_image = crop_image_by_vector(cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR), vector)
+                cropped_image = crop_image_by_vector(cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_COLOR), vector)
                 # cv2.imwrite(f"cropped_{label}.png", cropped_image)
 
                 # OCR 실행 및 결과 처리

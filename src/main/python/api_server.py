@@ -6,7 +6,7 @@ import os  # 파일 경로 및 시스템 관련 작업을 위한 모듈
 app = Flask(__name__)
 
 # 서버에서 이미지 파일을 찾기 위한 기본 경로 설정
-BASE_PATH = "C:/Users/user/Documents/Github/illiterate/src/main/resources"
+BASE_PATH = "D:/Project/illiterate/src/main/resources"
 
 # '/ocr' 경로에 POST 요청을 처리하는 API 엔드포인트 생성
 @app.route('/ocr', methods=['POST'])
