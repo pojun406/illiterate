@@ -71,14 +71,16 @@ public class LocalFileUtil {
 
     public String adjustImagePath(String imagePath) {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // 윈도우 호스트에서 실행 중인 경우 호스트의 이미지 경로를 컨테이너 내부 경로로 변환
             return imagePath.replace("C:\\app\\image", "/app/image").replace("\\", "/");
+        } else if (imagePath.startsWith("/app/image")) {
+            // 만약 경로가 이미 /app/image로 시작한다면 추가 변환이 필요 없음
+            return imagePath;
         } else {
-            if (imagePath.startsWith("/app/image")) {
-                return imagePath;
-            } else {
-                return "/app/image/" + Paths.get(imagePath).getFileName().toString();
-            }
+            // 그 외의 경우 경로가 잘못 설정되는 것을 방지하기 위해 단순히 파일명을 덧붙임
+            return "/app/image/" + Paths.get(imagePath).getFileName().toString();
         }
     }
+
 
 }
