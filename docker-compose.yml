@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile  # 주어진 Dockerfile 이름이 'Dockerfile'인 경우
     container_name: ocr-api
     volumes:
-      - D:/app/image:/app/image  # 호스트의 이미지 폴더를 컨테이너와 연결
+      - C:/app/image:/app/image  # 호스트의 이미지 폴더를 컨테이너와 연결
     ports:
       - "5000:5000"  # 호스트의 5000 포트를 컨테이너의 5000 포트와 연결
     environment:

@@ -71,7 +71,7 @@ public class LocalFileUtil {
 
     public String adjustImagePath(String imagePath) {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            return imagePath.replace("D:\\app\\image", "/app/image").replace("\\", "/");
+            return imagePath.replace("C:\\app\\image", "/app/image").replace("\\", "/");
         } else {
             if (imagePath.startsWith("/app/image")) {
                 return imagePath;
