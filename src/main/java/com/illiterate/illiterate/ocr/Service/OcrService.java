@@ -50,69 +50,47 @@ public class OcrService {
     private RestTemplate restTemplate;
 
     @Value("${python.ocr.api.url}")
-    private String pythonOcrApiUrl;  // Python 서버의 OCR API URL
+    private String pythonOcrApiUrl;
 
     private final OcrRepository ocrRepository;
     private final PaperInfoRepository paperInfoRepository;
     private final LocalFileUtil localFileUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * 이미지 업로드 및 OCR 처리 후 결과 저장
-     */
+    // 이미지 업로드 및 OCR 처리 후 결과 저장
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
-        // 1. 이미지 업로드 및 경로 가져오기
-        String imagePath = localFileUtil.saveImageTmp(file);
+        // 이미지 저장
+        String imagePath = localFileUtil.saveImage(file);
         if (imagePath == null) {
-            log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
         }
         log.info("Image path: {}", imagePath);
 
-        // 2. Python API 호출하여 OCR 수행
+        // Python API 호출하여 OCR 수행
         String ocrResult = callPythonOcrApi(imagePath);
         if (ocrResult == null) {
-            log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
         }
-/*
 
-        // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
-        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);
-        OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
-*/
+        // 임시 파일 삭제
+        localFileUtil.deleteImage(imagePath);
 
-        // 4. 임시 파일 삭제
-        localFileUtil.deleteImageTmp(imagePath);
-/*
-        // 5. 결과 반환
-        return OcrResponseDto.builder()
-                .ocrText(ocrEntity.getOcrData())
-                .build();*/
-        return null;
+        return OcrResponseDto.builder().ocrText(ocrResult).build();
     }
 
-    /**
-     * Python OCR API를 호출하여 이미지에 대해 OCR 작업을 수행
-     *
-     * @param imagePath 업로드한 이미지 경로
-     * @return OCR 결과 텍스트
-     */
     private String callPythonOcrApi(String imagePath) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
+            // 이미지 경로를 컨테이너에 맞게 변환
+            String adjustedImagePath = localFileUtil.adjustImagePath(imagePath);
+
             Map<String, String> body = new HashMap<>();
-            body.put("image_path", imagePath);
+            body.put("image_path", adjustedImagePath);
 
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
-
-            restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
-
-            log.info("Sending request to Python OCR API. Image path: {}", imagePath);
-            log.info("Python OCR API response: {}", response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
@@ -124,32 +102,5 @@ public class OcrService {
             log.error("Error calling Python OCR API", e);
             return null;
         }
-    }
-
-    /**
-     * OCR 결과를 JSON 형식으로 저장
-     *
-     * @param member OCR을 요청한 사용자
-     * @param paperInfo OCR과 연관된 PaperInfo 엔티티
-     * @param ocrResult OCR 결과 텍스트
-     * @return 저장된 OCR 엔티티
-     */
-    private OCR saveOcrResult(Member member, PaperInfo paperInfo, String ocrResult) {
-        OCR ocrEntity = new OCR();
-        ocrEntity.setMember(member);
-        ocrEntity.setPaperInfo(paperInfo);
-
-        try {
-            // OCR 결과를 JSON 형식으로 저장
-            Map<String, Object> ocrDataMap = new HashMap<>();
-            ocrDataMap.put("ocr_text", ocrResult);
-            String ocrDataJson = objectMapper.writeValueAsString(ocrDataMap);
-            ocrEntity.setOcrData(ocrDataJson);
-        } catch (JsonProcessingException e) {
-            log.error("Error converting OCR result to JSON", e);
-            throw new RuntimeException("Error saving OCR result.");
-        }
-
-        return ocrRepository.save(ocrEntity);
     }
 }

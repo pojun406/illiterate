@@ -11,7 +11,11 @@ from pathlib import Path
 import locale
 
 # 로케일 설정 (한국어 UTF-8)
-locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+try:
+    locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+except locale.Error:
+    print("Warning: 'ko_KR.UTF-8' is not available. Setting to default locale.")
+    locale.setlocale(locale.LC_ALL, '')
 
 # OCR 객체 초기화
 ocr = MyFinalPPOCR()
