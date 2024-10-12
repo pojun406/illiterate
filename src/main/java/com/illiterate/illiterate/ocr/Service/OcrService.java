@@ -145,4 +145,23 @@ public class OcrService {
             return null;
         }
     }
+
+    private OCR saveOcrResult(Member member, PaperInfo paperInfo, String ocrResult) {
+        OCR ocrEntity = new OCR();
+        ocrEntity.setMember(member);
+        ocrEntity.setPaperInfo(paperInfo);
+
+        try {
+            // OCR 결과를 JSON 형식으로 저장
+            Map<String, Object> ocrDataMap = new HashMap<>();
+            ocrDataMap.put("ocr_text", ocrResult);
+            String ocrDataJson = objectMapper.writeValueAsString(ocrDataMap);
+            ocrEntity.setOcrData(ocrDataJson);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting OCR result to JSON", e);
+            throw new RuntimeException("Error saving OCR result.");
+        }
+
+        return ocrRepository.save(ocrEntity);
+    }
 }
