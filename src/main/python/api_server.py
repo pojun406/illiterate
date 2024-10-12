@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
-from ocr_processing import process_image
-import os
+from flask import Flask, request, Response, jsonify  # Flask 웹 프레임워크 및 JSON 응답을 위한 모듈
+from ocr_processing import process_image  # OCR 처리 함수 불러오기
+import os  # 파일 경로 및 시스템 관련 작업을 위한 모듈
+import json
 
 app = Flask(__name__)
 
@@ -33,8 +34,11 @@ def ocr_api():
         return jsonify({"error": f"No read permission for file: {full_image_path}"}), 400
 
     try:
+        # 이미지 처리 및 OCR 실행
         result = process_image(full_image_path)
-        return jsonify(result)
+        response_data = json.dumps(result, ensure_ascii=False)
+        response = Response(response_data, content_type='application/json; charset=utf-8')
+        return response
     except Exception as e:
         error_message = f"Error occurred: {str(e)}"
         print(error_message)
