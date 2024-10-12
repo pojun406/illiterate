@@ -51,7 +51,7 @@ public class MemberService {
             throw new MemberException(DUPLICATED_MEMBER_EMAIL);
         } else if (memberRepository.existsByEmail(joinDto.getEmail())) {
             System.out.println("중복된 이메일입니다: " + joinDto.getEmail());
-            throw new MemberException(DUPLICATED_MEMBER_PHONE_NUMBER);
+            throw new MemberException(DUPLICATED_MEMBER_EMAIL);
         }
 
         Member member = ConvertUtil.toDtoOrEntity(joinDto, Member.class);

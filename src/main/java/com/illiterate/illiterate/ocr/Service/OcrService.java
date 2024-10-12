@@ -1,14 +1,17 @@
 package com.illiterate.illiterate.ocr.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
+import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Entity.PaperInfo;
@@ -40,6 +43,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_INFO;
 
 @Slf4j
 @Service
@@ -75,21 +79,46 @@ public class OcrService {
             log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
         }
-/*
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
-        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);
-        OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
-*/
+        try {
 
-        // 4. 임시 파일 삭제
-        localFileUtil.deleteImageTmp(imagePath);
-/*
-        // 5. 결과 반환
-        return OcrResponseDto.builder()
-                .ocrText(ocrEntity.getOcrData())
-                .build();*/
-        return null;
+            JsonNode rootNode = objectMapper.readTree(ocrResult);
+
+            // document_index 키가 있는지 확인
+            JsonNode documentIndexNode = rootNode.get("document_index");
+            if (documentIndexNode == null || documentIndexNode.isNull()) {
+                log.error("document_index not found in OCR result.");
+                throw new RuntimeException("document_index not found in OCR result.");
+            }
+
+            Long documentIdx = documentIndexNode.asLong();
+            log.info("문서 번호 : {}", documentIdx);
+
+            // PaperInfo 찾기
+            PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
+                    .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+            OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+
+            // 4. 임시 파일 삭제
+            localFileUtil.deleteImageTmp(imagePath);
+
+            // 5. 결과 반환
+            return OcrResponseDto.builder()
+                    .ocrText(ocrEntity.getOcrData())
+                    .build();
+
+        } catch (MemberException e) {
+            log.error("MemberException occurred: {}", e.getMessage());
+            throw new MemberException(e.getErrorCode());
+        } catch (JsonMappingException e) {
+            log.error("Error mapping JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to map JSON.");
+        } catch (JsonProcessingException e) {
+            log.error("Error processing JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to process JSON.");
+        }
     }
 
     /**
@@ -110,9 +139,6 @@ public class OcrService {
 
             restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
-
-            log.info("Sending request to Python OCR API. Image path: {}", imagePath);
-            log.info("Python OCR API response: {}", response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
