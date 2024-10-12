@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.ocr.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,6 +10,7 @@ import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Entity.PaperInfo;
@@ -40,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_INFO;
 
 @Slf4j
 @Service
@@ -57,25 +60,64 @@ public class OcrService {
     private final LocalFileUtil localFileUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 이미지 업로드 및 OCR 처리 후 결과 저장
+    /**
+     * 이미지 업로드 및 OCR 처리 후 결과 저장
+     */
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
-        // 이미지 저장
+        // 1. 이미지 업로드 및 경로 가져오기
         String imagePath = localFileUtil.saveImage(file);
         if (imagePath == null) {
+            log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
         }
         log.info("Image path: {}", imagePath);
 
-        // Python API 호출하여 OCR 수행
+        // 2. Python API 호출하여 OCR 수행
         String ocrResult = callPythonOcrApi(imagePath);
         if (ocrResult == null) {
+            log.error("OCR processing failed.");
             throw new RuntimeException("OCR processing failed.");
         }
 
-        // 임시 파일 삭제
-        localFileUtil.deleteImage(imagePath);
+        // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
+        try {
 
-        return OcrResponseDto.builder().ocrText(ocrResult).build();
+            JsonNode rootNode = objectMapper.readTree(ocrResult);
+
+            // document_index 키가 있는지 확인
+            JsonNode documentIndexNode = rootNode.get("document_index");
+            if (documentIndexNode == null || documentIndexNode.isNull()) {
+                log.error("document_index not found in OCR result.");
+                throw new RuntimeException("document_index not found in OCR result.");
+            }
+
+            Long documentIdx = documentIndexNode.asLong();
+            log.info("문서 번호 : {}", documentIdx);
+
+            // PaperInfo 찾기
+            PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
+                    .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+            OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+
+            // 4. 임시 파일 삭제
+            //localFileUtil.deleteImageTmp(imagePath);
+
+            // 5. 결과 반환
+            return OcrResponseDto.builder()
+                    .ocrText(ocrEntity.getOcrData())
+                    .build();
+
+        } catch (MemberException e) {
+            log.error("MemberException occurred: {}", e.getMessage());
+            throw new MemberException(e.getErrorCode());
+        } catch (JsonMappingException e) {
+            log.error("Error mapping JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to map JSON.");
+        } catch (JsonProcessingException e) {
+            log.error("Error processing JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to process JSON.");
+        }
     }
 
     private String callPythonOcrApi(String imagePath) {
