@@ -108,7 +108,8 @@ def process_image(image_path):
 
                     # OCR 결과 처리
                     if isinstance(ocr_result, dict) and 'error' in ocr_result:
-                        processed_result = ocr_result
+                        #processed_result = ocr_result
+                        processed_result = "" # 빈값 요청으로 인해 "error": "No OCR result found" 라고 출력하는게 아니라 그냥 text : ""로 출력되게
                     elif isinstance(ocr_result, list) and len(ocr_result) > 0:
                         combined_text = ' '.join([r['text'] for r in ocr_result])
                         processed_result = combined_text
