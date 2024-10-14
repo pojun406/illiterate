@@ -3,7 +3,8 @@ package com.illiterate.illiterate.ocr.Entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.Date;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -22,14 +23,32 @@ public class PaperInfo {
     @Column(name = "title_img",nullable = false)
     private String titleImg;
 
+    @Column(name = "title_text", nullable = false)
+    private String titleText;
+
     @Column(name = "img_info", columnDefinition = "JSON")
     private String imgInfo;
 
+    @Column(name = "empty_img")
+    private String emptyImg;
+
     @Column(name = "created_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt = new Date();
+    private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "modify_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt = new Date();
+    private LocalDateTime modifyAt;
+
+    @PrePersist
+    protected void onCreate(){
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        modifyAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        modifyAt = LocalDateTime.now();
+    }
 }

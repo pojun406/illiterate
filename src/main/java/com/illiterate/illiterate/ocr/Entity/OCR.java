@@ -3,11 +3,8 @@ package com.illiterate.illiterate.ocr.Entity;
 import com.illiterate.illiterate.member.Entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -33,11 +30,29 @@ public class OCR {
     @Column(name = "ocr_data", columnDefinition = "JSON", nullable = false)
     private String ocrData; // OCR 결과 JSON으로 저장
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "image")
+    private String image;
+
     @Column(name = "created_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt = new Date();
+    private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "modify_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt = new Date();
+    private LocalDateTime modifyAt;
+
+    @PrePersist
+    protected void onCreate(){
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        modifyAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        modifyAt = LocalDateTime.now();
+    }
 }

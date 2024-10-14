@@ -37,6 +37,9 @@ def ocr_api():
         # 이미지 처리 및 OCR 실행
         result = process_image(full_image_path)
         response = Response(result, content_type='application/json; charset=utf-8')
+        with open('ocr_result.json', 'w', encoding='utf-8') as json_file:
+            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4) # 테스트용 json파일 출력
+
         return response
     except Exception as e:
         error_message = f"Error occurred: {str(e)}"

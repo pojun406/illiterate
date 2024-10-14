@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class OcrRequestDto {
-    private Long OcrId;
-    private Long userId;
-    private String imagePath;
+    private String title;
+    private String ocrData;
 }
