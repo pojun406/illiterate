@@ -93,6 +93,7 @@ public class OcrService {
 
             Long documentIdx = documentIndexNode.asLong();
             log.info("문서 번호 : {}", documentIdx);
+            log.info("결과값 : {}", ocrResult);
 
             // PaperInfo 찾기
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
