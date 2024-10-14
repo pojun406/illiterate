@@ -28,6 +28,7 @@ import java.util.List;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.*;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.BAD_REQUEST;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
 
 @Slf4j
 @Service
@@ -45,7 +46,7 @@ public class BoardService {
         for (Board board : boardList) {
             responseDtoList.add(
                     BoardResponseDto.builder()
-                            .id(board.getMember().getId())
+                            .id(board.getMember().getIndex())
                             .title(board.getTitle())
                             .content(board.getContent())
                             .imagePath(board.getRequestImg())
@@ -64,12 +65,16 @@ public class BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if(userDetails.getMember().getRoles().equals(RolesType.ROLE_ADMIN)){
+        Member member = memberRepository.findByIndex(userDetails.getId())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+
+        if(userDetails.getAuthorities().equals(RolesType.ROLE_ADMIN)){
             board.setStatus(StatusType.READ);
         }
 
         return BoardResponseDto.builder()
-                .id(board.getMember().getId())
+                .id(member.getIndex())
+                .userId(member.getUserId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .imagePath(board.getRequestImg())
@@ -124,12 +129,12 @@ public class BoardService {
         boardRepository.save(board);
     }
     @Transactional
-    public void deletePost(Long board_index, UserDetailsImpl userDetails) {
+    public void deletePost(Long bid, UserDetailsImpl userDetails) {
 
-        Board board = boardRepository.findByBoardId(board_index)
+        Board board = boardRepository.findByBoardId(bid)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if ((!(board.getMember().getId().equals(userDetails.getId())))) {
+        if (board.getMember().getIndex().equals(userDetails.getId())) {
             throw new MemberException(BAD_REQUEST);
         }
         boardRepository.delete(board);

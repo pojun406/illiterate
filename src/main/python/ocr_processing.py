@@ -11,7 +11,11 @@ from pathlib import Path
 import locale
 
 # 로케일 설정 (한국어 UTF-8)
-locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+try:
+    locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+except locale.Error:
+    print("Warning: 'ko_KR.UTF-8' is not available. Setting to default locale.")
+    locale.setlocale(locale.LC_ALL, '')
 
 # OCR 객체 초기화
 ocr = MyFinalPPOCR()
@@ -108,11 +112,11 @@ def process_image(image_path):
 
                     # OCR 결과 처리
                     if isinstance(ocr_result, dict) and 'error' in ocr_result:
-                        processed_result = ocr_result
+                        #processed_result = ocr_result
+                        processed_result = ""
                     elif isinstance(ocr_result, list) and len(ocr_result) > 0:
                         combined_text = ' '.join([r['text'] for r in ocr_result])
-                        confidence = sum([r['confidence'] for r in ocr_result]) / len(ocr_result)
-                        processed_result = {'text': combined_text, 'confidence': confidence}
+                        processed_result = combined_text
                     else:
                         processed_result = {"error": "Unexpected OCR result format", "raw_result": str(ocr_result)}
 
@@ -125,7 +129,7 @@ def process_image(image_path):
                 results.append({
                     "vector": vector_str,
                     "label": label,
-                    "ocr_result": processed_result
+                    "text": processed_result
                 })
 
         # 최종 결과를 JSON 형식으로 반환
@@ -134,7 +138,7 @@ def process_image(image_path):
             "results": results
         }
 
-        return final_result
+        return json.dumps(final_result, ensure_ascii=False, indent=2)
 
     except Exception as e:
         print(f"Error processing image: {e}")

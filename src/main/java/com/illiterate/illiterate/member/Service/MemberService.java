@@ -62,7 +62,7 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        return member.getId();
+        return member.getIndex();
     }
     public boolean checkId(String userid){
         log.debug("user id : " + userid);
@@ -254,12 +254,12 @@ public class MemberService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // redis 갱신된 refresh token 유효성 검증
-        if (!redisRepository.hasKey(member.getId())) {
+        if (!redisRepository.hasKey(member.getIndex())) {
             throw new MemberException(NOT_FOUND_REFRESH_TOKEN);
         }
 
         // redis에 저장된 토큰과 비교
-        if (!redisRepository.getRefreshToken(member.getId()).get("refreshToken").equals(oldRefreshToken)) {
+        if (!redisRepository.getRefreshToken(member.getIndex()).get("refreshToken").equals(oldRefreshToken)) {
             throw new MemberException(NOT_MATCH_REFRESH_TOKEN);
         }
 

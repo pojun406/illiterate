@@ -28,81 +28,59 @@ public class LocalFileUtil {
     @Value("${file.path.db}")
     private String savedPath;
 
-    // 이미지 tmp파일에 저장
-    public String saveImageTmp(MultipartFile file) {
+
+    @Value("${IMAGE_PATH:/app/image}")
+    private String imagePath;  // 기본 이미지 경로 설정
+
+    public String saveImage(MultipartFile file) {
         if (file.isEmpty()) {
             logger.error("File is empty.");
             return null;
         }
 
         String originalFileName = file.getOriginalFilename();
-        // 확장자 추출
         String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         String uuid = UUID.randomUUID().toString();
         String saveFileName = uuid + extension;
-        String savePath = Paths.get(tmpfilePath, saveFileName).toAbsolutePath().toString();
-
-        try {
-            Path path = Paths.get(savePath).normalize();
-            Files.createDirectories(path.getParent());  // 디렉토리가 없을 경우 생성
-            Files.copy(file.getInputStream(), path);
-
-            // 파일 존재 여부 확인
-            if (!Files.exists(path)) {
-                logger.error("File not found after saving: " + savePath);
-                return null;
-            }
-
-            logger.debug("File saved successfully: " + savePath);
-
-        } catch (Exception e) {
-            logger.error("Error saving image: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-
-        // DB에 저장되는 값이 경로이려면 savePath, 이름값이려면 saveFileName
-        return savedPath + saveFileName;  // 필요에 따라 변경 가능
-    }
-
-    // 이미지파일 image 폴더에 저장
-    public String saveImage(MultipartFile file){
-        if(file.isEmpty()){
-            logger.error("not images");
-            return null;
-        }
-        String originalFileName = file.getOriginalFilename();
-        //확장자 추출
-        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        String uuid = UUID.randomUUID().toString();
-        String saveFileName = uuid + extension;
-        String savePath = tmpfilePath + saveFileName;
+        String savePath = Paths.get(imagePath, saveFileName).toAbsolutePath().toString();
 
         try {
             Path path = Paths.get(savePath).normalize();
             Files.createDirectories(path.getParent());
             Files.copy(file.getInputStream(), path);
-        } catch (Exception e){
-            logger.error("error save images");
-            e.printStackTrace();
+            logger.debug("File saved successfully: {}", savePath);
+        } catch (Exception e) {
+            logger.error("Error saving image: {}", e.getMessage());
             return null;
         }
-        System.out.println("fileName: " + saveFileName);
-        //return saveFileName;
-        // DB에 저장되는 값이 경로이려면 savePath 이름값이려면 saveFileName
-        //return savePath;
-        return savedPath + saveFileName;
+
+        return savePath;
     }
 
-    public boolean deleteImageTmp(String imagePath) {
+    public boolean deleteImage(String imagePath) {
         try {
             Path path = Paths.get(imagePath).normalize();
             Files.deleteIfExists(path);
-            logger.debug("Temporary file deleted successfully: " + imagePath);
+            logger.debug("File deleted successfully: {}", imagePath);
             return true;
         } catch (IOException e) {
-            logger.error("Error deleting temporary file: " + e.getMessage());
+            logger.error("Error deleting file: {}", e.getMessage());
             return false;
         }
     }
+
+    public String adjustImagePath(String imagePath) {
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            // 윈도우 호스트에서 실행 중인 경우 호스트의 이미지 경로를 컨테이너 내부 경로로 변환
+            return imagePath.replace("C:\\app\\image", "/app/image").replace("\\", "/");
+        } else if (imagePath.startsWith("/app/image")) {
+            // 만약 경로가 이미 /app/image로 시작한다면 추가 변환이 필요 없음
+            return imagePath;
+        } else {
+            // 그 외의 경우 경로가 잘못 설정되는 것을 방지하기 위해 단순히 파일명을 덧붙임
+            return "/app/image/" + Paths.get(imagePath).getFileName().toString();
+        }
+    }
+
+
 }

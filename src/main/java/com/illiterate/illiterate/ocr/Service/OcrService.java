@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.ocr.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -9,6 +10,7 @@ import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Entity.PaperInfo;
@@ -40,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_INFO;
 
 @Slf4j
 @Service
@@ -50,7 +53,7 @@ public class OcrService {
     private RestTemplate restTemplate;
 
     @Value("${python.ocr.api.url}")
-    private String pythonOcrApiUrl;  // Python 서버의 OCR API URL
+    private String pythonOcrApiUrl;
 
     private final OcrRepository ocrRepository;
     private final PaperInfoRepository paperInfoRepository;
@@ -62,7 +65,7 @@ public class OcrService {
      */
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
-        String imagePath = localFileUtil.saveImageTmp(file);
+        String imagePath = localFileUtil.saveImage(file);
         if (imagePath == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
@@ -77,39 +80,59 @@ public class OcrService {
         }
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
-        PaperInfo matchedPaperInfo = findMatchingPaperInfo(ocrResult);
-        OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+        try {
 
-        // 4. 임시 파일 삭제
-        localFileUtil.deleteImageTmp(imagePath);
+            JsonNode rootNode = objectMapper.readTree(ocrResult);
 
-        // 5. 결과 반환
-        return OcrResponseDto.builder()
-                .ocrText(ocrEntity.getOcrData())
-                .build();
+            // document_index 키가 있는지 확인
+            JsonNode documentIndexNode = rootNode.get("document_index");
+            if (documentIndexNode == null || documentIndexNode.isNull()) {
+                log.error("document_index not found in OCR result.");
+                throw new RuntimeException("document_index not found in OCR result.");
+            }
+
+            Long documentIdx = documentIndexNode.asLong();
+            log.info("문서 번호 : {}", documentIdx);
+
+            // PaperInfo 찾기
+            PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
+                    .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+            OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+
+            // 4. 임시 파일 삭제
+            //localFileUtil.deleteImageTmp(imagePath);
+
+            // 5. 결과 반환
+            return OcrResponseDto.builder()
+                    .ocrText(ocrEntity.getOcrData())
+                    .build();
+
+        } catch (MemberException e) {
+            log.error("MemberException occurred: {}", e.getMessage());
+            throw new MemberException(e.getErrorCode());
+        } catch (JsonMappingException e) {
+            log.error("Error mapping JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to map JSON.");
+        } catch (JsonProcessingException e) {
+            log.error("Error processing JSON: {}", e.getMessage());
+            throw new RuntimeException("Failed to process JSON.");
+        }
     }
 
-    /**
-     * Python OCR API를 호출하여 이미지에 대해 OCR 작업을 수행
-     *
-     * @param imagePath 업로드한 이미지 경로
-     * @return OCR 결과 텍스트
-     */
     private String callPythonOcrApi(String imagePath) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
+            // 이미지 경로를 컨테이너에 맞게 변환
+            String adjustedImagePath = localFileUtil.adjustImagePath(imagePath);
+
             Map<String, String> body = new HashMap<>();
-            body.put("image_path", imagePath);
+            body.put("image_path", adjustedImagePath);
 
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
-
-            restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
-
-            log.info("Sending request to Python OCR API. Image path: {}", imagePath);
-            log.info("Python OCR API response: {}", response.getBody());
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
@@ -123,14 +146,6 @@ public class OcrService {
         }
     }
 
-    /**
-     * OCR 결과를 JSON 형식으로 저장
-     *
-     * @param member OCR을 요청한 사용자
-     * @param paperInfo OCR과 연관된 PaperInfo 엔티티
-     * @param ocrResult OCR 결과 텍스트
-     * @return 저장된 OCR 엔티티
-     */
     private OCR saveOcrResult(Member member, PaperInfo paperInfo, String ocrResult) {
         OCR ocrEntity = new OCR();
         ocrEntity.setMember(member);
@@ -148,18 +163,5 @@ public class OcrService {
         }
 
         return ocrRepository.save(ocrEntity);
-    }
-
-    /**
-     * OCR 결과로 PaperInfo 엔티티를 찾는 로직 (추후 필요에 따라 수정 가능)
-     *
-     * @param ocrResult OCR 결과 텍스트
-     * @return 매칭된 PaperInfo 엔티티
-     */
-    private PaperInfo findMatchingPaperInfo(String ocrResult) {
-        // TODO: OCR 결과를 바탕으로 PaperInfo와 매칭하는 로직 구현
-        return paperInfoRepository.findAll().stream()
-                .findFirst()  // 예시로 첫 번째 PaperInfo를 반환, 실제 로직 필요
-                .orElse(null);
     }
 }

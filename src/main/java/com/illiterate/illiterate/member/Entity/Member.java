@@ -22,7 +22,7 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_index")
-    private Long id;
+    private Long index;
 
     @Column(name = "user_id", nullable = false)
     private String userId;

@@ -24,18 +24,16 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private String password;
     private List<GrantedAuthority> authorities;
-    private Member member;
 
     public static UserDetails from(Member member) {
         List<GrantedAuthority> authorities = member.getRoles() != null ?
                 List.of(new SimpleGrantedAuthority(member.getRoles().name())): null;
 
         return new UserDetailsImpl(
-                member.getId(),
+                member.getIndex(),
                 member.getUserId(),
                 member.getPassword(),
-                authorities,
-                member
+                authorities
         );
     }
 
