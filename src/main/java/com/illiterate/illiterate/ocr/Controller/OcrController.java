@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
+import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
 
 
@@ -54,15 +56,15 @@ public class OcrController {
         System.out.println(ocrResult);
 
         // OCR 결과를 클라이언트에게 반환
-        return ResponseEntity.ok(new BfResponse<>(ocrResult));
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, ocrResult));
     }
 
-    /*@PostMapping(value = "/saveText")
-    public ResponseEntity<BfResponse<OcrResponseDto>> saveText(
+    @PostMapping(value = "/saveText")
+    public ResponseEntity<BfResponse<?>> saveText(
             @RequestParam Long ocrId,
-            @RequestParam String text) {
-        OcrResponseDto responseDto = ocrService.saveOcrText(ocrId, text);
-        return ResponseEntity.ok(new BfResponse<>(responseDto));
+            @RequestBody String text) {
+        ocrService.saveOcrText(ocrId, text);
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "SUCCESS"));
     }
 
 
@@ -74,15 +76,15 @@ public class OcrController {
     }
 
 
-    @PostMapping("/posts/{userid}")
+    /*@PostMapping("/posts/{userid}")
     public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long userid) {
         OcrResponseDto post = ocrService.getPost(userid);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
-    }
+    }*/
 
     // 게시글 삭제
-    @PostMapping("/del_post/{ocrid}")
+    /*@PostMapping("/del_post/{ocrid}")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long ocrid,
             @RequestBody OcrRequestDto requestsDto) {
@@ -96,12 +98,5 @@ public class OcrController {
 
         ocrService.deletePost(ocrid, user.getId());
         return ResponseEntity.noContent().build();
-    }*/
-
-    /*@GetMapping("/run-python")
-    public ResponseEntity<String> runPythonTest() {
-        // 파이썬 스크립트 실행하고 결과 반환
-        String result = ocrService.executeTestPythonScript();
-        return ResponseEntity.ok(result);
     }*/
 }

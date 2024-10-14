@@ -178,4 +178,13 @@ public class OcrService {
 
         return ocrRepository.save(ocrEntity);
     }
+
+    @Transactional
+    public void saveOcrText(Long ocrId, String text){
+        OCR ocr = ocrRepository.findByOcrIndex(ocrId)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+        ocr.setOcrData(text);
+
+        ocrRepository.save(ocr);
+    }
 }

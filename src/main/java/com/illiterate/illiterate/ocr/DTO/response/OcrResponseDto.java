@@ -13,5 +13,6 @@ import java.util.List;
 @Setter
 @Builder
 public class OcrResponseDto {
+    private String paperInfo;
     private String ocrText;
 }
