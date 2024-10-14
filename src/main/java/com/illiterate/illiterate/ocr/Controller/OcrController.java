@@ -1,25 +1,22 @@
 package com.illiterate.illiterate.ocr.Controller;
 
-import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
-import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
+import com.illiterate.illiterate.ocr.DTO.response.OcrListResponseDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
@@ -59,44 +56,47 @@ public class OcrController {
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, ocrResult));
     }
 
+    // 저장
     @PostMapping(value = "/saveText")
     public ResponseEntity<BfResponse<?>> saveText(
             @RequestParam Long ocrId,
-            @RequestBody String text) {
-        ocrService.saveOcrText(ocrId, text);
+            @RequestBody OcrRequestDto dto) {
+        ocrService.saveOcrText(ocrId, dto.getOcrData());
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "SUCCESS"));
     }
 
-
-    @PostMapping("/posts")
-    public ResponseEntity<BfResponse<List<OcrResponseDto>>> getPosts() {
-        List<OcrResponseDto> posts = ocrService.getPosts();
-        BfResponse<List<OcrResponseDto>> response = new BfResponse<>(posts);
+    // 리스트 출력
+    @GetMapping("/posts")
+    public ResponseEntity<BfResponse<List<OcrListResponseDto>>> getPosts(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<OcrListResponseDto> posts = ocrService.getPosts(userDetails);
+        BfResponse<List<OcrListResponseDto>> response = new BfResponse<>(posts);
         return ResponseEntity.ok(response);
     }
 
-
-    /*@PostMapping("/posts/{userid}")
-    public ResponseEntity<BfResponse<OcrResponseDto>> getPost(@PathVariable Long userid) {
-        OcrResponseDto post = ocrService.getPost(userid);
+    @PostMapping("/posts/{ocrIdx}")
+    public ResponseEntity<BfResponse<OcrResponseDto>> getPost(
+            @PathVariable Long ocrIdx) {
+        OcrResponseDto post = ocrService.getPost(ocrIdx);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
-    }*/
+    }
+
+    // 내용 업데이트
+    @PutMapping("/posts/{ocrIdx}")
+    public ResponseEntity<BfResponse<?>> updatePost(
+            @PathVariable Long ocrIdx,
+            @RequestBody OcrRequestDto dto){
+        OcrResponseDto post = ocrService.updatePost(ocrIdx, dto);
+
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, post));
+    }
 
     // 게시글 삭제
-    /*@PostMapping("/del_post/{ocrid}")
-    public ResponseEntity<Void> deletePost(
-            @PathVariable Long ocrid,
-            @RequestBody OcrRequestDto requestsDto) {
-
-        if (requestsDto.getUserId() == null) {
-            throw new IllegalArgumentException("Member ID must not be null");
-        }
-
-        Member user = memberRepository.findById(requestsDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid member ID"));
-
-        ocrService.deletePost(ocrid, user.getId());
-        return ResponseEntity.noContent().build();
-    }*/
+    @DeleteMapping("/posts/{ocrIdx}")
+    public ResponseEntity<BfResponse<?>> deletePost(
+            @PathVariable Long ocrIdx) {
+        ocrService.deletePost(ocrIdx);
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "삭제완료"));
+    }
 }

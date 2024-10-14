@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.illiterate.illiterate.board.Entity.Board;
-import com.illiterate.illiterate.common.enums.BoardErrorCode;
-import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
-import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.MemberException;
+import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
+import com.illiterate.illiterate.ocr.DTO.response.OcrListResponseDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
 import com.illiterate.illiterate.ocr.Entity.OCR;
 import com.illiterate.illiterate.ocr.Entity.PaperInfo;
@@ -20,10 +18,6 @@ import com.illiterate.illiterate.ocr.Repository.PaperInfoRepository;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -36,14 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_INFO;
+import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
 
 @Slf4j
 @Service
@@ -60,6 +52,7 @@ public class OcrService {
     private final PaperInfoRepository paperInfoRepository;
     private final LocalFileUtil localFileUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MemberRepository memberRepository;
 
     /**
      * 이미지 업로드 및 OCR 처리 후 결과 저장
@@ -82,7 +75,6 @@ public class OcrService {
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
         try {
-
             JsonNode rootNode = objectMapper.readTree(ocrResult);
 
             // document_index 키가 있는지 확인
@@ -99,14 +91,13 @@ public class OcrService {
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
                     .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
-            OCR ocrEntity = saveOcrResult(member, matchedPaperInfo, ocrResult);
+            //TODO:일단 테스트하려고 둠
+            String title = "테스트";
 
-            // 4. 임시 파일 삭제
-            localFileUtil.deleteImageTmp(imagePath);
+            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, ocrResult, title);
 
-            // 5. 결과 반환
             return OcrResponseDto.builder()
-                    .ocrText(ocrEntity.getOcrData())
+                    .ocrResult(ocr.getOcrData())
                     .build();
 
         } catch (MemberException e) {
@@ -160,10 +151,12 @@ public class OcrService {
      * @param ocrResult OCR 결과 텍스트
      * @return 저장된 OCR 엔티티
      */
-    private OCR saveOcrResult(Member member, PaperInfo paperInfo, String ocrResult) {
+    private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult, String title) {
         OCR ocrEntity = new OCR();
+        ocrEntity.setImage(img);
         ocrEntity.setMember(member);
         ocrEntity.setPaperInfo(paperInfo);
+        ocrEntity.setTitle(title);
 
         try {
             // OCR 결과를 JSON 형식으로 저장
@@ -186,5 +179,66 @@ public class OcrService {
         ocr.setOcrData(text);
 
         ocrRepository.save(ocr);
+    }
+
+    public List<OcrListResponseDto> getPosts(UserDetailsImpl userDetails) {
+        Member member = memberRepository.findByIndex(userDetails.getId())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+
+        OCR ocr = ocrRepository.findByMember(member)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String formattedCreatedAt = ocr.getCreatedAt().format(formatter);
+        String formattedModifyAt = ocr.getModifyAt().format(formatter);
+
+        OcrListResponseDto dto = OcrListResponseDto.builder()
+                .resultIdx(ocr.getOcrIndex())
+                .title(ocr.getTitle())
+                .infoTitle(ocr.getPaperInfo().getTitleText())
+                .createdAt(formattedCreatedAt)
+                .modifyAt(formattedModifyAt)
+                .build();
+
+        List<OcrListResponseDto> list = new ArrayList<>();
+        list.add(dto);
+
+        return list;
+    }
+
+    public OcrResponseDto getPost(Long ocrIdx) {
+        OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+        return OcrResponseDto.builder()
+                .resultIdx(ocr.getOcrIndex())
+                .title(ocr.getTitle())
+                .infoTitle(ocr.getPaperInfo().getTitleText())
+                .ocrResult(ocr.getOcrData())
+                .createTime(ocr.getCreatedAt())
+                .modifyTime(ocr.getModifyAt())
+                .originalImg(ocr.getImage())
+                .emptyImg(ocr.getPaperInfo().getEmptyImg())
+                .build();
+    }
+
+    public void deletePost(Long ocrIdx) {
+        OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+        ocrRepository.delete(ocr);
+    }
+
+    public OcrResponseDto updatePost(Long ocrIdx, OcrRequestDto dto) {
+        OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+        ocr.setOcrData(dto.getOcrData());
+
+        ocrRepository.save(ocr);
+        return OcrResponseDto.builder()
+                .ocrResult(dto.getOcrData())
+                .build();
     }
 }
