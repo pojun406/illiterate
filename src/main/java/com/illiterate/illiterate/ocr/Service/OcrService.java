@@ -132,6 +132,10 @@ public class OcrService {
             body.put("image_path", adjustedImagePath);
 
             HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+            // UTF-8 인코딩을 위한 메시지 컨버터 설정
+            restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
@@ -145,6 +149,7 @@ public class OcrService {
             return null;
         }
     }
+
 
     private OCR saveOcrResult(Member member, PaperInfo paperInfo, String ocrResult) {
         OCR ocrEntity = new OCR();
