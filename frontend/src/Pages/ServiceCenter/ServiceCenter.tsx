@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Post {
     boardIdx: number;
@@ -10,6 +11,7 @@ interface Post {
 
 const ServiceCenter = () => {
     const [posts, setPosts] = useState<Post[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -32,6 +34,10 @@ const ServiceCenter = () => {
         fetchPosts();
     }, []);
 
+    const handleItemClick = (boardIdx: number) => {
+        navigate(`/servicecenter/detail/${boardIdx}`);
+    };
+
     return (
         <div className="p-6 max-w-[1260px] mx-auto">
             <h2 className="text-2xl font-bold mb-6">고객센터</h2>
@@ -43,20 +49,28 @@ const ServiceCenter = () => {
                     <div>작성일</div>
                     <div>상태</div>
                 </div>
-                {posts.map((post) => (
-                    <div key={post.boardIdx} className="hidden md:grid grid-cols-7 p-3 hover:bg-gray-50 transition-colors text-center">
-                        <div className='flex justify-center'>{post.boardIdx}</div>
+                {posts.map((post, index) => (
+                    <div 
+                        key={post.boardIdx} 
+                        className="hidden md:grid grid-cols-7 p-3 hover:bg-gray-50 transition-colors text-center cursor-pointer"
+                        onClick={() => handleItemClick(post.boardIdx)}
+                    >
+                        <div className='flex justify-center'>{index + 1}</div>
                         <div className='col-span-3'>{post.title}</div>
                         <div>{post.userId}</div>
                         <div>{post.createdAt}</div>
                         <div>{post.status}</div>
                     </div>
                 ))}
-                {posts.map((post) => (
-                    <div key={post.boardIdx} className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center">
+                {posts.map((post, index) => (
+                    <div 
+                        key={post.boardIdx} 
+                        className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center cursor-pointer"
+                        onClick={() => handleItemClick(post.boardIdx)}
+                    >
                         <div className="grid grid-cols-2 gap-2">
                             <div className="font-semibold">번호:</div>
-                            <div className='flex justify-center'>{post.boardIdx}</div>
+                            <div className='flex justify-center'>{index + 1}</div>
                             <div className="font-semibold">제목:</div>
                             <div className="font-medium">{post.title}</div>
                             <div className="font-semibold">작성자:</div>

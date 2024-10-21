@@ -10,6 +10,7 @@ import FindAccount from './Pages/auth/FindAccount/FindAccount';
 import Profile from './Pages/auth/Profile/Profile';
 import Result from './Pages/Result/Result';
 import Mydocument from './Pages/Mydocument/Mydocument';
+import Detail from './Pages/ServiceCenter/Detail';
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
         <Route path="application" element={<Application />} />
         <Route path="result" element={<Result />} />
         <Route path="servicecenter" element={<ServiceCenter />} />
+        <Route path="servicecenter/detail/:boardIdx" element={<Detail />} />
         <Route path="mydocument" element={<Mydocument />} />
         <Route path="/" element={<Main/>}/>
         <Route path="profile" element={<Profile />} />
