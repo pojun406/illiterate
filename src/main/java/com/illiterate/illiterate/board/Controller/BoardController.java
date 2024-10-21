@@ -69,11 +69,11 @@ public class BoardController {
 
     // 게시글 삭제
     @PostMapping("/user/del_post")
-    public ResponseEntity<Void> deletePost(
+    public ResponseEntity<BfResponse<?>> deletePost(
             @RequestBody BoardIdxRequestDto dto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         boardService.deletePost(dto.getBoardIdx(), userDetails);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "delete success!"));
     }
 }
