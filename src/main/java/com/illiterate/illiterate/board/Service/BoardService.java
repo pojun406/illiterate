@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.board.Service;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
+import com.illiterate.illiterate.board.DTO.response.BoardPostResponseDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
@@ -39,18 +40,26 @@ public class BoardService {
     private final LocalFileUtil localFileUtil;
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> getPosts() {
-        List<Board> boardList = boardRepository.findAll();
-        List<BoardResponseDto> responseDtoList = new ArrayList<>();
+    public List<BoardPostResponseDto> getPosts(UserDetailsImpl userDetails) {
 
+        List<Board> boardList = null;
+
+        if (userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(RolesType.ROLE_ADMIN.name()))) {
+            boardList = boardRepository.findAll();
+        } else {
+            boardList = boardRepository.findByMemberIndex(userDetails.getId());
+        }
+
+        List<BoardPostResponseDto> responseDtoList = new ArrayList<>();
         for (Board board : boardList) {
             responseDtoList.add(
-                    BoardResponseDto.builder()
-                            .id(board.getMember().getIndex())
+                    BoardPostResponseDto.builder()
+                            .boardIdx(board.getBoardId())
+                            .userId(board.getMember().getUserId())
                             .title(board.getTitle())
-                            .content(board.getContent())
-                            .imagePath(board.getRequestImg())
                             .status(board.getStatus())
+                            .createdAt(board.getRegDate())
                             .build());
         }
 
@@ -73,7 +82,7 @@ public class BoardService {
         }
 
         return BoardResponseDto.builder()
-                .id(member.getIndex())
+                .boardIdx(board.getBoardId())
                 .userId(member.getUserId())
                 .title(board.getTitle())
                 .content(board.getContent())
