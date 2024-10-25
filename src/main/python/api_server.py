@@ -1,12 +1,9 @@
-from flask import Flask, request, Response, jsonify  # Flask 웹 프레임워크 및 JSON 응답을 위한 모듈
-from ocr_processing import process_image  # OCR 처리 함수 불러오기
-import os  # 파일 경로 및 시스템 관련 작업을 위한 모듈
+from flask import Flask, request, Response, jsonify
+from ocr_processing import process_image
+import os
 import json
 
 app = Flask(__name__)
-
-# 서버에서 이미지 파일을 찾기 위한 기본 경로 설정
-BASE_PATH = os.getenv('IMAGE_PATH', '/app/image')
 
 @app.route('/ocr', methods=['POST'])
 def ocr_api():
@@ -15,17 +12,17 @@ def ocr_api():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    relative_image_path = data.get('image_path')
-    if not relative_image_path:
+    # Spring에서 전달된 경로를 가져옴
+    full_image_path = data.get('image_path')
+    if not full_image_path:
         return jsonify({"error": "Image path not provided"}), 400
 
-    # relative_image_path가 BASE_PATH를 이미 포함하고 있는지 확인
-    if relative_image_path.startswith(BASE_PATH):
-        full_image_path = os.path.normpath(relative_image_path)
-    else:
-        full_image_path = os.path.normpath(os.path.join(BASE_PATH, relative_image_path.lstrip('/')))
+    # 경로에 Windows 드라이브 레터가 포함된 경우 제거
+    if ':' in full_image_path:
+        _, full_image_path = full_image_path.split(':', 1)  # "D:/app/image"에서 "D:" 제거
+        full_image_path = os.path.join('/', full_image_path.lstrip('/'))  # "/app/image" 형식으로 변환
 
-    full_image_path = full_image_path.replace('\\', '/')  # Windows 경로를 Linux 스타일로 변경
+    full_image_path = os.path.normpath(full_image_path).replace('\\', '/')  # 정규화 후 Windows 경로 -> Linux 경로로 변경
 
     if not os.path.isfile(full_image_path):
         return jsonify({"error": f"Image file does not exist: {full_image_path}"}), 400
@@ -34,11 +31,10 @@ def ocr_api():
         return jsonify({"error": f"No read permission for file: {full_image_path}"}), 400
 
     try:
-        # 이미지 처리 및 OCR 실행
         result = process_image(full_image_path)
         response = Response(result, content_type='application/json; charset=utf-8')
         with open('ocr_result.json', 'w', encoding='utf-8') as json_file:
-            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4) # 테스트용 json파일 출력
+            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4)
 
         return response
     except Exception as e:

@@ -59,7 +59,8 @@ public class OcrService {
      */
     public OcrResponseDto uploadImageAndProcessOcr(MultipartFile file, Member member) {
         // 1. 이미지 업로드 및 경로 가져오기
-        String imagePath = localFileUtil.saveImage(file);
+        String imagePath = localFileUtil.saveImage(file, "ocr");
+        System.out.println("이미지경로 : " + imagePath);
         if (imagePath == null) {
             log.error("Image upload failed.");
             throw new RuntimeException("Image upload failed.");
@@ -112,13 +113,10 @@ public class OcrService {
         }
     }
 
-    private String callPythonOcrApi(String imagePath) {
+    private String callPythonOcrApi(String adjustedImagePath) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // 이미지 경로를 컨테이너에 맞게 변환
-            String adjustedImagePath = localFileUtil.adjustImagePath(imagePath);
 
             Map<String, String> body = new HashMap<>();
             body.put("image_path", adjustedImagePath);

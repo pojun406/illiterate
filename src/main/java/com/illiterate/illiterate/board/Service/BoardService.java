@@ -91,7 +91,7 @@ public class BoardService {
         String imagePath = null;
 
         if (requestImg != null && !requestImg.isEmpty()) {
-            imagePath = localFileUtil.saveImage(requestImg);
+            imagePath = localFileUtil.saveImage(requestImg, "board");
         }
 
         board.setMember(member);
@@ -116,7 +116,7 @@ public class BoardService {
         String imagePath = null;
 
         if (requestImg != null && !requestImg.isEmpty()) {
-            imagePath = localFileUtil.saveImage(requestImg);
+            imagePath = localFileUtil.saveImage(requestImg, "board");
         }
 
         board.setMember(member);

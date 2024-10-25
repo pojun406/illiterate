@@ -28,7 +28,8 @@ class MyFinalPPOCR:
 
         # OCR 결과 처리 및 포맷팅
         if not ocr_result or ocr_result == [None]:
-            return {"error": "No OCR result found"}
+            #return {"error": "No OCR result found"}
+            return {"text": "None"}
 
         results = []
         for line in ocr_result:

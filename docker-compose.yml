@@ -7,11 +7,13 @@ services:
       dockerfile: Dockerfile  # 주어진 Dockerfile 이름이 'Dockerfile'인 경우
     container_name: ocr-api
     volumes:
-      - C:/app/image:/app/image  # 호스트의 이미지 폴더를 컨테이너와 연결
+      - D:/app/image:/app/image  # 호스트의 이미지 폴더를 컨테이너와 연결
     ports:
       - "5000:5000"  # 호스트의 5000 포트를 컨테이너의 5000 포트와 연결
     environment:
       - IMAGE_PATH=/app/image  # Docker 환경 변수 설정
+      - DOCKER_ENV=true
+      - SPRING_APPLICATION_JSON={"IMAGE_PATH":"/app/image"}
     networks:
       - ocr-network
 
