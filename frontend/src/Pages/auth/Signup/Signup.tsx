@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AiOutlineUser, AiOutlineLock, AiOutlineMail } from "react-icons/ai";
 import { CgRename } from "react-icons/cg";
 import { SiOpenaccess } from "react-icons/si";
@@ -7,6 +7,7 @@ import Logo from '../../../Components/Logo/Logo';
 import axios from 'axios';
 
 const Signup: React.FC = () => {
+    const navigate = useNavigate();
     const [userid, setUserid] = useState("");
     const [password, setPassword] = useState("");
     const [username, setUsername] = useState("");
@@ -181,7 +182,7 @@ const Signup: React.FC = () => {
             alert("비밀번호를 입력해주세요.");
             return;
         }
-        // 비밀번호 정규식 확인
+        // 비���번호 정규식 확인
         const regex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[a-z\d@$!%*?&]{8,}$/;
         if (!regex.test(password)) {
             alert("비밀번호는 최소 8자, 하나 이상의 소문자, 숫자, 특수문자가 포함되어야 합니다.");
@@ -214,7 +215,7 @@ const Signup: React.FC = () => {
             console.log("회원가입 요청 데이터:", signupData);
             const response = await axios.post('/public/join', signupData);
             console.log(response.data);
-            // 회원가입 성공 후 처리 로직을 여기에 추가합니다.
+            navigate('/auth/login');
         } catch (error) {
             console.error(error);
             // 에러 처리 로직을 여기에 추가합니다.

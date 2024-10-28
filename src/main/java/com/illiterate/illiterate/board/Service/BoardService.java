@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.board.Service;
 
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
+import com.illiterate.illiterate.board.DTO.response.BoardPostResponseDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Entity.Board;
 import com.illiterate.illiterate.board.Repository.BoardRepository;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.illiterate.illiterate.board.enums.StatusType.DELETE;
+import static com.illiterate.illiterate.board.enums.StatusType.WAIT;
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.*;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.BAD_REQUEST;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
@@ -39,18 +42,26 @@ public class BoardService {
     private final LocalFileUtil localFileUtil;
 
     @Transactional(readOnly = true)
-    public List<BoardResponseDto> getPosts() {
-        List<Board> boardList = boardRepository.findAll();
-        List<BoardResponseDto> responseDtoList = new ArrayList<>();
+    public List<BoardPostResponseDto> getPosts(UserDetailsImpl userDetails) {
 
+        List<Board> boardList = null;
+
+        if (userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(RolesType.ROLE_ADMIN.name()))) {
+            boardList = boardRepository.findAll();
+        } else {
+            boardList = boardRepository.findByMemberIndex(userDetails.getId());
+        }
+
+        List<BoardPostResponseDto> responseDtoList = new ArrayList<>();
         for (Board board : boardList) {
             responseDtoList.add(
-                    BoardResponseDto.builder()
-                            .id(board.getMember().getIndex())
+                    BoardPostResponseDto.builder()
+                            .boardIdx(board.getBoardId())
+                            .userId(board.getMember().getUserId())
                             .title(board.getTitle())
-                            .content(board.getContent())
-                            .imagePath(board.getRequestImg())
                             .status(board.getStatus())
+                            .createdAt(board.getRegDate())
                             .build());
         }
 
@@ -58,22 +69,23 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public BoardResponseDto getPost(UserDetailsImpl userDetails, Long id) {
-        if (!userDetails.getId().equals(id)) {
-            throw new BoardException(NOT_MATCHING_INFO);
-        }
-        Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+    public BoardResponseDto getPost(UserDetailsImpl userDetails, Long boardIdx) {
 
         Member member = memberRepository.findByIndex(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
-        if(userDetails.getAuthorities().equals(RolesType.ROLE_ADMIN)){
-            board.setStatus(StatusType.READ);
+        Board board = boardRepository.findByMember(member)
+                .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
+
+        if (userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(RolesType.ROLE_ADMIN.name())) && (board.getStatus().equals(WAIT))){
+                board.setStatus(StatusType.READ);
+                boardRepository.save(board);
+
         }
 
         return BoardResponseDto.builder()
-                .id(member.getIndex())
+                .boardIdx(board.getBoardId())
                 .userId(member.getUserId())
                 .title(board.getTitle())
                 .content(board.getContent())
@@ -130,13 +142,14 @@ public class BoardService {
     }
     @Transactional
     public void deletePost(Long bid, UserDetailsImpl userDetails) {
-
         Board board = boardRepository.findByBoardId(bid)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         if (board.getMember().getIndex().equals(userDetails.getId())) {
             throw new MemberException(BAD_REQUEST);
         }
-        boardRepository.delete(board);
+
+        board.setStatus(DELETE);
+        boardRepository.save(board);
     }
 }
