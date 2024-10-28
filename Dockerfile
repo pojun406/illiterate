@@ -34,7 +34,7 @@ RUN mkdir -p /app/image
 COPY ./src/main/python /app
 
 # 9. 필요한 파이썬 패키지 설치 (pip 사용)
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt --default-timeout=1000
 
 # 10. 서버 실행 (api_server.py 경로 지정)
 CMD ["python", "/app/api_server.py"]

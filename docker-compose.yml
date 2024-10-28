@@ -16,6 +16,11 @@ services:
       - SPRING_APPLICATION_JSON={"IMAGE_PATH":"/app/image"}
     networks:
       - ocr-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
 
 networks:
   ocr-network:
