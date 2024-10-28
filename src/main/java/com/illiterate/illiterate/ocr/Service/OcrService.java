@@ -76,18 +76,29 @@ public class OcrService {
 
         // 3. OCR 엔티티 생성 및 저장 (OCR 결과 저장)
         try {
-            JsonNode rootNode = objectMapper.readTree(ocrResult);
+            // JSON 문자열의 이스케이프 문자와 필요없는 문자를 정리
+            String cleanJsonString = ocrResult
+                    .replaceAll("\\\\\"", "\"")
+                    .replaceAll("\\\\n", "")
+                    .replaceAll("\\\\t", "")
+                    .replaceAll("^\"|\"$", ""); // 문자열 양쪽에 있는 불필요한 큰따옴표 제거
+            log.info("정리된 OCR JSON 응답: {}", cleanJsonString);
+
+            // JSON 응답을 JsonNode로 파싱
+            JsonNode rootNode = objectMapper.readTree(cleanJsonString);
+            log.info("루트 노드 : {}", rootNode);
 
             // document_index 키가 있는지 확인
             JsonNode documentIndexNode = rootNode.get("document_index");
+            log.info("문서 번호 json에서 바로 뽑은거 : {}", documentIndexNode);
             if (documentIndexNode == null || documentIndexNode.isNull()) {
                 log.error("document_index not found in OCR result.");
                 throw new RuntimeException("document_index not found in OCR result.");
             }
 
+            // document_index 값 추출
             Long documentIdx = documentIndexNode.asLong();
             log.info("문서 번호 : {}", documentIdx);
-            log.info("결과값 : {}", ocrResult);
 
             // PaperInfo 찾기
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
@@ -96,7 +107,7 @@ public class OcrService {
             //TODO:일단 테스트하려고 둠
             String title = "테스트";
 
-            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, ocrResult, title);
+            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString, title);
 
             return OcrResponseDto.builder()
                     .ocrResult(ocr.getOcrData())
