@@ -32,9 +32,12 @@ def ocr_api():
 
     try:
         result = process_image(full_image_path)
-        response = Response(result, content_type='application/json; charset=utf-8')
+        # JSON 직렬화를 위해 jsonify로 감싸서 반환
+        response = jsonify(result)
+
+        # JSON 파일로 저장
         with open('ocr_result.json', 'w', encoding='utf-8') as json_file:
-            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4)
+            json.dump(result, json_file, ensure_ascii=False, indent=4)
 
         return response
     except Exception as e:
