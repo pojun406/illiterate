@@ -1,8 +1,10 @@
 from flask import Flask, request, Response, jsonify
 from ocr_processing import process_image
-from paper_info_processing import select_roi  # paper_info_processing.py에서 import
+from paper_info_processing import select_rois_with_descriptions
 import os
 import json
+import cv2
+import base64
 
 app = Flask(__name__)
 
@@ -33,7 +35,7 @@ def ocr_api():
 
         # JSON 파일로 저장
         with open('ocr_result.json', 'w', encoding='utf-8') as json_file:
-            json.dump(result, json_file, ensure_ascii=False, indent=4)
+            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4)
             
         return response
     except Exception as e:
@@ -41,34 +43,53 @@ def ocr_api():
         print(error_message)
         return jsonify({"error": error_message}), 500
 
-@app.route('/paperinfo', methods=['POST'])
-def paper_info_api():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+def crop_image(image_path, coordinates):
+    """이미지를 주어진 좌표대로 자르고 Base64로 인코딩하여 반환"""
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or unable to load.")
 
+    x1, y1, x2, y2 = coordinates
+    cropped_image = image[y1:y2, x1:x2]
+    _, buffer = cv2.imencode('.jpg', cropped_image)
+    encoded_image = base64.b64encode(buffer).decode("utf-8")
+    return encoded_image
+
+@app.route('/paperinfo', methods=['POST'])
+def send_rois():
+    data = request.get_json()
     image_path = data.get('image_path')
-    json_name = data.get('json_name', 'roi_data.json')
+
     if not image_path:
         return jsonify({"error": "Image path not provided"}), 400
 
     if ':' in image_path:
         _, image_path = image_path.split(':', 1)
         image_path = os.path.join('/', image_path.lstrip('/'))
-
     image_path = os.path.normpath(image_path).replace('\\', '/')
     if not os.path.isfile(image_path):
         return jsonify({"error": f"Image file does not exist: {image_path}"}), 400
-    if not os.access(image_path, os.R_OK):
-        return jsonify({"error": f"No read permission for file: {image_path}"}), 400
 
     try:
-        title_vectors = select_roi(image_path, json_name)
-        return jsonify({"title_vectors": title_vectors, "message": "ROI data saved successfully."})
+        roi_data = select_rois_with_descriptions(image_path)
+
+        # "title" 혹은 "제목"이 있는 경우, 해당 좌표대로 이미지를 잘라서 Base64로 인코딩
+        title_img = None
+        title_key = 'title' if 'title' in roi_data else '제목' if '제목' in roi_data else None
+        if title_key:
+            coordinates = eval(roi_data[title_key])
+            title_img = crop_image(image_path, (coordinates[0][0], coordinates[0][1], coordinates[1][0], coordinates[1][1]))
+
+        response_data = {
+            "roi_data": roi_data,
+            "title_img": title_img  # 잘린 이미지 (Base64 인코딩)
+        }
+
+        return jsonify(response_data), 200
     except Exception as e:
         error_message = f"Error occurred: {str(e)}"
         print(error_message)
         return jsonify({"error": error_message}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
