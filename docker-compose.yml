@@ -21,6 +21,11 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   ocr-network:
