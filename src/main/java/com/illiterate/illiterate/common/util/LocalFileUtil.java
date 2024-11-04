@@ -56,9 +56,8 @@ public class LocalFileUtil {
     /**
      * Base64 문자열을 디코딩하여 이미지 파일로 저장하는 메서드
      */
-    public String saveImageFromBase64(String base64String, String folderName, String fileExtension) {
-        String uuid = UUID.randomUUID().toString();
-        String saveFileName = uuid + "." + fileExtension;
+    public String saveImageFromBase64(String title, String base64String, String folderName, String fileExtension) {
+        String saveFileName = title + "." + fileExtension;
 
         // 저장 경로를 상대 경로로 설정
         String relativePath = "/" + folderName + "/" + saveFileName;

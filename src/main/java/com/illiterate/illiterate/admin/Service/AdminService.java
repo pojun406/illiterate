@@ -2,6 +2,8 @@ package com.illiterate.illiterate.admin.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.illiterate.illiterate.admin.DTO.request.AdminRequestDto;
+import com.illiterate.illiterate.admin.DTO.request.PaperInfoRequestDto;
 import com.illiterate.illiterate.admin.DTO.response.AdminResponseDto;
 import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
@@ -78,8 +80,8 @@ public class AdminService {
     /**
      * /paperinfo 호출 및 결과 처리 메서드
      */
-    public AdminResponseDto uploadImageAndProcessPaperInfo(String imagePath) {
-        String paperInfoResult = callPythonPaperInfoApi(imagePath);
+    public AdminResponseDto uploadImageAndProcessPaperInfo(PaperInfoRequestDto requestDto) {
+        String paperInfoResult = callPythonPaperInfoApi(requestDto.getImagePath());
         if (paperInfoResult == null) {
             log.error("PaperInfo processing failed.");
             throw new RuntimeException("PaperInfo processing failed.");
@@ -97,7 +99,7 @@ public class AdminService {
             }
 
             // Base64 이미지를 파일로 저장
-            String savedImagePath = localFileUtil.saveImageFromBase64(titleImageBase64, "title_image", "png");
+            String savedImagePath = localFileUtil.saveImageFromBase64(requestDto.getInfoTitle(), titleImageBase64, "paperinfo", "png");
             if (savedImagePath == null) {
                 log.error("Failed to save title image from Base64.");
                 throw new RuntimeException("Failed to save title image from Base64.");

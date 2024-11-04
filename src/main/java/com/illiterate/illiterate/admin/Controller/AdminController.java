@@ -57,7 +57,7 @@ public class AdminController {
     public ResponseEntity<BfResponse<?>> processPaperInfo(
             @RequestBody PaperInfoRequestDto requestDto) {
         // OcrService를 호출하여 Flask API를 통한 PaperInfo 처리 수행
-        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(requestDto.getImagePath());
+        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(requestDto);
 
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, responseDto));
     }
