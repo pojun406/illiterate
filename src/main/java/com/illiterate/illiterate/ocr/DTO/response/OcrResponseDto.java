@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class OcrResponseDto {
-    private Long resultIdx;
+    private Long ocrId;
     private String title;
     private String infoTitle;
     private String ocrResult;

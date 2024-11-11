@@ -50,18 +50,15 @@ public class OcrController {
         // OCR 처리 및 결과 반환
         OcrResponseDto ocrResult = ocrService.uploadImageAndProcessOcr(file, member);
 
-        System.out.println(ocrResult);
-
         // OCR 결과를 클라이언트에게 반환
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, ocrResult));
     }
 
     // 저장
-    @PostMapping(value = "/saveText")
+    @PostMapping("/saveText")
     public ResponseEntity<BfResponse<?>> saveText(
-            @RequestParam Long ocrId,
             @RequestBody OcrRequestDto dto) {
-        ocrService.saveOcrText(ocrId, dto.getOcrData());
+        ocrService.saveOcrText(dto);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "SUCCESS"));
     }
 

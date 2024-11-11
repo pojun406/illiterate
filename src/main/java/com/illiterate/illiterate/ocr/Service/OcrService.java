@@ -111,6 +111,7 @@ public class OcrService {
 
             return OcrResponseDto.builder()
                     .ocrResult(ocr.getOcrData())
+                    .ocrId(ocr.getOcrIndex())
                     .build();
 
         } catch (MemberException e) {
@@ -182,10 +183,10 @@ public class OcrService {
     }
 
     @Transactional
-    public void saveOcrText(Long ocrId, String text){
-        OCR ocr = ocrRepository.findByOcrIndex(ocrId)
+    public void saveOcrText(OcrRequestDto dto){
+        OCR ocr = ocrRepository.findByOcrIndex(dto.getOcrId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
-        ocr.setOcrData(text);
+        ocr.setOcrData(dto.getOcrData());
 
         ocrRepository.save(ocr);
     }
@@ -221,7 +222,7 @@ public class OcrService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
         return OcrResponseDto.builder()
-                .resultIdx(ocr.getOcrIndex())
+                .ocrId(ocr.getOcrIndex())
                 .title(ocr.getTitle())
                 .infoTitle(ocr.getPaperInfo().getTitleText())
                 .ocrResult(ocr.getOcrData())

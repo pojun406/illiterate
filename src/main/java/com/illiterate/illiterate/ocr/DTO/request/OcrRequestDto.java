@@ -9,4 +9,5 @@ import lombok.Setter;
 public class OcrRequestDto {
     private String title;
     private String ocrData;
+    private Long ocrId;
 }
