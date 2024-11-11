@@ -90,6 +90,7 @@ public class MemberService {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .id(userDetail.getId())
+                    .role(String.valueOf(userDetail.getAuthorities()))
                     .build();
 
             // redis 토큰 정보 저장
