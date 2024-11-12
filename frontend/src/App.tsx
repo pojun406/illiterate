@@ -11,6 +11,7 @@ import Profile from './Pages/auth/Profile/Profile';
 import Result from './Pages/Result/Result';
 import Mydocument from './Pages/Mydocument/Mydocument';
 import Detail from './Pages/ServiceCenter/Detail';
+import DocumentType from './Pages/DocumentType/DocumentType';
 
 function App() {
   const location = useLocation();
@@ -33,6 +34,7 @@ function App() {
         <Route path="mydocument" element={<Mydocument />} />
         <Route path="/" element={<Main/>}/>
         <Route path="profile" element={<Profile />} />
+        <Route path="documenttype" element={<DocumentType />} />
       </Route>
       <Route path="/auth">
         <Route path="login" element={<Login />} />

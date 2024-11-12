@@ -5,6 +5,7 @@ import Logo from '../Logo/Logo';
 const Navigation = () => {
     const [isLogin, setIsLogin] = useState(false);
     const accessToken = localStorage.getItem('authToken');
+    const role = localStorage.getItem('role');
 
     useEffect(() => {
         if (accessToken) {
@@ -14,6 +15,9 @@ const Navigation = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('role');
+        localStorage.removeItem('id');
+        localStorage.removeItem('refreshToken');
         setIsLogin(false);
         window.location.href = '/';
     };
@@ -26,8 +30,8 @@ const Navigation = () => {
                 {!isLogin ? (
                     <div className="flex items-center">
                         <Link to="/auth/login" className="ml-4">로그인</Link>
-                    <Link to="/auth/signup" className="ml-4">회원가입</Link>
-                </div>) : (
+                        <Link to="/auth/signup" className="ml-4">회원가입</Link>
+                    </div>) : (
                     <div className="flex items-center">
                         <Link to="/profile" className="ml-4">마이페이지</Link>
                         <Link to="/" className="ml-4" onClick={handleLogout}>로그아웃</Link>
@@ -39,6 +43,9 @@ const Navigation = () => {
                     <Link to="/application" className="text-center mx-4">문서등록</Link>
                     <Link to="/mydocument" className="text-center mx-4">문서목록</Link>
                     <Link to="/servicecenter" className="text-center mx-4">고객센터</Link>
+                    {role === 'ROLE_ADMIN' && (
+                        <Link to="/documenttype" className="text-center mx-4">문서타입등록</Link>
+                    )}
                 </div>
             </div>
         </div>

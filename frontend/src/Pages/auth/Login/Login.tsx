@@ -24,10 +24,12 @@ const Login = () => {
             });
     
             if (response.data && response.data.data) {
-                const { accessToken, refreshToken, id } = response.data.data;
+                const { accessToken, refreshToken, id, role } = response.data.data;
+                console.log(response.data.data);
                 localStorage.setItem('authToken', accessToken);
                 localStorage.setItem('refreshToken', refreshToken);
                 localStorage.setItem('id', id);
+                localStorage.setItem('role', role);
                 setIsLoggedIn(true);
                 setMessage("로그인 성공");
                 navigate("/");
