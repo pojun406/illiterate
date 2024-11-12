@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.ocr.Service;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,20 +40,34 @@ import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_M
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OcrService {
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Value("${python.ocr.api.url}")
     private String pythonOcrApiUrl;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
     private final OcrRepository ocrRepository;
     private final PaperInfoRepository paperInfoRepository;
     private final LocalFileUtil localFileUtil;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final MemberRepository memberRepository;
+
+    public OcrService(
+            RestTemplate restTemplate,
+            OcrRepository ocrRepository,
+            PaperInfoRepository paperInfoRepository,
+            LocalFileUtil localFileUtil,
+            MemberRepository memberRepository
+    ) {
+        this.restTemplate = restTemplate;
+        this.ocrRepository = ocrRepository;
+        this.paperInfoRepository = paperInfoRepository;
+        this.localFileUtil = localFileUtil;
+        this.memberRepository = memberRepository;
+
+        // ObjectMapper의 비ASCII 설정
+        this.objectMapper.getFactory().configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+    }
 
     /**
      * 이미지 업로드 및 OCR 처리 후 결과 저장
@@ -104,7 +119,7 @@ public class OcrService {
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
                     .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
-            //TODO:일단 테스트하려고 둠
+            // TODO: 테스트용 제목 설정
             String title = "테스트";
 
             OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString, title);
@@ -142,7 +157,7 @@ public class OcrService {
             ResponseEntity<String> response = restTemplate.postForEntity(pythonOcrApiUrl, requestEntity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody();
+                return new String(response.getBody().getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
             } else {
                 log.error("Python OCR API returned non-successful status code: {}", response.getStatusCodeValue());
                 return null;
@@ -153,14 +168,6 @@ public class OcrService {
         }
     }
 
-    /**
-     * OCR 결과를 JSON 형식으로 저장
-     *
-     * @param member OCR을 요청한 사용자
-     * @param paperInfo OCR과 연관된 PaperInfo 엔티티
-     * @param ocrResult OCR 결과 텍스트
-     * @return 저장된 OCR 엔티티
-     */
     private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult, String title) {
         OCR ocrEntity = new OCR();
         ocrEntity.setImage(img);
@@ -169,11 +176,10 @@ public class OcrService {
         ocrEntity.setTitle(title);
 
         try {
-            // OCR 결과를 JSON 형식으로 저장
             Map<String, Object> ocrDataMap = new HashMap<>();
             ocrDataMap.put("ocr_text", ocrResult);
             String ocrDataJson = objectMapper.writeValueAsString(ocrDataMap);
-            ocrEntity.setOcrData(ocrDataJson);
+            ocrEntity.setOcrData(new String(ocrDataJson.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
         } catch (JsonProcessingException e) {
             log.error("Error converting OCR result to JSON", e);
             throw new RuntimeException("Error saving OCR result.");
@@ -183,7 +189,7 @@ public class OcrService {
     }
 
     @Transactional
-    public void saveOcrText(OcrRequestDto dto){
+    public void saveOcrText(OcrRequestDto dto) {
         OCR ocr = ocrRepository.findByOcrIndex(dto.getOcrId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
         ocr.setOcrData(dto.getOcrData());
