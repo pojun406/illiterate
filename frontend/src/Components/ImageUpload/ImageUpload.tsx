@@ -1,16 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import fetchWithAuth from '../AccessToken/AccessToken';
 
 const ImageUpload: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [filePath, setFilePath] = useState<string | null>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const navigate = useNavigate(); // useNavigate hook 사용
-    const location = useLocation(); // useLocation hook 사용
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
-        setShowModal(false); // URL 변경 시 모달 닫기
+        setShowModal(false);
     }, [location.pathname]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,28 +46,41 @@ const ImageUpload: React.FC = () => {
         }
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (file) {
             setShowModal(false);
-            const formData = new FormData();
-            formData.append('file', file);
+            setIsLoading(true);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
 
-            fetch('/ocr/upload', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                const response = await fetchWithAuth('/ocr/upload', null, formData);
+                
+                if (typeof response !== 'string') {
+                    const data = response.data;
+                    console.log('OCR 결과:', data);
+
+                    if (data && data.data && typeof data.data.ocrResult === 'string') {
+                        try {
+                            const parsedOcrResult = JSON.parse(data.data.ocrResult);
+                            const ocrId = data.data.ocrId;
+                            console.log('파싱된 OCR 결과:', parsedOcrResult);
+                            console.log('OCR ID:', ocrId);
+                            navigate('/result', { state: { fromImageUpload: true, file: file, filePath1: filePath, ocrResult: parsedOcrResult, ocrId: ocrId } });
+                        } catch (error) {
+                            console.error('OCR 결과 JSON 파싱 오류:', error);
+                        }
+                    } else {
+                        console.error('OCR 결과가 유효하지 않습니다.');
+                    }
+                } else {
+                    console.error('OCR 요청 실패:', response);
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('OCR 결과:', data);
-                navigate('/result', { state: { fromImageUpload: true, file, filePath, ocrResult: data } });
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('OCR 요청 오류:', error);
-            });
-            
+            } finally {
+                setIsLoading(false);
+            }
         } else {
             console.error('파일이 선택되지 않았습니다.');
         }
@@ -78,50 +93,58 @@ const ImageUpload: React.FC = () => {
 
     return (
         <div className="w-full">
-            {!filePath && (
-                <div>
-                    <div
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer sm:min-h-[780px] w-full">
-                        <p className="text-gray-600 text-center text-lg">이미지를 드래그하거나 클릭하여 업로드하세요.</p>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-                    </div>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-screen">
+                    <p className="text-lg text-gray-500">로딩 중...</p>
                 </div>
-            )}
-            {showModal && (
-                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl w-3/4">
-                        <div className="border-2 border-gray-300 p-4 rounded-lg ">
-                            <p className="text-lg font-semibold mb-4">해당 이미지가 맞습니까?</p>
-                            <div className="flex justify-center items-center w-full mb-4 overflow-auto">
-                                <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                                    <img src={filePath || undefined} alt="Selected" className="rounded-lg shadow-md w-full"/>
-                                </div>
-                            </div>
-                            <div className="flex justify-center space-x-20 w-full">
-                                <button
-                                    onClick={handleCancel}
-                                    className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200 w-1/3"
-                                >
-                                    취소
-                                </button>
-                                <button
-                                    onClick={handleConfirm}
-                                    className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200 w-1/3"
-                                >
-                                    확인
-                                </button>
+            ) : (
+                <>
+                    {!filePath && (
+                        <div>
+                            <div
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer sm:min-h-[780px] w-full">
+                                <p className="text-gray-600 text-center text-lg">이미지를 드래그하거나 클릭하여 업로드하세요.</p>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
+                    )}
+                    {showModal && (
+                        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
+                            <div className="bg-white p-8 rounded-lg shadow-2xl w-3/4">
+                                <div className="border-2 border-gray-300 p-4 rounded-lg ">
+                                    <p className="text-lg font-semibold mb-4">해당 이미지가 맞습니까?</p>
+                                    <div className="flex justify-center items-center w-full mb-4 overflow-auto">
+                                        <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                                            <img src={filePath || undefined} alt="Selected" className="rounded-lg shadow-md w-full"/>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-center space-x-20 w-full">
+                                        <button
+                                            onClick={handleCancel}
+                                            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200 w-1/3"
+                                        >
+                                            취소
+                                        </button>
+                                        <button
+                                            onClick={handleConfirm}
+                                            className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200 w-1/3"
+                                        >
+                                            확인
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
