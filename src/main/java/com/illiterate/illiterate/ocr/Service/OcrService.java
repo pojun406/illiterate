@@ -118,11 +118,7 @@ public class OcrService {
             // PaperInfo 찾기
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
                     .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
-
-            // TODO: 테스트용 제목 설정
-            String title = "테스트";
-
-            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString, title);
+            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString);
 
             return OcrResponseDto.builder()
                     .ocrResult(ocr.getOcrData())
@@ -168,12 +164,20 @@ public class OcrService {
         }
     }
 
-    private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult, String title) {
+    /**
+     * OCR 결과를 JSON 형식으로 저장
+     *
+     * @param member OCR을 요청한 사용자
+     * @param paperInfo OCR과 연관된 PaperInfo 엔티티
+     * @param ocrResult OCR 결과 텍스트
+     * @return 저장된 OCR 엔티티
+     */
+    private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult) {
         OCR ocrEntity = new OCR();
         ocrEntity.setImage(img);
         ocrEntity.setMember(member);
         ocrEntity.setPaperInfo(paperInfo);
-        ocrEntity.setTitle(title);
+        ocrEntity.setTitle("임시저장");
 
         try {
             Map<String, Object> ocrDataMap = new HashMap<>();
@@ -193,6 +197,7 @@ public class OcrService {
         OCR ocr = ocrRepository.findByOcrIndex(dto.getOcrId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
         ocr.setOcrData(dto.getOcrData());
+        ocr.setTitle(dto.getTitle());
 
         ocrRepository.save(ocr);
     }
