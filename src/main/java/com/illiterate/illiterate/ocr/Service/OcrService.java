@@ -104,10 +104,7 @@ public class OcrService {
             PaperInfo matchedPaperInfo = paperInfoRepository.findByDocumentIndex(documentIdx)
                     .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
-            //TODO:일단 테스트하려고 둠
-            String title = "테스트";
-
-            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString, title);
+            OCR ocr = saveOcrResult(imagePath, member, matchedPaperInfo, cleanJsonString);
 
             return OcrResponseDto.builder()
                     .ocrResult(ocr.getOcrData())
@@ -161,12 +158,12 @@ public class OcrService {
      * @param ocrResult OCR 결과 텍스트
      * @return 저장된 OCR 엔티티
      */
-    private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult, String title) {
+    private OCR saveOcrResult(String img, Member member, PaperInfo paperInfo, String ocrResult) {
         OCR ocrEntity = new OCR();
         ocrEntity.setImage(img);
         ocrEntity.setMember(member);
         ocrEntity.setPaperInfo(paperInfo);
-        ocrEntity.setTitle(title);
+        ocrEntity.setTitle("임시저장");
 
         try {
             // OCR 결과를 JSON 형식으로 저장
@@ -187,6 +184,7 @@ public class OcrService {
         OCR ocr = ocrRepository.findByOcrIndex(dto.getOcrId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
         ocr.setOcrData(dto.getOcrData());
+        ocr.setTitle(dto.getTitle());
 
         ocrRepository.save(ocr);
     }
