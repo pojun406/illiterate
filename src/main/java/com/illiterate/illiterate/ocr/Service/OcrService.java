@@ -9,6 +9,7 @@ import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
+import com.illiterate.illiterate.ocr.DTO.request.OcrFileNameRequest;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrListResponseDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
@@ -32,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -265,5 +267,49 @@ public class OcrService {
         return OcrResponseDto.builder()
                 .ocrResult(dto.getOcrData())
                 .build();
+    }
+
+    public boolean deleteImg(UserDetailsImpl userDetails, OcrFileNameRequest filenameDto) {
+        Member member = memberRepository.findByIndex(userDetails.getId())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+
+        // 사용자에 연결된 모든 OCR 정보 조회
+        List<OCR> ocrList = ocrRepository.findByMember(member);
+
+        if (ocrList.isEmpty()) {
+            throw new MemberException(NOT_FOUND_INFO);
+        }
+
+        // DTO의 이미지 이름과 매칭되는 OCR 정보를 찾고 삭제
+        boolean isImageDeleted = false;
+
+        for (OCR ocr : ocrList) {
+            String fullImagePath = ocr.getImage(); // C:\app\image\ocr\212fb7ab-ebcb-4961-acad-1660e6813518.png
+            String imageName = Paths.get(fullImagePath).getFileName().toString(); // 212fb7ab-ebcb-4961-acad-1660e6813518.png
+
+            if (imageName.equals(filenameDto.getFileName())) {
+                // 폴더 이름 추출 (예: ocr)
+                String folderName = Paths.get(fullImagePath).getParent().getFileName().toString();
+
+                // 이미지 삭제
+                boolean isDeleted = localFileUtil.deleteImage(folderName, filenameDto.getFileName());
+
+                if (isDeleted) {
+                    // OCR 엔티티에서 이미지 정보 제거 (DB 업데이트)
+                    ocr.setImage(null);
+                    ocrRepository.save(ocr);
+                    isImageDeleted = true;
+                    break; // 매칭된 이미지 삭제 후 반복 종료
+                } else {
+                    throw new RuntimeException("Failed to delete image.");
+                }
+            }
+        }
+
+        if (!isImageDeleted) {
+            throw new IllegalArgumentException("Image name does not match any existing records for the user.");
+        }
+
+        return true;
     }
 }
