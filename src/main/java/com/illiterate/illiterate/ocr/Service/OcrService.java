@@ -193,24 +193,28 @@ public class OcrService {
         Member member = memberRepository.findByIndex(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
-        OCR ocr = ocrRepository.findByMember(member)
-                .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
+        List<OCR> ocrList = ocrRepository.findByMember(member);
+        if (ocrList.isEmpty()) {
+            throw new MemberException(NOT_FOUND_INFO);
+        }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        String formattedCreatedAt = ocr.getCreatedAt().format(formatter);
-        String formattedModifyAt = ocr.getModifyAt().format(formatter);
-
-        OcrListResponseDto dto = OcrListResponseDto.builder()
-                .resultIdx(ocr.getOcrIndex())
-                .title(ocr.getTitle())
-                .infoTitle(ocr.getPaperInfo().getTitleText())
-                .createdAt(formattedCreatedAt)
-                .modifyAt(formattedModifyAt)
-                .build();
-
         List<OcrListResponseDto> list = new ArrayList<>();
-        list.add(dto);
+        for (OCR ocr : ocrList) {
+            String formattedCreatedAt = ocr.getCreatedAt().format(formatter);
+            String formattedModifyAt = ocr.getModifyAt().format(formatter);
+
+            OcrListResponseDto dto = OcrListResponseDto.builder()
+                    .resultIdx(ocr.getOcrIndex())
+                    .title(ocr.getTitle())
+                    .infoTitle(ocr.getPaperInfo().getTitleText())
+                    .createdAt(formattedCreatedAt)
+                    .modifyAt(formattedModifyAt)
+                    .build();
+
+            list.add(dto);
+        }
 
         return list;
     }
