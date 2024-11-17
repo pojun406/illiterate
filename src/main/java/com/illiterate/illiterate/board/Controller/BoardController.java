@@ -1,6 +1,5 @@
 package com.illiterate.illiterate.board.Controller;
 
-import com.illiterate.illiterate.board.DTO.request.BoardIdxRequestDto;
 import com.illiterate.illiterate.board.DTO.request.BoardRequestDto;
 import com.illiterate.illiterate.board.DTO.response.BoardPostResponseDto;
 import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
@@ -31,17 +30,18 @@ public class BoardController {
     private final BoardService boardService;
 
     // 게시글 전체 목록 조회
-    @PostMapping("/posts")
-    public ResponseEntity<BfResponse<List<BoardPostResponseDto>>> getPosts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("/posts")
+    public ResponseEntity<BfResponse<List<BoardPostResponseDto>>> getPosts(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         List<BoardPostResponseDto> posts = boardService.getPosts(userDetails);
         BfResponse<List<BoardPostResponseDto>> response = new BfResponse<>(posts);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/post/detail")
+    @PostMapping("/posts/{boardIdx}")
     public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                @RequestBody BoardIdxRequestDto dto) {
-        BoardResponseDto post = boardService.getPost(userDetails, dto.getBoardIdx());
+                                                                @PathVariable("boardIdx") Long boardIdx) {
+        BoardResponseDto post = boardService.getPost(userDetails, boardIdx);
         return ResponseEntity.ok(new BfResponse<>(post));
     }
 
@@ -56,24 +56,24 @@ public class BoardController {
     }
 
     // 게시글 수정
-    @PostMapping("/fix_post")
+    @PutMapping("/posts/{boardIdx}")
     public ResponseEntity<BfResponse<?>> updatePost(
-            @RequestBody BoardIdxRequestDto dto,
+            @PathVariable("boardIdx") Long boardIdx,
             @RequestBody BoardRequestDto requestsDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("image") MultipartFile requestImg) {
 
-        boardService.updatePost(dto.getBoardIdx(), requestsDto, userDetails, requestImg);
+        boardService.updatePost(boardIdx, requestsDto, userDetails, requestImg);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "modify success!"));
     }
 
     // 게시글 삭제
-    @PostMapping("/user/del_post")
+    @DeleteMapping("/posts/{boardIdx}")
     public ResponseEntity<BfResponse<?>> deletePost(
-            @RequestBody BoardIdxRequestDto dto,
+            @PathVariable("boardIdx") Long boardIdx,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        boardService.deletePost(dto.getBoardIdx(), userDetails);
+        boardService.deletePost(boardIdx, userDetails);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "delete success!"));
     }
 }
