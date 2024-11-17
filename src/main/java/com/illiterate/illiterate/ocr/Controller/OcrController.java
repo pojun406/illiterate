@@ -73,7 +73,7 @@ public class OcrController {
 
     @PostMapping("/posts/{ocrIdx}")
     public ResponseEntity<BfResponse<OcrResponseDto>> getPost(
-            @PathVariable Long ocrIdx) {
+            @PathVariable("ocrIdx") Long ocrIdx) {
         OcrResponseDto post = ocrService.getPost(ocrIdx);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
