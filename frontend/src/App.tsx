@@ -13,7 +13,7 @@ import Mydocument from './Pages/Mydocument/Mydocument';
 import Detail from './Pages/ServiceCenter/Detail';
 import DocumentType from './Pages/DocumentType/DocumentType';
 import DocumentDetail from './Pages/Mydocument/DocumentDetail';
-
+import DocumentEdit from './Pages/Mydocument/DocumentUpdate';
 function App() {
   const location = useLocation();
 
@@ -34,6 +34,7 @@ function App() {
         <Route path="servicecenter/detail/:boardIdx" element={<Detail />} />
         <Route path="mydocument" element={<Mydocument />} />
         <Route path="mydocument/detail/:ocrId" element={<DocumentDetail />} />
+        <Route path="mydocument/edit/:ocrId" element={<DocumentEdit />} />
         <Route path="/" element={<Main/>}/>
         <Route path="profile" element={<Profile />} />
         <Route path="documenttype" element={<DocumentType />} />

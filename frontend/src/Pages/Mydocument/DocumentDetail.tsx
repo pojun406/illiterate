@@ -39,7 +39,13 @@ const DocumentDetail = () => {
                     const data = res.data;
                     setDocumentData(data.data);
                     setOcrResult(JSON.parse(data.data.ocrResult));
-                    console.log("요청한 문서:", data.data);
+                    
+                    const parsedResult = JSON.parse(data.data.ocrResult);
+                    console.log("요청한 문서:", parsedResult.results.map((item: any) => ({
+                        label: item.label,
+                        text: item.text,
+                        vector: item.vector
+                    })));
                 })
                 .catch((error) => {
                     console.error("문서 가져오기 오류:", error);
@@ -55,11 +61,27 @@ const DocumentDetail = () => {
             {documentData?.originalImg ? (
                 <div className='flex flex-row items-center justify-between mt-4'>
                     <div>
-                        <h2 className='text-2xl font-bold'>BEFORE</h2>
-                        <img src={`http://localhost:8080/images/${documentData?.originalImg.split('\\').pop()}`} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
+                        <h2 className='text-2xl font-bold'>원본 이미지</h2>
+                        <img src={`http://localhost:8080/image/ocr/${documentData?.originalImg.split('\\').pop()}`} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
                     </div>
                     <div className='relative'>
-                        
+                        <h2 className='text-2xl font-bold'>저장된 데이터</h2>
+                        <div className='w-[620px] h-[877px] border-2 border-gray-300 p-4 overflow-y-auto'>
+                            <div className='space-y-4'>
+                                {ocrResult?.results?.map((item: any, index: number) => (
+                                    <div key={index} className="p-4 border rounded bg-white shadow-sm">
+                                        <div className="flex items-center mb-2">
+                                            <div className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-lg text-sm">
+                                                {item.label}
+                                            </div>
+                                        </div>
+                                        <div className="text-gray-700 bg-gray-50 p-3 rounded-lg">
+                                            {item.text}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -69,6 +91,7 @@ const DocumentDetail = () => {
             )}
             <div className='flex flex-row items-center justify-between mt-4'>
                 <button className='bg-red-400 text-white px-4 py-2 rounded-md hover:bg-red-500' onClick={() => navigate('/mydocument')}>돌아가기</button>
+                <button className='bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-500' onClick={() => navigate(`/mydocument/edit/${ocrId}`)}>수정하기</button>
             </div>
         </div>
     );
