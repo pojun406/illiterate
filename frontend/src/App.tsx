@@ -12,6 +12,7 @@ import Result from './Pages/Result/Result';
 import Mydocument from './Pages/Mydocument/Mydocument';
 import Detail from './Pages/ServiceCenter/Detail';
 import DocumentType from './Pages/DocumentType/DocumentType';
+import DocumentDetail from './Pages/Mydocument/DocumentDetail';
 
 function App() {
   const location = useLocation();
@@ -32,6 +33,7 @@ function App() {
         <Route path="servicecenter" element={<ServiceCenter />} />
         <Route path="servicecenter/detail/:boardIdx" element={<Detail />} />
         <Route path="mydocument" element={<Mydocument />} />
+        <Route path="mydocument/detail/:ocrId" element={<DocumentDetail />} />
         <Route path="/" element={<Main/>}/>
         <Route path="profile" element={<Profile />} />
         <Route path="documenttype" element={<DocumentType />} />
