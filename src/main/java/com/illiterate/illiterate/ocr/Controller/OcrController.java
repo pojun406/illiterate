@@ -1,9 +1,11 @@
 package com.illiterate.illiterate.ocr.Controller;
 
 import com.illiterate.illiterate.common.response.BfResponse;
+import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.MemberException;
+import com.illiterate.illiterate.ocr.DTO.request.OcrFileNameRequest;
 import com.illiterate.illiterate.ocr.DTO.request.OcrRequestDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrListResponseDto;
 import com.illiterate.illiterate.ocr.DTO.response.OcrResponseDto;
@@ -30,6 +32,7 @@ public class OcrController {
 
     private final OcrService ocrService;
     private final MemberRepository memberRepository;
+    private final LocalFileUtil localFileUtil;
 
     /**
      * 이미지 업로드 및 OCR 작업 처리
@@ -95,5 +98,18 @@ public class OcrController {
             @PathVariable("ocrIdx") Long ocrIdx) {
         ocrService.deletePost(ocrIdx);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "삭제완료"));
+    }
+
+    // 파일 삭제
+    @PostMapping("/deleteImage")
+    public ResponseEntity<BfResponse<?>> deleteImage(
+            @RequestBody OcrFileNameRequest filenameDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
+        boolean isDeleted = ocrService.deleteImg(userDetails, filenameDto);
+        if(isDeleted){
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, "이미지 삭제 완료"));
+        } else {
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, "이미지 삭제 실패"));
+        }
     }
 }

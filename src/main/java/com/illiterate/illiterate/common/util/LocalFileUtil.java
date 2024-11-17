@@ -90,4 +90,38 @@ public class LocalFileUtil {
         // 경로의 \를 /로 치환하여 반환
         return relativePath.replace("\\", "/");
     }
+
+    public boolean deleteImage(String folderName, String fileName) {
+        boolean isDeleted = false;
+
+        // 첫 번째 경로 (/app/image)
+        String appImagePath = Paths.get(filePath, folderName, fileName).toAbsolutePath().toString();
+
+        // 프로젝트 내부 경로 (src/main/resources/static/image)
+        String projectImagePath = Paths.get("src/main/resources/static/image", folderName, fileName).toAbsolutePath().toString();
+
+        try {
+            // 첫 번째 경로의 파일 삭제
+            Path appPath = Paths.get(appImagePath).normalize();
+            if (Files.exists(appPath)) {
+                Files.delete(appPath);
+                logger.debug("File deleted from app path: {}", appImagePath);
+                isDeleted = true;
+            }
+
+            // 프로젝트 내부 경로의 파일 삭제
+            Path projectPath = Paths.get(projectImagePath).normalize();
+            if (Files.exists(projectPath)) {
+                Files.delete(projectPath);
+                logger.debug("File deleted from project path: {}", projectImagePath);
+                isDeleted = true;
+            }
+
+        } catch (IOException e) {
+            logger.error("Error deleting file: {}", e.getMessage());
+            return false;
+        }
+
+        return isDeleted;
+    }
 }
