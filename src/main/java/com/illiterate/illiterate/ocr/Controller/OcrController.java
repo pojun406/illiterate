@@ -82,7 +82,7 @@ public class OcrController {
     // 내용 업데이트
     @PutMapping("/posts/{ocrIdx}")
     public ResponseEntity<BfResponse<?>> updatePost(
-            @PathVariable Long ocrIdx,
+            @PathVariable("ocrIdx") Long ocrIdx,
             @RequestBody OcrRequestDto dto){
         OcrResponseDto post = ocrService.updatePost(ocrIdx, dto);
 
@@ -92,7 +92,7 @@ public class OcrController {
     // 게시글 삭제
     @DeleteMapping("/posts/{ocrIdx}")
     public ResponseEntity<BfResponse<?>> deletePost(
-            @PathVariable Long ocrIdx) {
+            @PathVariable("ocrIdx") Long ocrIdx) {
         ocrService.deletePost(ocrIdx);
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "삭제완료"));
     }

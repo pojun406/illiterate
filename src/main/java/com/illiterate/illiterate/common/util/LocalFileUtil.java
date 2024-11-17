@@ -39,12 +39,21 @@ public class LocalFileUtil {
         // 저장 경로 설정
         String savePath = Paths.get(filePath, folderName, saveFileName).toAbsolutePath().toString();
 
+        // 프로젝트 내의 image 폴더 저장 경로 설정
+        String projectImagePath = Paths.get("src/main/resources/static/image", folderName, saveFileName).toAbsolutePath().toString();
+
         try {
             Path path = Paths.get(savePath).normalize();
             Files.createDirectories(path.getParent());
             Files.copy(file.getInputStream(), path);
 
             logger.debug("File saved successfully in folder {}: {}", folderName, savePath);
+
+            // 프로젝트 내의 경로에도 파일 저장
+            Path projectPath = Paths.get(projectImagePath).normalize();
+            Files.createDirectories(projectPath.getParent());
+            Files.copy(file.getInputStream(), projectPath);
+            logger.debug("File copied successfully to project path: {}", projectImagePath);
         } catch (IOException e) {
             logger.error("Error saving image: {}", e.getMessage());
             return null;
