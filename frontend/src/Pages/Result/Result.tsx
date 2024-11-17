@@ -52,6 +52,7 @@ const Result = () => {
     }, [state]);
 
     useEffect(() => {
+        console.log("ocrResult:", ocrResult);
         if (ocrResult) {
             console.log('OCR 결과:', ocrResult);
             

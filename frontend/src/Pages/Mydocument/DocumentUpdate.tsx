@@ -1,3 +1,5 @@
+import { request } from 'http';
+import fetchWithAuthGet from '../../Components/AccessToken/AccessToken';
 import fetchWithAuth from '../../Components/AccessToken/AccessToken';
 import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -60,7 +62,7 @@ const DocumentUpdate = () => {
     useEffect(() => {
         if (ocrId) {
             console.log("Sending request with ocrId:", ocrId);
-            fetchWithAuth(`/ocr/posts/${ocrId}`)
+            fetchWithAuthGet(`/ocr/posts/${ocrId}`)
                 .then((res) => {
                     console.log("res:", res);
                     if (typeof res === 'string') {
@@ -160,6 +162,7 @@ const DocumentUpdate = () => {
                 }
                 return result;
             });
+            console.log('Updated OCR Result:', updatedResults);
             return { ...prev, results: updatedResults };
         });
     };
@@ -175,6 +178,9 @@ const DocumentUpdate = () => {
     };
 
     const handleRegister = async () => {
+        console.log('Current title:', title);
+        console.log('Current OCR Result:', decodedOcrResult);
+
         if (decodedOcrResult && decodedOcrResult.results) {
             const updatedOcrResults = decodedOcrResult.results.map(result => {
                 const element = document.getElementById(result.label) as HTMLInputElement | null;
@@ -211,32 +217,32 @@ const DocumentUpdate = () => {
                         text: result.text
                     }))
                 }),
-                ocrId: ocrId
+                ocrId: ocrId || ''
             };
 
-            console.log(requestDto);
+            console.log('Request DTO:', requestDto);
+
             try {
-                const response = await fetchWithAuth(`/ocr/posts/${ocrId}`, requestDto);
-                if (typeof response !== 'string' && response.data.code === 200) {
-                    alert('수정이 완료되었습니다.');
-                    navigate('/mydocument');
-                } else {
-                    console.error('수정 실패:', response);
-                    alert('수정에 실패했습니다.');
-                }
+                fetchWithAuth(`/ocr/posts/${ocrId}`, requestDto)
+                    .then((response) => {
+                        console.log("response:", response);
+                        console.log("requestDto:", requestDto);
+                        if (typeof response !== 'string' && response.data.code === 200) {
+                            alert('수정이 완료되었습니다.');
+                            navigate('/mydocument');
+                        } else {
+                            console.error('수정 실패:', response);
+                            alert('수정에 실패했습니다.');
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('수정 중 오류 발생:', error);
+                        alert('수정 중 오류가 발생했습니다.');
+                    });
             } catch (error) {
                 console.error('수정 중 오류 발생:', error);
                 alert('수정 중 오류가 발생했습니다.');
             }
-
-            try {
-                const parsedOcrData = JSON.parse(requestDto.ocrData);
-                console.log('Parsed OCR Data:', parsedOcrData);
-            } catch (error) {
-                console.error('Error parsing OCR data:', error);
-            }
-
-            console.log('Request DTO:', requestDto);
         } else {
             console.error('OCR 결과가 없습니다.');
         }
