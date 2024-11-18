@@ -125,6 +125,7 @@ public class OcrService {
             return OcrResponseDto.builder()
                     .ocrResult(ocr.getOcrData())
                     .ocrId(ocr.getOcrIndex())
+                    .originalImg(ocr.getImage())
                     .build();
 
         } catch (MemberException e) {
@@ -266,6 +267,7 @@ public class OcrService {
         ocrRepository.save(ocr);
         return OcrResponseDto.builder()
                 .ocrResult(dto.getOcrData())
+                .title(dto.getTitle())
                 .build();
     }
 
