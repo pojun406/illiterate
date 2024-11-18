@@ -263,6 +263,7 @@ public class OcrService {
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
         ocr.setOcrData(dto.getOcrData());
+        ocr.setTitle(dto.getTitle());
 
         ocrRepository.save(ocr);
         return OcrResponseDto.builder()
