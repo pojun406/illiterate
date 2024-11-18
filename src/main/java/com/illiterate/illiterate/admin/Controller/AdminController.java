@@ -9,6 +9,7 @@ import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.enums.GlobalSuccessCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.common.response.ErrorResponseHandler;
+import com.illiterate.illiterate.common.util.LocalFileUtil;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.BoardException;
@@ -21,6 +22,7 @@ import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.illiterate.illiterate.common.enums.BoardErrorCode.NOT_FOUND_WRITING;
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
@@ -33,7 +35,7 @@ public class AdminController {
     private final AdminService adminService;
     private final BoardRepository boardRepository;
     private final ErrorResponseHandler errorResponseHandler;
-    private final MemberRepository memberRepository;
+    private final LocalFileUtil localFileUtil;
 
     @PostMapping("/process/{board_index}")
     public ResponseEntity<BfResponse<?>> processBoardImage(@PathVariable Long board_index, @RequestBody String title){
@@ -55,9 +57,13 @@ public class AdminController {
 
     @PostMapping("/paperinfo")
     public ResponseEntity<BfResponse<?>> processPaperInfo(
-            @RequestBody PaperInfoRequestDto requestDto) {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("request") PaperInfoRequestDto requestDto) {
+
+        String saved = localFileUtil.saveImage(file, "paperinfo");
+
         // OcrService를 호출하여 Flask API를 통한 PaperInfo 처리 수행
-        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(requestDto);
+        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(saved, requestDto);
 
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, responseDto));
     }

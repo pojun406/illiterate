@@ -80,8 +80,8 @@ public class AdminService {
     /**
      * /paperinfo 호출 및 결과 처리 메서드
      */
-    public AdminResponseDto uploadImageAndProcessPaperInfo(PaperInfoRequestDto requestDto) {
-        String paperInfoResult = callPythonPaperInfoApi(requestDto.getImagePath());
+    public AdminResponseDto uploadImageAndProcessPaperInfo(String path, PaperInfoRequestDto requestDto) {
+        String paperInfoResult = callPythonPaperInfoApi(path);
         if (paperInfoResult == null) {
             log.error("PaperInfo processing failed.");
             throw new RuntimeException("PaperInfo processing failed.");
