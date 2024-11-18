@@ -1,66 +1,32 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import fetchWithAuth from '../../Components/AccessToken/AccessToken';
+import React, { useState } from 'react';
 
 const DocumentType = () => {
-    const navigate = useNavigate();
-    const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [infoTitle, setInfoTitle] = useState<string>("");
-
-    // 이미지 선택 핸들러
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedImage(file);
-        }
-    };
-
-    // 문서 제목 입력 핸들러
+    const [infoTitle, setInfoTitle] = useState('');
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInfoTitle(event.target.value);
     };
 
-    // 업로드 버튼 클릭 핸들러
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(event.target.files);
+    };
+
     const handleButtonClick = async () => {
-        if (!selectedImage) {
-            alert("이미지를 선택해주세요.");
-            return;
+        const formData = new FormData();
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput && fileInput.files) {
+            formData.append('file', fileInput.files[0]);
+            console.log('File:', fileInput.files[0]);
         }
-        if (!infoTitle) {
-            alert("문서 제목을 입력해주세요.");
-            return;
-        }
+        formData.append('InfoTitle', infoTitle);
+        console.log('InfoTitle:', infoTitle);
 
         try {
-            const formData = new FormData();
-            formData.append("file", selectedImage); // 이미지 파일 추가
-            formData.append(
-                "request",
-                JSON.stringify({
-                    infoTitle, // 문서 제목 추가
-                })
-            );
-
-
-
-            // 백엔드 API 요청
-            const response = await axios.post("http://localhost:8080/admin/paperinfo", formData, {
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("authToken")}`, // 필요 시 인증 토큰 추가
-                },
-            });
-
-            console.log("FormData 내용 확인:");
-            Array.from(formData.entries()).forEach(([key, value]) => {
-                console.log(`${key}:`, value);
-            });
-
-            console.log("응답 데이터:", response.data);
-            alert("문서 타입이 성공적으로 등록되었습니다!");
-            navigate("/success");
+            console.log('FormData Request:', formData.get('file'), formData.get('InfoTitle'));
+            const response = await fetchWithAuth('/admin/paperinfo', {}, formData);
+            console.log('Response:', response);
         } catch (error) {
-            console.error("문서 타입 등록 중 오류 발생:", error);
-            alert("문서 타입 등록에 실패했습니다.");
+            console.error('Error:', error);
         }
     };
 
