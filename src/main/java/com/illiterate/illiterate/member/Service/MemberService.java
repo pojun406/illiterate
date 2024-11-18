@@ -159,13 +159,11 @@ public class MemberService {
         Member member = memberRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
 
-        MemberInfoDto memberInfoDto = MemberInfoDto.builder()
+        return MemberInfoDto.builder()
                 .email(member.getEmail())
                 .name(member.getUserName())
                 .userid(member.getUserId())
                 .build();
-
-        return memberInfoDto;
     }
 
     public String findMemberId(String userId) {
@@ -217,7 +215,7 @@ public class MemberService {
         member.setUserName(userUpdateDto.getName());
 
         // 이메일 변경
-        member.setUserName(userUpdateDto.getEmail());
+        member.setEmail(userUpdateDto.getEmail());
 
         memberRepository.save(member);
         log.debug("Member info updated successfully");
