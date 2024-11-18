@@ -223,7 +223,7 @@ const DocumentUpdate = () => {
             console.log('Request DTO:', requestDto);
 
             try {
-                fetchWithAuth(`/ocr/posts/${ocrId}`, requestDto)
+                fetchWithAuth(`/ocr/posts/update/${ocrId}`, requestDto)
                     .then((response) => {
                         console.log("response:", response);
                         console.log("requestDto:", requestDto);
