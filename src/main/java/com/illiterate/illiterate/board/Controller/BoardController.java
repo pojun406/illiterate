@@ -56,7 +56,7 @@ public class BoardController {
     }
 
     // 게시글 수정
-    @PutMapping("/posts/{boardIdx}")
+    @PostMapping("/posts/update/{boardIdx}")
     public ResponseEntity<BfResponse<?>> updatePost(
             @PathVariable("boardIdx") Long boardIdx,
             @RequestBody BoardRequestDto requestsDto,
@@ -68,7 +68,7 @@ public class BoardController {
     }
 
     // 게시글 삭제
-    @DeleteMapping("/posts/{boardIdx}")
+    @PostMapping("/posts/delete/{boardIdx}")
     public ResponseEntity<BfResponse<?>> deletePost(
             @PathVariable("boardIdx") Long boardIdx,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
