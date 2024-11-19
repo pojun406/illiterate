@@ -162,7 +162,6 @@ const DocumentUpdate = () => {
                 }
                 return result;
             });
-            console.log('Updated OCR Result:', updatedResults);
             return { ...prev, results: updatedResults };
         });
     };
