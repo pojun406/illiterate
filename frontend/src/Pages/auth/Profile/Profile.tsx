@@ -46,9 +46,10 @@ function updateProfile() {
         }
     })
     .then(data => {
-        if (data === true) {
+        if (data && data.code === 200) {
             console.log('프로필 업데이트 성공:', data);
-            
+            getProfile();
+            setActiveTab('profile');
         } else {
             console.error('프로필 업데이트 실패:', data.message);
         }
