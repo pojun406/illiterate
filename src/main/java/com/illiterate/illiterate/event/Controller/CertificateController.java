@@ -27,8 +27,7 @@ public class CertificateController {
     public ResponseEntity<BfResponse<CertificateMailResponseDto>> sendCertificateMail(
             @Valid @RequestBody MailCertificateRequestDto mailCertificateRequestDto
     ) {
-        CertificateMailResponseDto responseDto = certificateService.sendEmailCertificateNumber(
-                mailCertificateRequestDto);
+        CertificateMailResponseDto responseDto = certificateService.sendEmailCertificateNumber(mailCertificateRequestDto);
 
         return ResponseEntity.ok()
                 .body(new BfResponse<>(SUCCESS, responseDto));
