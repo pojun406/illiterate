@@ -85,6 +85,12 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
+    //이메일 인증
+    @PostMapping("/public/CertificationNumber")
+    public ResponseEntity<BfResponse<?>> getCertificationNumber(@RequestBody FindPasswordRequestDto find){
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, memberService.getCertificationNumber(find)));
+    }
+
     @PostMapping("/public/findId")
     public ResponseEntity<BfResponse<?>> findId(
             @RequestBody FindIdRequestDto request){

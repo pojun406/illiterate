@@ -4,10 +4,7 @@ import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.repository.RedisRepository;
 import com.illiterate.illiterate.common.util.ConvertUtil;
 import com.illiterate.illiterate.event.Service.CertificateService;
-import com.illiterate.illiterate.member.DTO.request.JoinDto;
-import com.illiterate.illiterate.member.DTO.request.LoginDto;
-import com.illiterate.illiterate.member.DTO.request.MemberPasswordResetRequestDto;
-import com.illiterate.illiterate.member.DTO.request.MemberUpdateRequestDto;
+import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
 import com.illiterate.illiterate.member.Entity.Member;
@@ -115,11 +112,6 @@ public class MemberService {
             throw new MemberException(FORBIDDEN_RESET_PASSWORD);
         }
 
-        // 인증번호 검증
-        if (!certificateService.verifyCertificateEmailNumber(member.getEmail(), resetRequestDto.getCertificationNumber())) {
-            throw new MemberException(FORBIDDEN_RESET_PASSWORD);
-        }
-
         // 비밀번호 인코딩
         String encodedPassword = passwordEncoder.encode(resetRequestDto.getNewPassword());
 
@@ -134,13 +126,7 @@ public class MemberService {
     public boolean findPassword(MemberPasswordResetRequestDto resetRequestDto) {
         // 회원 조회
         Member member = memberRepository.findByEmail(resetRequestDto.getEmail())
-                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
-
-        // 인증번호 검증
-        boolean isValid = certificateService.verifyCertificateEmailNumber(resetRequestDto.getEmail(), resetRequestDto.getCertificationNumber());
-        if (!isValid) {
-            return false;
-        }
+                .orElseThrow(() -> new MemberException(FORBIDDEN_DELETE_MEMBER));
 
         // 비밀번호 인코딩
         String encodedPassword = passwordEncoder.encode(resetRequestDto.getNewPassword());
@@ -152,6 +138,10 @@ public class MemberService {
         memberRepository.save(member);
 
         return true;
+    }
+
+    public boolean getCertificationNumber(FindPasswordRequestDto dto){
+        return certificateService.verifyCertificateEmailNumber(dto.getEmail(), dto.getVerificationCode());
     }
 
     public MemberInfoDto getUserInfo(UserDetailsImpl userDetails) {
