@@ -4,6 +4,7 @@ package com.illiterate.illiterate.member.Controller;
 import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.common.response.ErrorResponseHandler;
+import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
 import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
@@ -87,8 +88,8 @@ public class MemberController {
 
     //이메일 인증
     @PostMapping("/public/CertificationNumber")
-    public ResponseEntity<BfResponse<?>> getCertificationNumber(@RequestBody FindPasswordRequestDto find){
-        return ResponseEntity.ok(new BfResponse<>(SUCCESS, memberService.getCertificationNumber(find)));
+    public ResponseEntity<BfResponse<?>> getCertificationNumber(@RequestBody MailCertificateRequestDto find){
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, memberService.sendCertificationNumber(find)));
     }
 
     @PostMapping("/public/findId")

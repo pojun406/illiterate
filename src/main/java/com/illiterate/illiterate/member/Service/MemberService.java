@@ -4,6 +4,8 @@ import com.illiterate.illiterate.common.enums.MemberErrorCode;
 import com.illiterate.illiterate.common.repository.RedisRepository;
 import com.illiterate.illiterate.common.util.ConvertUtil;
 import com.illiterate.illiterate.event.Service.CertificateService;
+import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
+import com.illiterate.illiterate.event.dto.response.CertificateMailResponseDto;
 import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
@@ -124,9 +126,16 @@ public class MemberService {
 
     // 비밀번호 찾기 ( 비로그인중일때 )
     public boolean findPassword(MemberPasswordResetRequestDto resetRequestDto) {
-        // 회원 조회
-        Member member = memberRepository.findByEmail(resetRequestDto.getEmail())
-                .orElseThrow(() -> new MemberException(FORBIDDEN_DELETE_MEMBER));
+
+        Member member = new Member();
+
+        try{
+            // 회원 조회
+            member = memberRepository.findByEmail(resetRequestDto.getEmail());
+        } catch (MemberException e){
+            throw new MemberException(FORBIDDEN_DELETE_MEMBER);
+        }
+
 
         // 비밀번호 인코딩
         String encodedPassword = passwordEncoder.encode(resetRequestDto.getNewPassword());
@@ -140,8 +149,19 @@ public class MemberService {
         return true;
     }
 
-    public boolean getCertificationNumber(FindPasswordRequestDto dto){
-        return certificateService.verifyCertificateEmailNumber(dto.getEmail(), dto.getVerificationCode());
+    public CertificateMailResponseDto sendCertificationNumber(MailCertificateRequestDto dto){
+        Member member = new Member();
+        try{
+            member = memberRepository.findByEmail(dto.email());
+        }catch (MemberException e){
+            throw new MemberException(FORBIDDEN_DELETE_MEMBER);
+        }
+
+        if (member.getEmail().equals(dto.email())){
+            return certificateService.sendEmailCertificateNumber(dto);
+        } else {
+            return null;
+        }
     }
 
     public MemberInfoDto getUserInfo(UserDetailsImpl userDetails) {
