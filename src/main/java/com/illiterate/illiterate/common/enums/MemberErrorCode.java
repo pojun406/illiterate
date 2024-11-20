@@ -23,6 +23,7 @@ public enum MemberErrorCode implements BaseErrorCode {
 
     // 404 NOT_FOUND
     NOT_FOUND_MEMBER_ID(404, "존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND),
+    INACTIVE_MEMBER(404, "이미 탈퇴한 회원입니다.", HttpStatus.NOT_FOUND),
     NOT_FOUND_REFRESH_TOKEN(404, "refresh token이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     NOT_MATCH_REFRESH_TOKEN(404, "refresh token이 일치하지 않습니다.", HttpStatus.NOT_FOUND),
     NOT_FOUND_BANK(404, "존재하지 않는 은행입니다.", HttpStatus.NOT_FOUND),

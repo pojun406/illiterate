@@ -160,6 +160,9 @@ public class MemberService {
 
         // 이메일 일치 여부 확인
         if (member.getEmail().equals(dto.email())) {
+            if(!member.getStatus().equals(StatusType.INACTIVE)){
+                throw new MemberException(INACTIVE_MEMBER);
+            }
             return certificateService.sendEmailCertificateNumber(dto);
         } else {
             throw new MemberException(NOT_FOUND_MEMBER_ID); // 적절한 예외 처리

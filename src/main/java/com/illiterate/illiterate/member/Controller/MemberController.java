@@ -89,7 +89,11 @@ public class MemberController {
     //이메일 인증
     @PostMapping("/public/CertificationNumber")
     public ResponseEntity<BfResponse<?>> getCertificationNumber(@RequestBody MailCertificateRequestDto find){
-        return ResponseEntity.ok(new BfResponse<>(SUCCESS, memberService.sendCertificationNumber(find)));
+        try {
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, memberService.sendCertificationNumber(find)));
+        } catch (MemberException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        }
     }
 
     @PostMapping("/public/findId")
