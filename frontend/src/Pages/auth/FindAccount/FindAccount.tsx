@@ -73,7 +73,7 @@ const FindAccount: React.FC = () => {
         }
 
         try {
-            const response = await axios.post('/public/sendVerificationEmail', { email });
+            const response = await axios.post('/public/CertificationNumber', { email });
             console.log(response.data);
             alert("이메일을 보냈습니다.");
             setIsResend(true);
