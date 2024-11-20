@@ -149,20 +149,23 @@ public class MemberService {
         return true;
     }
 
-    public CertificateMailResponseDto sendCertificationNumber(MailCertificateRequestDto dto){
-        Member member = new Member();
-        try{
-            member = memberRepository.findByEmail(dto.email());
-        }catch (MemberException e){
-            throw new MemberException(FORBIDDEN_DELETE_MEMBER);
+    public CertificateMailResponseDto sendCertificationNumber(MailCertificateRequestDto dto) {
+        System.out.println("email : " + dto.email());
+        Member member = memberRepository.findByEmail(dto.email());
+
+        // member가 null인지 확인
+        if (member == null) {
+            throw new MemberException(NOT_FOUND_MEMBER_ID); // 적절한 예외 처리
         }
 
-        if (member.getEmail().equals(dto.email())){
+        // 이메일 일치 여부 확인
+        if (member.getEmail().equals(dto.email())) {
             return certificateService.sendEmailCertificateNumber(dto);
         } else {
-            return null;
+            throw new MemberException(NOT_FOUND_MEMBER_ID); // 적절한 예외 처리
         }
     }
+
 
     public MemberInfoDto getUserInfo(UserDetailsImpl userDetails) {
         System.out.println("userDetail : " + userDetails);
