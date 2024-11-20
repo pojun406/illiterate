@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../../../Components/Logo/Logo";
+import axios from "axios";
 
 const FindAccount: React.FC = () => {
     const [email, setEmail] = useState<string>("");
@@ -8,6 +9,9 @@ const FindAccount: React.FC = () => {
     const [message, setMessage] = useState<string>("");
     const [isFindingUsername, setIsFindingUsername] = useState<boolean>(true);
     const [verificationCode, setVerificationCode] = useState<string>("");
+    const [isResend, setIsResend] = useState<boolean>(false);
+    const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+    const [verificationError, setVerificationError] = useState<string>("");
     const location = useLocation();
 
     useEffect(() => {
@@ -16,21 +20,26 @@ const FindAccount: React.FC = () => {
         }
     }, [location.state]);
 
-    const handleFindIdSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const endpoint = "/findId";
-        const data = { userEmail: email };
+        const endpoint = isFindingUsername ? "/findId" : `/${userid}/password`;
+        const data = isFindingUsername ? { userEmail: email } : { email, verificationCode };
 
         if (!email) {
             setMessage("이메일을 입력해주세요.");
             return;
         }
 
-        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
+        if (!isFindingUsername && !verificationCode) {
+            setMessage("인증번호를 입력해주세요.");
+            return;
+        }
+
+        console.log("서버로 보내는 데이터:", data);
 
         try {
             const response = await fetch(endpoint, {
-                method: "POST",
+                method: isFindingUsername ? "POST" : "PATCH",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -39,45 +48,9 @@ const FindAccount: React.FC = () => {
 
             if (response.ok) {
                 const result = await response.json();
-                setMessage(`아이디: ${result.data}`);
+                setMessage(isFindingUsername ? `아이디: ${result.data}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
             } else {
-                setMessage("아이디를 찾을 수 없습니다.");
-            }
-        } catch (error) {
-            setMessage("오류가 발생했습니다. 다시 시도해주세요.");
-        }
-    };
-
-    const handleFindPasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const endpoint = `/${userid}/password`;
-        const data = { email, verificationCode };
-
-        if (!email) {
-            setMessage("이메일을 입력해주세요.");
-            return;
-        }
-
-        if (!verificationCode) {
-            setMessage("인증번호를 입력해주세요.");
-            return;
-        }
-
-        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
-
-        try {
-            const response = await fetch(endpoint, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
-            } else {
-                setMessage("비밀번호를 찾을 수 없습니다.");
+                setMessage(isFindingUsername ? "아이디를 찾을 수 없습니다." : "비밀번호를 찾을 수 없습니다.");
             }
         } catch (error) {
             setMessage("오류가 발생했습니다. 다시 시도해주세요.");
@@ -85,38 +58,51 @@ const FindAccount: React.FC = () => {
     };
 
     const handleSendVerificationEmail = async () => {
-        const endpoint = "/sendVerificationEmail";
-        const data = { email };
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!email) {
-            setMessage("이메일을 입력해주세요.");
+        if (email === "" || !emailRegex.test(email)) {
+            alert("유효한 이메일 주소를 입력해주세요.");
             return;
         }
 
-        console.log("서버로 보내는 데이터:", data); // 서버로 보내는 데이터 콘솔에 출력
+        if (isResend) {
+            const confirmResend = window.confirm("인증번호를 다시 요청하시겠습니까?");
+            if (!confirmResend) {
+                return;
+            }
+        }
 
         try {
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
+            const response = await axios.post('/public/sendVerificationEmail', { email });
+            console.log(response.data);
+            alert("이메일을 보냈습니다.");
+            setIsResend(true);
+        } catch (error) {
+            console.error(error);
+            alert("인증번호 전송 중 오류가 발생했습니다.");
+        }
+    };
 
-            if (response.ok) {
-                setMessage("인증메일이 전송되었습니다.");
+    const handleVerifyCode = async () => {
+        try {
+            const response = await axios.post('/public/verify', { email, verificationCode });
+
+            if (response.data.code === 200 && response.data.data.isValid) {
+                setIsEmailVerified(true);
+                setVerificationError("");
             } else {
-                setMessage("인증메일 전송에 실패했습니다.");
+                setIsEmailVerified(false);
+                setVerificationError("인증번호가 올바르지 않습니다.");
             }
         } catch (error) {
-            setMessage("오류가 발생했습니다. 다시 시도해주세요.");
+            console.error(error);
+            setVerificationError("인증번호 확인 중 오류가 발생했습니다.");
         }
     };
 
     const handleTabClick = (isUsernameTab: boolean) => {
         setIsFindingUsername(isUsernameTab);
-        setMessage(""); // 탭 전환 시 메시지 초기화
+        setMessage("");
     };
 
     return (
@@ -143,8 +129,12 @@ const FindAccount: React.FC = () => {
                     <div className="text-center font-bold text-blue-300 text-xl mb-4">
                         {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
                     </div>
-                    {message && <div className="text-center text-red-500 mb-4">{message}</div>}
-                    <form onSubmit={isFindingUsername ? handleFindIdSubmit : handleFindPasswordSubmit}>
+                    {(message || verificationError) && (
+                        <div className="text-center text-red-500 mb-4">
+                            {message || verificationError}
+                        </div>
+                    )}
+                    <form onSubmit={handleSubmit}>
                         {!isFindingUsername && (
                             <>
                                 <input
@@ -181,6 +171,7 @@ const FindAccount: React.FC = () => {
                                     <button
                                         type="button"
                                         className="w-1/4 px-4 py-2 text-white bg-blue-700 rounded-md hover:bg-blue-800 focus:outline-none"
+                                        onClick={handleVerifyCode}
                                     >
                                         확인
                                     </button>

@@ -19,15 +19,24 @@ const Mydocument = () => {
     useEffect(() => {
         fetchWithAuthGet("/ocr/posts", null)
             .then((res) => {
-                console.log(res);
-                if (typeof res !== 'string' && res.data) {
-                    setDocuments(res.data.data);
+                if (typeof res === 'string') {
+                    return;
+                }
+                
+                if (res?.data?.errorMessage === "존재하지 않는 문서입니다.") {
+                    alert("존재하지 않는 문서입니다.");
+                    return;
+                }
+
+                if (res?.data) {
+                    setDocuments(res.data);
                 } else {
-                    console.error("Unexpected response format:", res);
+                    console.error("예상치 못한 응답 형식:", res);
                 }
             })
             .catch((error) => {
-                console.error("Error fetching documents:", error);
+                console.error("문서 가져오기 오류:", error);
+                alert("문서를 가져오는데 실패했습니다.");
             });
     }, []);
 
