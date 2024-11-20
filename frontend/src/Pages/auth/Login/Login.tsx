@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useNavigate, useLocation} from 'react-router-dom';
 import Logo from "../../../Components/Logo/Logo";
 import { AiOutlineLock, AiOutlineUser } from "react-icons/ai";
 import axios from "axios";
@@ -10,6 +10,7 @@ const Login = () => {
     const [message, setMessage] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         handleFetchProtectedResource();
@@ -32,10 +33,11 @@ const Login = () => {
                 localStorage.setItem('role', role);
                 setIsLoggedIn(true);
                 setMessage("로그인 성공");
-                navigate(-1);
-            } else {
-                setMessage("로그인 실패: 자격 증명을 확인해주세요.");
-                alert("아이디/비밀번호를 다시 확인해주세요");
+                if(location.pathname === "/auth/Signup") {
+                    navigate("/");
+                } else {
+                    navigate(-1);
+                }
             }
         } catch (error) {
             const errorMessage = axios.isAxiosError(error) && error.response
