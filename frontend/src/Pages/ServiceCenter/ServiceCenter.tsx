@@ -1,3 +1,4 @@
+import fetchWithAuthGet from '../../Components/AccessToken/AccessTokenGet';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,18 +17,19 @@ const ServiceCenter = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await fetch('/board/posts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
-                });
-                const data = await response.json();
-                console.log(data);
-                setPosts(data.data);
+                const response = await fetchWithAuthGet('/board/posts', null);
+                if (typeof response === 'string') {
+                    setPosts([]);
+                    return;
+                }
+                if (response?.data?.data) {
+                    setPosts(response.data.data);
+                } else {
+                    setPosts([]);
+                }
             } catch (error) {
                 console.error('게시글을 불러오는 중 오류가 발생했습니다:', error);
+                setPosts([]);
             }
         };
 
@@ -40,7 +42,10 @@ const ServiceCenter = () => {
 
     return (
         <div className="p-6 max-w-[1260px] mx-auto">
-            <h2 className="text-2xl font-bold mb-6">고객센터</h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold mb-6">고객센터</h2>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => navigate('/service')}>문의하기</button>
+            </div>
             <div className="space-y-4">
                 <div className="hidden md:grid grid-cols-7 font-semibold bg-gray-100 p-3 rounded-t-lg text-center">
                     <div>번호</div>
