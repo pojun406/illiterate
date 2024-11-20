@@ -1,5 +1,6 @@
 import fetchWithAuth from '../../../Components/AccessToken/AccessToken';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -9,7 +10,7 @@ const Profile = () => {
     const [userid, setUserId] = useState('');
     const [editName, setEditName] = useState('');
     const [editEmail, setEditEmail] = useState('');
-    
+    const navigate = useNavigate();
     useEffect(() => {
         getProfile();
     }, []);
@@ -65,6 +66,19 @@ function updateProfile() {
 
     function EditEmailHandler(e: React.ChangeEvent<HTMLInputElement>) {
         setEditEmail(e.target.value);
+    }
+
+    function deleteUser() {
+      const userIndex = localStorage.getItem('id') || '';
+        fetchWithAuth(`/user/deluser/${userIndex}`)
+        .then(res => {
+            console.log(res);
+            localStorage.clear();
+            navigate('/');
+        })
+        .catch(error => {
+            console.error('회원 탈퇴 중 오류 발생:', error);
+        });
     }
 
   return (
@@ -158,7 +172,7 @@ function updateProfile() {
               <div className="bg-gray-100 p-4 text-xl font-bold">회원 탈퇴</div>
               <div className="my-4">
                 <p className="text-lg font-bold mb-4">정말 회원 탈퇴를 하시겠습니까?</p>
-                <button type="button" className="btn rounded-md bg-red-500 text-white hover:bg-red-600 w-full h-8">회원 탈퇴</button>
+                <button type="button" className="btn rounded-md bg-red-500 text-white hover:bg-red-600 w-full h-8" onClick={deleteUser}>회원 탈퇴</button>
               </div>
             </div>
           )}
