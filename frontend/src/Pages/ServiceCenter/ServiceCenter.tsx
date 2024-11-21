@@ -12,6 +12,8 @@ interface Post {
 
 const ServiceCenter = () => {
     const [posts, setPosts] = useState<Post[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const postsPerPage = 7;
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,53 +42,121 @@ const ServiceCenter = () => {
         navigate(`/servicecenter/detail/${boardIdx}`);
     };
 
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
+    const displayPosts = [...currentPosts, ...Array(postsPerPage - currentPosts.length).fill(null)];
+
     return (
         <div className="p-6 max-w-[1260px] mx-auto">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold mb-6">고객센터</h2>
                 <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => navigate('/service')}>문의하기</button>
             </div>
-            <div className="space-y-4">
-                <div className="hidden md:grid grid-cols-7 font-semibold bg-gray-100 p-3 rounded-t-lg text-center">
+            <div className="space-y-4 min-h-[598px]">
+                <div className="hidden md:grid grid-cols-7 font-semibold bg-gray-100 p-3 rounded text-center mt-0 border border-gray-200">
                     <div>번호</div>
                     <div className='col-span-3'>제목</div>
                     <div>작성자</div>
                     <div>작성일</div>
                     <div>상태</div>
                 </div>
-                {posts.map((post, index) => (
-                    <div 
-                        key={post.boardIdx} 
-                        className="hidden md:grid grid-cols-7 p-3 hover:bg-gray-50 transition-colors text-center cursor-pointer"
-                        onClick={() => handleItemClick(post.boardIdx)}
-                    >
-                        <div className='flex justify-center'>{index + 1}</div>
-                        <div className='col-span-3'>{post.title}</div>
-                        <div>{post.userId}</div>
-                        <div>{post.createdAt}</div>
-                        <div>{post.status}</div>
-                    </div>
-                ))}
-                {posts.map((post, index) => (
-                    <div 
-                        key={post.boardIdx} 
-                        className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center cursor-pointer"
-                        onClick={() => handleItemClick(post.boardIdx)}
-                    >
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="font-semibold">번호:</div>
-                            <div className='flex justify-center'>{index + 1}</div>
-                            <div className="font-semibold">제목:</div>
-                            <div className="font-medium">{post.title}</div>
-                            <div className="font-semibold">작성자:</div>
+                {displayPosts.map((post, index) => (
+                    post ? (
+                        <div 
+                            key={post.boardIdx} 
+                            className="hidden md:grid grid-cols-7 p-3 hover:bg-gray-50 transition-colors text-center cursor-pointer mt-0 rounded border border-gray-200"
+                            onClick={() => handleItemClick(post.boardIdx)}
+                        >
+                            <div className='flex justify-center'>{indexOfFirstPost + index + 1}</div>
+                            <div className='col-span-3'>{post.title}</div>
                             <div>{post.userId}</div>
-                            <div className="font-semibold">작성일:</div>
                             <div>{post.createdAt}</div>
-                            <div className="font-semibold">상태:</div>
                             <div>{post.status}</div>
                         </div>
-                    </div>
+                    ) : (
+                        <div 
+                            key={index} 
+                            className="hidden md:grid grid-cols-7 p-3 text-center mt-0 rounded border border-gray-200"
+                        >
+                            <div className='flex justify-center'>-</div>
+                            <div className='col-span-3'>-</div>
+                            <div>-</div>
+                            <div>-</div>
+                            <div>-</div>
+                        </div>
+                    )
                 ))}
+                {displayPosts.map((post, index) => (
+                    post ? (
+                        <div 
+                            key={post.boardIdx} 
+                            className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center cursor-pointer border border-gray-200"
+                            onClick={() => handleItemClick(post.boardIdx)}
+                        >
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="font-semibold">번호:</div>
+                                <div className='flex justify-center'>{indexOfFirstPost + index + 1}</div>
+                                <div className="font-semibold">제목:</div>
+                                <div className="font-medium">{post.title}</div>
+                                <div className="font-semibold">작성자:</div>
+                                <div>{post.userId}</div>
+                                <div className="font-semibold">작성일:</div>
+                                <div>{post.createdAt}</div>
+                                <div className="font-semibold">상태:</div>
+                                <div>{post.status}</div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div 
+                            key={index} 
+                            className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center"
+                        >
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="font-semibold">번호:</div>
+                                <div className='flex justify-center'>-</div>
+                                <div className="font-semibold">제목:</div>
+                                <div className="font-medium">-</div>
+                                <div className="font-semibold">작성자:</div>
+                                <div>-</div>
+                                <div className="font-semibold">작성일:</div>
+                                <div>-</div>
+                                <div className="font-semibold">상태:</div>
+                                <div>-</div>
+                            </div>
+                        </div>
+                    )
+                ))}
+                <div className="flex justify-center">
+                    <button
+                        className={`px-3 py-1 mx-1 ${currentPage === 1 ? 'bg-gray-300' : 'bg-gray-200'}`}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        이전
+                    </button>
+                    {Array.from({ length: Math.ceil(posts.length / postsPerPage) }, (_, i) => (
+                        <button
+                            key={i}
+                            className={`px-3 py-1 mx-1 ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                            onClick={() => handlePageChange(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                    <button
+                        className={`px-3 py-1 mx-1 ${currentPage === Math.ceil(posts.length / postsPerPage) ? 'bg-gray-300' : 'bg-gray-200'}`}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === Math.ceil(posts.length / postsPerPage)}
+                    >
+                        다음
+                    </button>
+                </div>
             </div>
         </div>
     );
