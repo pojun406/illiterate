@@ -33,7 +33,7 @@ const fetchWithAuthGet = async (apiUrl: string, requestParameters?: any): Promis
             return "인증이 만료되었습니다.";
         } else if (error.response && error.response.status === 400) {
             console.error('잘못된 요청:', error.response.data);
-            return "잘못된 요청입니다.";
+            return error.response;
         } else {
             console.error('요청 중 오류:', error);
             if (error.response) {

@@ -20,42 +20,55 @@ const FindAccount: React.FC = () => {
         }
     }, [location.state]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const endpoint = isFindingUsername ? "/findId" : `/${userid}/password`;
-        const data = isFindingUsername ? { userEmail: email } : { email, verificationCode };
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const endpoint = isFindingUsername ? "/public/findId" : `/${userid}/password`;
+    const data = isFindingUsername ? { userEmail: email } : { email, verificationCode };
 
-        if (!email) {
-            setMessage("이메일을 입력해주세요.");
-            return;
-        }
+    if (!email) {
+        setMessage("이메일을 입력해주세요.");
+        return;
+    }
 
-        if (!isFindingUsername && !verificationCode) {
+    if (!isFindingUsername) {
+        if (!verificationCode) {
             setMessage("인증번호를 입력해주세요.");
             return;
         }
-
-        console.log("서버로 보내는 데이터:", data);
-
-        try {
-            const response = await fetch(endpoint, {
-                method: isFindingUsername ? "POST" : "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                setMessage(isFindingUsername ? `아이디: ${result.data}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
-            } else {
-                setMessage(isFindingUsername ? "아이디를 찾을 수 없습니다." : "비밀번호를 찾을 수 없습니다.");
-            }
-        } catch (error) {
-            setMessage("오류가 발생했습니다. 다시 시도해주세요.");
+        if (!isEmailVerified) {
+            setMessage("이메일 인증이 완료되지 않았습니다.");
+            return;
         }
-    };
+        if (!userid) {
+            setMessage("아이디를 입력해주세요.");
+            return;
+        }
+        // 이메일 인증이 완료되고 userid가 입력된 경우 페이지 이동
+        window.location.href = `/auth/reset-password/${userid}?email=${encodeURIComponent(email)}`;
+        return;
+    }
+
+    console.log("서버로 보내는 데이터:", data);
+
+    try {
+        const response = await fetch(endpoint, {
+            method: isFindingUsername ? "POST" : "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            setMessage(isFindingUsername ? `아이디: ${result.data}` : "비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+        } else {
+            setMessage(isFindingUsername ? "아이디를 찾을 수 없습니다." : "비밀번호를 찾을 수 없습니다.");
+        }
+    } catch (error) {
+        setMessage("오류가 발생했습니다. 다시 시도해주세요.");
+    }
+};
 
     const handleSendVerificationEmail = async () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -77,19 +90,26 @@ const FindAccount: React.FC = () => {
             console.log(response.data);
             alert("이메일을 보냈습니다.");
             setIsResend(true);
+            setVerificationError("");
         } catch (error) {
             console.error(error);
-            alert("인증번호 전송 중 오류가 발생했습니다.");
+            setVerificationError("인증번호 전송 중 오류가 발생했습니다.");
         }
     };
 
     const handleVerifyCode = async () => {
         try {
             const response = await axios.post('/public/verify', { email, verificationCode });
-
-            if (response.data.code === 200 && response.data.data.isValid) {
-                setIsEmailVerified(true);
-                setVerificationError("");
+            console.log(response.data);
+            if (response.data.code === 200) {
+                if (response.data.data.isValid) {
+                    setIsEmailVerified(true);
+                    alert("인증번호가 확인되었습니다.");
+                    setVerificationError("");
+                } else {
+                    setIsEmailVerified(false);
+                    setVerificationError("인증번호가 올바르지 않습니다.");
+                }
             } else {
                 setIsEmailVerified(false);
                 setVerificationError("인증번호가 올바르지 않습니다.");
@@ -103,6 +123,7 @@ const FindAccount: React.FC = () => {
     const handleTabClick = (isUsernameTab: boolean) => {
         setIsFindingUsername(isUsernameTab);
         setMessage("");
+        setVerificationError("");
     };
 
     return (
@@ -129,9 +150,9 @@ const FindAccount: React.FC = () => {
                     <div className="text-center font-bold text-blue-300 text-xl mb-4">
                         {isFindingUsername ? "아이디 찾기" : "비밀번호 찾기"}
                     </div>
-                    {(message || verificationError) && (
+                    {(verificationError || message) && (
                         <div className="text-center text-red-500 mb-4">
-                            {message || verificationError}
+                            {verificationError || message}
                         </div>
                     )}
                     <form onSubmit={handleSubmit}>
@@ -141,6 +162,7 @@ const FindAccount: React.FC = () => {
                                     type="text"
                                     placeholder="아이디"
                                     value={userid}
+                                    id="userid"
                                     onChange={(e) => setUserid(e.target.value)}
                                     className="block w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
                                 />
@@ -149,6 +171,7 @@ const FindAccount: React.FC = () => {
                                         type="email"
                                         placeholder="이메일"
                                         value={email}
+                                        id="email"
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="block w-full px-4 py-2 border rounded-md focus:outline-none"
                                     />
@@ -165,7 +188,11 @@ const FindAccount: React.FC = () => {
                                         type="text"
                                         placeholder="인증번호"
                                         value={verificationCode}
-                                        onChange={(e) => setVerificationCode(e.target.value)}
+                                        id="verificationCode"
+                                        onChange={(e) => {
+                                            const onlyNumbers = e.target.value.replace(/\D/g, '');
+                                            setVerificationCode(onlyNumbers);
+                                        }}
                                         className="block w-full px-4 py-2 border rounded-md focus:outline-none"
                                     />
                                     <button
@@ -184,6 +211,7 @@ const FindAccount: React.FC = () => {
                                     type="email"
                                     placeholder="이메일"
                                     value={email}
+                                    id="email"
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="block w-full px-4 py-2 border rounded-md focus:outline-none"
                                 />

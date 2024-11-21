@@ -35,6 +35,12 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, formData?:
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 }
+            }).catch(error => {
+                if (error.response && error.response.status === 400) {
+                    return error.response;
+                } else {
+                    throw error;
+                }
             });
         } else {
             response = await axios.post(apiUrl, { userId }, {
@@ -44,7 +50,6 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, formData?:
                 }
             });
         }
-        console.log(apiUrl + ' 요청 성공:', response);
         return response;
     } catch (error: any) {
         if (error.response && error.response.status === 401) {
@@ -53,15 +58,8 @@ const fetchWithAuth = async (apiUrl: string, requestParameters?: any, formData?:
             window.location.href = '/auth/login';
             return "인증이 만료되었습니다.";
         } else if (error.response && error.response.status === 400) {
-            console.error('잘못된 요청:', error.response.data);
-            return "잘못된 요청입니다.";
+            return error.response;
         } else {
-            console.error('요청 중 오류:', error);
-            if (error.response) {
-                console.error('서버 응답 데이터:', error.response.data);
-                console.error('서버 응답 상태:', error.response.status);
-                console.error('서버 응답 헤더:', error.response.headers);
-            }
             return "요청 중 오류가 발생했습니다.";
         }
     }

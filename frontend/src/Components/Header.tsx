@@ -28,7 +28,7 @@ const Header = () => {
     }, []);
 
     return (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col">
             <header className={`w-full z-30 ${isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
                 <Navigation />
                 {!isHomePage && <hr/>}

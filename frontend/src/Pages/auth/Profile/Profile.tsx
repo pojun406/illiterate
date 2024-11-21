@@ -1,6 +1,8 @@
+import { networkInterfaces } from 'os';
 import fetchWithAuth from '../../../Components/AccessToken/AccessToken';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -10,6 +12,13 @@ const Profile = () => {
     const [userid, setUserId] = useState('');
     const [editName, setEditName] = useState('');
     const [editEmail, setEditEmail] = useState('');
+
+    const [checkPassword, setCheckPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordCheck, setNewPasswordCheck] = useState('');
+
+
+
     const navigate = useNavigate();
     useEffect(() => {
         getProfile();
@@ -26,6 +35,8 @@ const Profile = () => {
                 setUserId(userid);
                 setEditName(name);
                 setEditEmail(email);
+                localStorage.setItem('userId',userid);
+                localStorage.setItem('email',email);
             } else {
                 console.error('Unexpected response format:', res);
             }
@@ -79,6 +90,82 @@ function updateProfile() {
         .catch(error => {
             console.error('회원 탈퇴 중 오류 발생:', error);
         });
+    }
+
+    function checkPasswordHandler(e: React.ChangeEvent<HTMLInputElement>) {
+        setCheckPassword(e.target.value);
+    }
+
+    function newPasswordHandler(e: React.ChangeEvent<HTMLInputElement>) {
+        setNewPassword(e.target.value);
+    }
+
+    function newPasswordBlurHandler(e: React.FocusEvent<HTMLInputElement>) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{8,}$/;
+        const errorElement = document.getElementById('newPasswordError');
+        if (!passwordRegex.test(e.target.value)) {
+            if (errorElement) {
+                errorElement.style.display = 'block';
+            }
+        } else {
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+    }
+
+    function newPasswordCheckHandler(e: React.ChangeEvent<HTMLInputElement>) {
+        setNewPasswordCheck(e.target.value);
+    }
+
+    function newPasswordCheckBlurHandler(e: React.FocusEvent<HTMLInputElement>) {
+        const errorElement = document.getElementById('newPasswordCheckError');
+        if (newPassword !== newPasswordCheck) {
+            if (errorElement) {
+                errorElement.style.display = 'block';
+            }
+        } else {
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+    }
+
+    function updatePassword() {
+        console.log('비밀번호 변경', "checkPassword: ", checkPassword, "newPassword: ", newPassword, "newPasswordCheck: ", newPasswordCheck);
+        if(newPassword===newPasswordCheck){
+            fetch('/public/login', {
+                method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8'
+            },
+            body: JSON.stringify({
+                userid: localStorage.getItem("userId"),
+                password: checkPassword
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.code === 200) {
+                console.log('로그인 성공:', data);
+                fetchWithAuth(`/user/resetPassword/${localStorage.getItem("id")}`, { email: localStorage.getItem("email"), newPassword: newPassword });
+                alert("비밀번호가 성공적으로 재설정되었습니다. 다시 로그인해주세요.");
+                localStorage.clear();
+                navigate('/');
+            } else {
+                setActiveTab('password');
+                const errorElement = document.getElementById('checkPasswordError');
+                if (errorElement) {
+                    errorElement.style.display = 'block';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('로그인 중 오류 발생:', error);
+            });
+        }else{
+            
+        }
     }
 
   return (
@@ -152,17 +239,25 @@ function updateProfile() {
                 <form>
                   <div className="mb-3">
                     <label className="block font-bold">현재 비밀번호</label>
-                    <input type="password" className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" />
+                    <input type="password" className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" onChange={checkPasswordHandler} />
+                    <p className="text-red-500 text-sm mt-1" id="checkPasswordError" style={{display: 'none'}}>비밀번호가 일치하지 않습니다.</p>
                   </div>
                   <div className="mb-3">
                     <label className="block font-bold">새 비밀번호</label>
-                    <input type="password" className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" />
+                    <input 
+                      type="password" 
+                      className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" 
+                      onChange={newPasswordHandler} 
+                      onBlur={newPasswordBlurHandler} 
+                    />
+                    <p className="text-red-500 text-sm mt-1" id="newPasswordError" style={{display: 'none'}}>비밀번호는 최소 8자 이상이어야 하며, 대문자, 소문자, 숫자 및 특수문자를 포함해야 합니다.</p>
                   </div>
                   <div className="mb-3">
                     <label className="block font-bold">새 비밀번호 확인</label>
-                    <input type="password" className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" />
+                    <input type="password" className="form-control rounded-md border border-gray-300 mt-2 p-1 px-2 w-full" onChange={newPasswordCheckHandler} onBlur={newPasswordCheckBlurHandler} />
+                    <p className="text-red-500 text-sm mt-1" id="newPasswordCheckError" style={{display: 'none'}}>비밀번호가 일치하지 않습니다.</p>
                   </div>
-                  <button type="button" className="btn bg-blue-500 rounded-md mt-3 text-white hover:bg-blue-600 w-full h-8">비밀번호 변경</button>
+                  <button type="button" className="btn bg-blue-500 rounded-md mt-3 text-white hover:bg-blue-600 w-full h-8" onClick={updatePassword}>비밀번호 변경</button>
                 </form>
               </div>
             </div>

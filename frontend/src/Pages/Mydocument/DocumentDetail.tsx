@@ -55,9 +55,20 @@ const DocumentDetail = () => {
         }
     }, [ocrId]);
 
+    const documentdelete = () => {
+        fetchWithAuth(`/ocr/posts/delete/${ocrId}`, { method: 'POST' })
+            .then((res) => {
+                alert('문서가 성공적으로 삭제되었습니다.');
+                navigate('/mydocument');
+            });
+    };
+
     return (
         <div className='flex flex-col w-[1260px] h-full mx-auto my-4'>
-            <h1 className='text-4xl font-bold'>{documentData?.title}</h1>
+            <div className='flex justify-between items-center mt-4'>
+                <h1 className='text-4xl font-bold'>{documentData?.title}</h1>
+                <button className='bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600' onClick={documentdelete}>삭제</button>
+            </div>
             {documentData?.originalImg ? (
                 <div className='flex flex-row items-center justify-between mt-4'>
                     <div>

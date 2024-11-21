@@ -24,7 +24,7 @@ interface OcrResult {
 
 const Result = () => {
     const [filePath1, setFilePath1] = useState<string | undefined>(undefined);
-    const [filePath2, setFilePath2] = useState<string | undefined>("/mockup/birth.png");
+    const [filePath2, setFilePath2] = useState<string | undefined>(undefined);
     const location = useLocation();
     const navigate = useNavigate();
     const [boxes, setBoxes] = useState<{ [key: string]: BoundingBox }>({});
@@ -63,6 +63,7 @@ const Result = () => {
                 console.log('디코딩된 OCR 결과:', decodedResult);
                 setDecodedOcrResult(decodedResult);
                 setOcrId(location.state.ocrId);
+                setFilePath2(location.state.originalImg);
             } catch (error) {
                 console.error('OCR 결과 파싱 오류:', error);
                 return;
@@ -235,10 +236,6 @@ const Result = () => {
                 console.error('저장 중 오류 발생:', error);
                 alert('저장 중 오류가 발생했습니다.');
             }
-
-
-
-
             try {
                 const parsedOcrData = JSON.parse(requestDto.ocrData);
                 console.log('Parsed OCR Data:', parsedOcrData);
@@ -250,6 +247,15 @@ const Result = () => {
         } else {
             console.error('OCR 결과가 없습니다.');
         }
+    };
+
+    const backToApplication = () => {
+        const formData = new FormData();
+        formData.append('fileName', location.state.originalImg || '');
+
+        console.log("fileName:", formData.get('fileName'));
+        fetchWithAuth('/ocr/deleteImage', formData);
+        navigate('/application');
     };
 
     return (
@@ -306,7 +312,7 @@ const Result = () => {
                 </div>
             )}
             <div className='flex flex-row items-center justify-between mt-4'>
-                <button className='bg-red-400 text-white px-4 py-2 rounded-md hover:bg-red-500' onClick={() => navigate('/application')}>돌아가기</button>
+                <button className='bg-red-400 text-white px-4 py-2 rounded-md hover:bg-red-500' onClick={backToApplication}>돌아가기</button>
                 <button className='bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-500' onClick={handleRegister}>등록하기</button>
             </div>
         </div>

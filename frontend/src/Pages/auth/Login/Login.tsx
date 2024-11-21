@@ -33,7 +33,7 @@ const Login = () => {
                 localStorage.setItem('role', role);
                 setIsLoggedIn(true);
                 setMessage("로그인 성공");
-                if(location.pathname === "/auth/Signup") {
+                if (location.pathname.startsWith("/auth")) {
                     navigate("/");
                 } else {
                     navigate(-1);

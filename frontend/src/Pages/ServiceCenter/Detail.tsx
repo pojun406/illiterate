@@ -38,11 +38,40 @@ function Detail() {
         }
     };
 
+    const handleDelete = async () => {
+        try {
+            const response = await fetchWithAuth(`/board/posts/delete/${boardIdx}`, null);
+            if (typeof response === 'string') {
+                console.error('Error deleting post:', response);
+                return;
+            }
+            if (response?.data?.code === 'SUCCESS') {
+                console.log('delete success!');
+            } else {
+                console.log('Post deleted successfully');
+            }
+            // 추가적인 로직이 필요하다면 여기에 작성하세요.
+        } catch (error) {
+            console.error('Error deleting post:', error);
+        }
+    };
+
+    const handleRegister = () => {
+        console.log('문서 등록하기');
+    };
+
     return (
         <div className="p-6 max-w-[1260px] mx-auto">
             <Link to="/servicecenter">
                 <h1 className="text-2xl font-bold mb-2">목록으로</h1>
             </Link>
+            <div className="flex justify-end">
+                {localStorage.getItem('role') === 'ROLE_USER' ? (
+                    <button className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600" onClick={handleDelete}>삭제하기</button>
+                ) : localStorage.getItem('role') === 'ROLE_ADMIN' ? (
+                    <button className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600" onClick={handleRegister}>문서 등록하기</button>
+                ) : null}
+            </div>
             {post && (
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <div className="mb-6">

@@ -64,9 +64,11 @@ const ImageUpload: React.FC = () => {
                         try {
                             const parsedOcrResult = JSON.parse(data.data.ocrResult);
                             const ocrId = data.data.ocrId;
+                            const originalImg = data.data.originalImg;
                             console.log('파싱된 OCR 결과:', parsedOcrResult);
                             console.log('OCR ID:', ocrId);
-                            navigate('/result', { state: { fromImageUpload: true, file: file, filePath1: filePath, ocrResult: parsedOcrResult, ocrId: ocrId } });
+                            console.log('originalImg:', originalImg);
+                            navigate('/result', { state: { fromImageUpload: true, file: file, filePath1: filePath, ocrResult: parsedOcrResult, ocrId: ocrId, originalImg: originalImg} });
                         } catch (error) {
                             console.error('OCR 결과 JSON 파싱 오류:', error);
                         }
@@ -75,6 +77,9 @@ const ImageUpload: React.FC = () => {
                     }
                 } else {
                     console.error('OCR 요청 실패:', response);
+                    alert('OCR 요청 실패. 다시 시도해주세요.');
+                    fetchWithAuth('/ocr/upload', null, formData);
+                    window.location.reload();
                 }
             } catch (error) {
                 console.error('OCR 요청 오류:', error);
@@ -105,7 +110,7 @@ const ImageUpload: React.FC = () => {
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
                                 onClick={() => fileInputRef.current?.click()}
-                                className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer sm:min-h-[780px] w-full">
+                                className="p-6 border-2 border-dashed border-gray-400 flex justify-center items-center cursor-pointer sm:min-h-[730px] w-full">
                                 <p className="text-gray-600 text-center text-lg">이미지를 드래그하거나 클릭하여 업로드하세요.</p>
                                 <input
                                     type="file"
