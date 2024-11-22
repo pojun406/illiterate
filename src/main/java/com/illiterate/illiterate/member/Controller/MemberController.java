@@ -83,7 +83,7 @@ public class MemberController {
             return ResponseEntity.status(400).body(new BfResponse<>(null, "Invalid certification number"));
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "비밀번호 초기화 완료"));
     }
 
     //이메일 인증
@@ -99,14 +99,16 @@ public class MemberController {
     @PostMapping("/public/findId")
     public ResponseEntity<BfResponse<?>> findId(
             @RequestBody FindIdRequestDto request){
-        String userEmail = request.getUserEmail();
-        return ResponseEntity.ok(new BfResponse<>(memberService.findMemberId(userEmail)));
+        try{
+            return ResponseEntity.ok(new BfResponse<>(memberService.findMemberId(request.getUserEmail())));
+        } catch (MemberException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        }
     }
 
     @PostMapping("/public/checkId")
-    public ResponseEntity<BfResponse<?>> checkId(@RequestBody Map<String, String> requestBody) {
-        String userId = requestBody.get("userId");
-        boolean isAvailable = memberService.checkId(userId);
+    public ResponseEntity<BfResponse<?>> checkId(@RequestBody FindIdRequestDto dto) {
+        boolean isAvailable = memberService.checkId(dto.getUserEmail());
         return ResponseEntity.ok(new BfResponse<>(isAvailable));
     }
 

@@ -64,9 +64,8 @@ public class MemberService {
 
         return member.getIndex();
     }
-    public boolean checkId(String userid){
-        log.debug("user id : " + userid);
-        return !memberRepository.existsByUserId(userid);
+    public boolean checkId(String userEmail){
+        return memberRepository.existsByEmail(userEmail);
     }
 
     public LoginTokenDto login(LoginDto memberLoginDto) {
@@ -97,7 +96,7 @@ public class MemberService {
             redisRepository.saveToken(userDetail.getId(), refreshToken);
 
             return loginTokenDto;
-        } catch (Exception e){
+        } catch (MemberException e){
             throw new MemberException(CHECK_ID_OR_PASSWORD);
         }
     }
@@ -131,7 +130,8 @@ public class MemberService {
 
         try{
             // 회원 조회
-            member = memberRepository.findByEmail(resetRequestDto.getEmail());
+            member = memberRepository.findByEmail(resetRequestDto.getEmail())
+                    .orElseThrow(() -> new MemberException(FORBIDDEN_RESET_PASSWORD));
         } catch (MemberException e){
             throw new MemberException(FORBIDDEN_DELETE_MEMBER);
         }
@@ -151,7 +151,8 @@ public class MemberService {
 
     public CertificateMailResponseDto sendCertificationNumber(MailCertificateRequestDto dto) {
         System.out.println("email : " + dto.email());
-        Member member = memberRepository.findByEmail(dto.email());
+        Member member = memberRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
         // member가 null인지 확인
         if (member == null) {
@@ -181,10 +182,10 @@ public class MemberService {
                 .build();
     }
 
-    public String findMemberId(String userId) {
-        return memberRepository.findByUserId(userId)
-                .map(Member::getUserId)
-                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_EMAIL));
+    public String findMemberId(String userEmail) {
+        Member member = memberRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
+        return member.getUserId();
     }
 /*
 

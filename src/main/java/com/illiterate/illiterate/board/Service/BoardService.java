@@ -149,7 +149,6 @@ public class BoardService {
             throw new MemberException(BAD_REQUEST);
         }
 
-        board.setStatus(DELETE);
-        boardRepository.save(board);
+        boardRepository.delete(board);
     }
 }
