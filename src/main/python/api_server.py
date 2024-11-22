@@ -81,6 +81,12 @@ def send_rois():
     gui_process = multiprocessing.Process(target=run_gui_process, args=(image_path, output_file), daemon=True)
     gui_process.start()
 
+    # 타임아웃 설정
+    gui_process.join(timeout=300)  # 300초(5분) 후 종료 대기
+    if gui_process.is_alive():
+        gui_process.terminate()  # 타임아웃 초과 시 강제 종료
+        return jsonify({"message": "GUI process terminated after timeout"}), 500
+
     # 즉시 응답 반환
     return jsonify({"message": "GUI process started successfully"}), 200
 
