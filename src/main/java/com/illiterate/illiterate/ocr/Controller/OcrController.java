@@ -100,7 +100,7 @@ public class OcrController {
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, "삭제완료"));
     }
 
-    // 파일 삭제
+    /*// 파일 삭제
     @PostMapping("/deleteImage")
     public ResponseEntity<BfResponse<?>> deleteImage(
             @RequestBody OcrFileNameRequest filenameDto,
@@ -111,5 +111,5 @@ public class OcrController {
         } else {
             return ResponseEntity.ok(new BfResponse<>(SUCCESS, "이미지 삭제 실패"));
         }
-    }
+    }*/
 }

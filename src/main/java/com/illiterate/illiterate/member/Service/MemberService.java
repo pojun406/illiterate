@@ -73,32 +73,27 @@ public class MemberService {
                 memberLoginDto.getUserid(),
                 memberLoginDto.getPassword()
         );
+        Authentication authenticated = authenticationManager.authenticate(authentication);
 
-        try{
-            Authentication authenticated = authenticationManager.authenticate(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authenticated);
 
-            SecurityContextHolder.getContext().setAuthentication(authenticated);
+        UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
 
-            UserDetailsImpl userDetail = (UserDetailsImpl) authenticated.getPrincipal();
+        // accessToken, refreshToken 생성
+        String accessToken = jwtProvider.createAccessToken(userDetail);
+        String refreshToken = jwtProvider.createRfreshToken(userDetail);
 
-            // accessToken, refreshToken 생성
-            String accessToken = jwtProvider.createAccessToken(userDetail);
-            String refreshToken = jwtProvider.createRfreshToken(userDetail);
+        LoginTokenDto loginTokenDto = LoginTokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .id(userDetail.getId())
+                .role(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList().get(0))
+                .build();
 
-            LoginTokenDto loginTokenDto = LoginTokenDto.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .id(userDetail.getId())
-                    .role(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList().get(0))
-                    .build();
+        // redis 토큰 정보 저장
+        redisRepository.saveToken(userDetail.getId(), refreshToken);
 
-            // redis 토큰 정보 저장
-            redisRepository.saveToken(userDetail.getId(), refreshToken);
-
-            return loginTokenDto;
-        } catch (MemberException e){
-            throw new MemberException(CHECK_ID_OR_PASSWORD);
-        }
+        return loginTokenDto;
     }
 
     // 비밀번호 초기화

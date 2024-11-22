@@ -98,7 +98,7 @@ public class LocalFileUtil {
         String appImagePath = Paths.get(filePath, folderName, fileName).toAbsolutePath().toString();
 
         // 프로젝트 내부 경로 (src/main/resources/static/image)
-        String projectImagePath = Paths.get("src/main/resources/static/image", folderName, fileName).toAbsolutePath().toString();
+        String projectImagePath = Paths.get("src/main/resources/image", folderName, fileName).toAbsolutePath().toString();
 
         try {
             // 첫 번째 경로의 파일 삭제

@@ -255,7 +255,17 @@ public class OcrService {
         OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
-        ocrRepository.delete(ocr);
+        String ImagePath = ocr.getImage();
+        String imageName = Paths.get(ImagePath).getFileName().toString();
+
+        boolean isDeleted = localFileUtil.deleteImage("ocr", imageName);
+        
+        if(isDeleted){
+            ocrRepository.delete(ocr);
+        } else {
+            log.debug("삭제 실패");
+        }
+
     }
 
     public OcrResponseDto updatePost(Long ocrIdx, OcrRequestDto dto) {
@@ -272,7 +282,7 @@ public class OcrService {
                 .build();
     }
 
-    public boolean deleteImg(UserDetailsImpl userDetails, OcrFileNameRequest filenameDto) {
+    /*public boolean deleteImg(UserDetailsImpl userDetails, OcrFileNameRequest filenameDto) {
         Member member = memberRepository.findByIndex(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
@@ -314,5 +324,5 @@ public class OcrService {
         }
 
         return true;
-    }
+    }*/
 }

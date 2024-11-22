@@ -8,17 +8,12 @@ import com.illiterate.illiterate.event.dto.request.MailCertificateRequestDto;
 import com.illiterate.illiterate.member.DTO.request.*;
 import com.illiterate.illiterate.member.DTO.response.LoginTokenDto;
 import com.illiterate.illiterate.member.DTO.response.MemberInfoDto;
-import com.illiterate.illiterate.member.Entity.Member;
-import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.Service.MemberService;
 import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
