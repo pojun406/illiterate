@@ -2,6 +2,7 @@ import cv2
 import json
 from tkinter import Tk, Label, Entry, Button
 
+
 def get_description():
     """
     설명을 입력받기 위한 tkinter 창을 띄우고,
@@ -24,7 +25,11 @@ def get_description():
     root.destroy()
     return description
 
-def select_rois_with_descriptions(image_path):
+
+def select_rois_with_descriptions(image_path, output_file="roi_descriptions.json"):
+    """
+    ROI를 선택하고 설명을 입력받아 JSON 형식으로 저장.
+    """
     # 이미지 로드
     image = cv2.imread(image_path)
     if image is None:
@@ -54,5 +59,9 @@ def select_rois_with_descriptions(image_path):
             roi_data[vector_value] = description
             print(f"Saved ROI '{vector_value}' with description '{description}'")
 
+    # 결과를 JSON 파일로 저장
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(roi_data, f, ensure_ascii=False, indent=4)
 
+    print(f"ROI data saved to {output_file}")
     return roi_data
