@@ -70,7 +70,7 @@ def get_images_from_db():
     conn.close()  # 연결 닫기
 
     #base_path = "D:/Project/illiterate/src/main/resources"  # 이미지 경로의 기본 디렉토리
-    base_path = os.getenv('IMAGE_PATH', 'D:/Project/illiterate/src/main/resources/image')  # 이미지 경로의 기본 디렉토리
+    base_path = os.getenv('IMAGE_PATH', 'D:/app/image')  # 이미지 경로의 기본 디렉토리
 
     full_paths = []  # 절대 경로 리스트 초기화
     for img in images:

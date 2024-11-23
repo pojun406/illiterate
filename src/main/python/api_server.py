@@ -53,19 +53,43 @@ def ocr_api():
         logger.error(f"Unexpected error: {str(e)}", exc_info=True)
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-def crop_image(image_path, coordinates):
+def crop_and_encode_base64(image_path, roi_data, key="제목"):
     """
-    이미지를 주어진 좌표대로 자르고 Base64로 인코딩하여 반환
+    특정 키에 해당하는 ROI를 기준으로 이미지를 자르고 Base64로 인코딩하여 반환.
+
+    Args:
+        image_path (str): 원본 이미지 경로.
+        roi_data (dict): ROI 데이터.
+        key (str): ROI에서 찾을 키. 기본값은 '제목'.
+
+    Returns:
+        str: 잘라낸 이미지를 Base64로 인코딩한 문자열.
     """
     image = cv2.imread(image_path)
     if image is None:
-        raise ValueError("Image not found or unable to load.")
+        raise ValueError(f"Image not found or cannot be loaded: {image_path}")
 
-    x1, y1, x2, y2 = coordinates
+    # 특정 키에 해당하는 벡터값 찾기
+    roi_key = next((k for k, v in roi_data.items() if v == key), None)
+    if roi_key is None:
+        raise ValueError(f"'{key}' key not found in ROI data")
+
+    # 벡터값 파싱
+    coordinates = eval(roi_key)
+    x1, y1 = coordinates[0]
+    x2, y2 = coordinates[3]
+
+    # 이미지 자르기
     cropped_image = image[y1:y2, x1:x2]
+    if cropped_image.size == 0:
+        raise ValueError(f"Cropped image is empty. Coordinates: {coordinates}")
+
+    # 이미지를 JPEG로 인코딩 후 Base64로 변환
     _, buffer = cv2.imencode('.jpg', cropped_image)
     encoded_image = base64.b64encode(buffer).decode("utf-8")
+
     return encoded_image
+
 
 def run_gui_process(image_path, output_file, window_width, window_height):
     """
@@ -86,7 +110,6 @@ def run_gui_process(image_path, output_file, window_width, window_height):
 def send_rois():
     data = request.get_json()
     image_path = data.get('image_path')
-    output_file = "roi_descriptions.json"
 
     if not image_path:
         return jsonify({"error": "Image path not provided"}), 400
@@ -94,34 +117,24 @@ def send_rois():
     if not os.path.isfile(image_path):
         return jsonify({"error": f"Image file does not exist: {image_path}"}), 400
 
-    # 창 크기 기본값 설정
-    window_width = 1200
-    window_height = 800
-
-    # GUI를 비동기로 실행
-    gui_process = multiprocessing.Process(
-        target=run_gui_process,
-        args=(image_path, output_file, window_width, window_height),
-        daemon=True
-    )
-    gui_process.start()
-    gui_process.join(timeout=300)  # 300초(5분) 후 종료 대기
-
-    if gui_process.is_alive():
-        gui_process.terminate()  # 타임아웃 초과 시 강제 종료
-        return jsonify({"message": "GUI process terminated after timeout"}), 500
-
     try:
-        # ROI 데이터 로드
-        with open(output_file, "r", encoding="utf-8") as f:
-            roi_data = json.load(f)
+        # `paper_info_processing`에서 ROI 데이터를 가져오도록 변경
+        roi_data = select_rois_with_descriptions(image_path)
 
-        # title_img 생성
+        # "제목"에 해당하는 이미지를 잘라 Base64로 인코딩
         title_img = None
-        title_key = next((k for k, v in roi_data.items() if v in ['title', '제목']), None)
-        if title_key:
-            coordinates = eval(title_key)
-            title_img = crop_image(image_path, (coordinates[0][0], coordinates[0][1], coordinates[1][0], coordinates[1][1]))
+        possible_keys = ["제목", "title", "Title"]
+        for key in possible_keys:
+            try:
+                title_img = crop_and_encode_base64(image_path, roi_data, key=key)
+                if title_img:  # "제목"이 성공적으로 처리되면 반복 종료
+                    break
+            except ValueError as ve:
+                logger.warning(f"Error processing key '{key}': {ve}")
+
+        if not title_img:
+            logger.error("Unable to process '제목' or 'title' key from ROI data.")
+            return jsonify({"error": "Unable to process '제목' or 'title' key from ROI data."}), 400
 
         response_data = {
             "roi_data": roi_data,
@@ -131,7 +144,7 @@ def send_rois():
         return jsonify(response_data), 200
     except Exception as e:
         error_message = f"Error processing ROI data: {str(e)}"
-        print(error_message)
+        logger.error(error_message, exc_info=True)
         return jsonify({"error": error_message}), 500
 
 
