@@ -18,11 +18,11 @@ const DocumentType = () => {
             formData.append('file', fileInput.files[0]);
             console.log('File:', fileInput.files[0]);
         }
-        formData.append('InfoTitle', infoTitle);
-        console.log('InfoTitle:', infoTitle);
+        formData.append('infoTitle', infoTitle);
+        console.log('infoTitle:', infoTitle);
 
         try {
-            console.log('FormData Request:', formData.get('file'), formData.get('InfoTitle'));
+            console.log('FormData Request:', formData.get('file'), formData.get('infoTitle'));
             const response = await fetchWithAuth('/admin/paperinfo', {}, formData);
             console.log('Response:', response);
         } catch (error) {

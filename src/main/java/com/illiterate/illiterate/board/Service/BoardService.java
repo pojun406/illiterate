@@ -145,7 +145,9 @@ public class BoardService {
         Board board = boardRepository.findByBoardId(bid)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
-        if (board.getMember().getIndex().equals(userDetails.getId())) {
+        if (!board.getMember().getIndex().equals(userDetails.getId())) {
+            log.error("Board member index: {}", board.getMember().getIndex());
+            log.error("Authenticated user ID: {}", userDetails.getId());
             throw new MemberException(BAD_REQUEST);
         }
 
