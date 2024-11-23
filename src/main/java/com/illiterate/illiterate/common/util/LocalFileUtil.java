@@ -86,7 +86,7 @@ public class LocalFileUtil {
         }
 
         // 경로의 \를 /로 치환하여 반환
-        return savePath.replace("\\", "/");
+        return relativePath.replace("\\", "/");
     }
 
     public boolean deleteImage(String folderName, String fileName) {
