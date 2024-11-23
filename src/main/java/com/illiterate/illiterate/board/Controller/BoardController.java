@@ -6,9 +6,11 @@ import com.illiterate.illiterate.board.DTO.response.BoardResponseDto;
 import com.illiterate.illiterate.board.Service.BoardService;
 import com.illiterate.illiterate.common.enums.BoardErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
+import com.illiterate.illiterate.common.response.ErrorResponseHandler;
 import com.illiterate.illiterate.member.Entity.Member;
 import com.illiterate.illiterate.member.Repository.MemberRepository;
 import com.illiterate.illiterate.member.exception.BoardException;
+import com.illiterate.illiterate.member.exception.MemberException;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 public class BoardController {
 
     private final BoardService boardService;
+    private final ErrorResponseHandler errorResponseHandler;
 
     // 게시글 전체 목록 조회
     @GetMapping("/posts")
@@ -39,10 +42,16 @@ public class BoardController {
     }
 
     @PostMapping("/posts/{boardIdx}")
-    public ResponseEntity<BfResponse<BoardResponseDto>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<BfResponse<?>> getPost(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                 @PathVariable("boardIdx") Long boardIdx) {
-        BoardResponseDto post = boardService.getPost(userDetails, boardIdx);
-        return ResponseEntity.ok(new BfResponse<>(post));
+        try{
+            BoardResponseDto post = boardService.getPost(userDetails, boardIdx);
+            return ResponseEntity.ok(new BfResponse<>(post));
+        } catch (MemberException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        } catch (BoardException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        }
     }
 
     @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -50,9 +59,13 @@ public class BoardController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("requestDto") BoardRequestDto requestDto,
             @RequestPart("image") MultipartFile requestImg) {
+        try{
+            boardService.createPost(userDetails, requestDto, requestImg);
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
+        } catch (BoardException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        }
 
-        boardService.createPost(userDetails, requestDto, requestImg);
-        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
     }
 
     // 게시글 수정
