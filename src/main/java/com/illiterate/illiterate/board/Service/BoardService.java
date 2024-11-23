@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -111,7 +112,7 @@ public class BoardService {
         board.setTitle(requestsDto.getTitle());
         board.setStatus(StatusType.WAIT);
         board.setRequestImg(imagePath);
-        board.setRegDate(String.valueOf(Date.from(Instant.now())));
+        board.setRegDate(String.valueOf(LocalDate.now()));
 
         boardRepository.save(board);
         //return null;
