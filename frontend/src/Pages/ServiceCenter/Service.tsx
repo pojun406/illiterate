@@ -1,6 +1,7 @@
 import fetchWithAuth from '../../Components/AccessToken/AccessToken';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AxiosResponse } from 'axios';
 
 const Service = () => {
     const navigate = useNavigate();
@@ -25,12 +26,19 @@ const Service = () => {
                 requestDtoBlob.text().then(text => console.log(JSON.parse(text)));
             }
             const response = await fetchWithAuth('/board/post', null, formData);
-            if (typeof response === 'string') {
-                return;
-            }
-            if (response?.data?.status === 'SUCCESS') {
-                alert('문의가 등록되었습니다.');
-                navigate('/servicecenter');
+
+            if (response && (response as AxiosResponse).status === 200) {
+                const jsonResponse = (response as AxiosResponse).data;
+                console.log(jsonResponse);
+
+                if (jsonResponse.code === 200) { // 상태 코드 확인
+                    alert('문의가 등록되었습니다.');
+                    navigate('/servicecenter');
+                }
+            } else {
+                const errorText = (response as AxiosResponse).data;
+                console.error('Error:', errorText);
+                alert('문의 등록에 실패했습니다.');
             }
         } catch (error) {
             console.error('문의 등록 실패:', error);
