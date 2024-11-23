@@ -46,6 +46,7 @@ function Detail() {
                 return;
             }
             if (response?.data?.code === 'SUCCESS') {
+                alert('삭제되었습니다.');
                 console.log('Post deleted successfully');
             } else {
                 console.error('Error deleting post:', response?.data?.message || 'Unknown error');
