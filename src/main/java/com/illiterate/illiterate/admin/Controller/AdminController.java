@@ -1,5 +1,6 @@
 package com.illiterate.illiterate.admin.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.illiterate.illiterate.admin.DTO.request.PaperInfoRequestDto;
 import com.illiterate.illiterate.admin.DTO.response.AdminResponseDto;
 import com.illiterate.illiterate.admin.Service.AdminService;
@@ -57,13 +58,14 @@ public class AdminController {
 
     @PostMapping("/paperinfo")
     public ResponseEntity<BfResponse<?>> processPaperInfo(
-            @RequestPart("file") MultipartFile file,
-            @RequestPart("request") PaperInfoRequestDto requestDto) {
+            @RequestPart("file") MultipartFile file, // 파일 파트
+            @RequestPart("infoTitle") String infoTitle // JSON 문자열로 받기
+    ) {
 
         String saved = localFileUtil.saveImage(file, "paperinfo");
 
-        // OcrService를 호출하여 Flask API를 통한 PaperInfo 처리 수행
-        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(saved, requestDto);
+        // Flask API 호출
+        AdminResponseDto responseDto = adminService.uploadImageAndProcessPaperInfo(saved, infoTitle);
 
         return ResponseEntity.ok(new BfResponse<>(SUCCESS, responseDto));
     }

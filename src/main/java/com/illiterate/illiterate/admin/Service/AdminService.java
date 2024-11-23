@@ -80,7 +80,7 @@ public class AdminService {
     /**
      * /paperinfo 호출 및 결과 처리 메서드
      */
-    public AdminResponseDto uploadImageAndProcessPaperInfo(String path, PaperInfoRequestDto requestDto) {
+    public AdminResponseDto uploadImageAndProcessPaperInfo(String path, String title) {
         String paperInfoResult = callPythonPaperInfoApi(path);
         if (paperInfoResult == null) {
             log.error("PaperInfo processing failed.");
@@ -99,7 +99,7 @@ public class AdminService {
             }
 
             // Base64 이미지를 파일로 저장
-            String savedImagePath = localFileUtil.saveImageFromBase64(requestDto.getInfoTitle(), titleImageBase64, "paperinfo", "png");
+            String savedImagePath = localFileUtil.saveImageFromBase64(title, titleImageBase64, "paperinfo", "png");
             if (savedImagePath == null) {
                 log.error("Failed to save title image from Base64.");
                 throw new RuntimeException("Failed to save title image from Base64.");

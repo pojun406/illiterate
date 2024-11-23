@@ -2,7 +2,6 @@ import cv2
 import json
 from tkinter import Tk, Label, Entry, Button
 
-
 def get_description():
     """
     설명을 입력받기 위한 tkinter 창을 띄우고,
@@ -26,30 +25,44 @@ def get_description():
     return description
 
 
-def select_rois_with_descriptions(image_path, output_file="roi_descriptions.json"):
+def select_rois_with_descriptions(image_path, output_file="roi_descriptions.json", window_width=800, window_height=600):
     """
     ROI를 선택하고 설명을 입력받아 JSON 형식으로 저장.
+    이미지 창 크기를 조정하여 ROI 선택이 가능하도록 설정.
     """
     # 이미지 로드
     image = cv2.imread(image_path)
     if image is None:
         raise ValueError("Image not found or unable to load.")
 
+    original_height, original_width = image.shape[:2]
+
+    # 이미지 리사이즈 비율 계산
+    scale_width = window_width / original_width
+    scale_height = window_height / original_height
+    scale = min(scale_width, scale_height)
+
+    # 리사이즈된 이미지 (보간법 사용)
+    resized_image = cv2.resize(
+        image,
+        (int(original_width * scale), int(original_height * scale)),
+        interpolation=cv2.INTER_AREA  # 고품질 축소 보간법
+    )
+
     roi_data = {}
 
-    # ROI 선택 반복문
     while True:
-        # OpenCV로 ROI 선택
-        x, y, w, h = cv2.selectROI("Select ROI (Press ESC to exit)", image, False, False)
+        # ROI 선택 (리사이즈된 이미지 기준)
+        x, y, w, h = cv2.selectROI("Select ROI (Press ESC to exit)", resized_image, False, False)
         if w == 0 or h == 0:  # 아무 영역도 선택하지 않으면 루프 종료
             break
 
-        # 선택된 좌표
-        x1, y1 = x, y
-        x2, y2 = x + w, y
-        x3, y3 = x, y + h
-        x4, y4 = x + w, y + h
-        vector_value = f"(({x1}, {y1}), ({x2}, {y2}), ({x3}, {y3}), ({x4}, {y4}))"
+        # 선택된 좌표를 원본 이미지 기준으로 변환
+        x1 = int(x / scale)
+        y1 = int(y / scale)
+        x2 = int((x + w) / scale)
+        y2 = int((y + h) / scale)
+        vector_value = f"(({x1}, {y1}), ({x2}, {y2}), ({x1}, {y2}), ({x2}, {y2}))"
 
         # 설명 입력 창 호출
         description = get_description()
