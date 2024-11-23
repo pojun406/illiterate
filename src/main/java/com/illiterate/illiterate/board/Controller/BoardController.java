@@ -48,7 +48,7 @@ public class BoardController {
     @PostMapping(value = "/post", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<BfResponse<?>> createPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestBody BoardRequestDto requestDto,
+            @RequestPart("requestDto") BoardRequestDto requestDto,
             @RequestPart("image") MultipartFile requestImg) {
 
         boardService.createPost(userDetails, requestDto, requestImg);
