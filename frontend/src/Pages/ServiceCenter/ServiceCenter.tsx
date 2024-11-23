@@ -69,7 +69,7 @@ const ServiceCenter = () => {
                 {displayPosts.map((post, index) => (
                     post ? (
                         <div 
-                            key={post.boardIdx} 
+                            key={`post-${post.boardIdx}`} 
                             className="hidden md:grid grid-cols-7 p-3 hover:bg-gray-50 transition-colors text-center cursor-pointer mt-0 rounded border border-gray-200"
                             onClick={() => handleItemClick(post.boardIdx)}
                         >
@@ -81,7 +81,7 @@ const ServiceCenter = () => {
                         </div>
                     ) : (
                         <div 
-                            key={index} 
+                            key={`empty-${index}`} 
                             className="hidden md:grid grid-cols-7 p-3 text-center mt-0 rounded border border-gray-200"
                         >
                             <div className='flex justify-center'>-</div>
@@ -95,7 +95,7 @@ const ServiceCenter = () => {
                 {displayPosts.map((post, index) => (
                     post ? (
                         <div 
-                            key={post.boardIdx} 
+                            key={`post-mobile-${post.boardIdx}`} 
                             className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center cursor-pointer border border-gray-200"
                             onClick={() => handleItemClick(post.boardIdx)}
                         >
@@ -114,7 +114,7 @@ const ServiceCenter = () => {
                         </div>
                     ) : (
                         <div 
-                            key={index} 
+                            key={`empty-mobile-${index}`} 
                             className="md:hidden bg-white shadow-sm rounded-lg overflow-hidden p-4 text-center"
                         >
                             <div className="grid grid-cols-2 gap-2">

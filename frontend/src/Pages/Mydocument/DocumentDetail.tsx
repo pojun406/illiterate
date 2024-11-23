@@ -56,11 +56,13 @@ const DocumentDetail = () => {
     }, [ocrId]);
 
     const documentdelete = () => {
-        fetchWithAuth(`/ocr/posts/delete/${ocrId}`, { method: 'POST' })
-            .then((res) => {
-                alert('문서가 성공적으로 삭제되었습니다.');
-                navigate('/mydocument');
-            });
+        if (window.confirm('문서를 삭제하시겠습니까?')) {
+            fetchWithAuth(`/ocr/posts/delete/${ocrId}`, { method: 'POST' })
+                .then((res) => {
+                    alert('문서가 성공적으로 삭제되었습니다.');
+                    navigate('/mydocument');
+                });
+        }
     };
 
     return (

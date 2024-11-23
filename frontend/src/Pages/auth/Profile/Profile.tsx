@@ -250,7 +250,7 @@ function updateProfile() {
                       onChange={newPasswordHandler} 
                       onBlur={newPasswordBlurHandler} 
                     />
-                    <p className="text-red-500 text-sm mt-1" id="newPasswordError" style={{display: 'none'}}>비밀번호는 최소 8자 이상이어야 하며, 대문자, 소문자, 숫자 및 특수문자를 포함해야 합니다.</p>
+                    <p className="text-red-500 text-sm mt-1" id="newPasswordError" style={{display: 'none'}}>비밀번호는 최소 8자 이상이어야 하며, 소문자, 숫자를 포함해야 합니다.</p>
                   </div>
                   <div className="mb-3">
                     <label className="block font-bold">새 비밀번호 확인</label>

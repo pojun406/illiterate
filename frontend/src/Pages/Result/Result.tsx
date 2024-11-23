@@ -227,7 +227,7 @@ const Result = () => {
                 const response = await fetchWithAuth('/ocr/saveText', requestDto);
                 if (typeof response !== 'string' && response.data.code === 200) {
                     alert('저장이 완료되었습니다.');
-                    navigate('/');
+                    navigate('/', { replace: true, state: { resetScroll: true } });
                 } else {
                     console.error('저장 실패:', response);
                     alert('저장에 실패했습니다.');
@@ -250,11 +250,7 @@ const Result = () => {
     };
 
     const backToApplication = () => {
-        const formData = new FormData();
-        formData.append('fileName', location.state.originalImg || '');
-
-        console.log("fileName:", formData.get('fileName'));
-        fetchWithAuth('/ocr/deleteImage', formData);
+        fetchWithAuth(`/ocr/posts/delete/${ocrId}`);
         navigate('/application');
     };
 

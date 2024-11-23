@@ -40,15 +40,15 @@ function Detail() {
 
     const handleDelete = async () => {
         try {
-            const response = await fetchWithAuth(`/board/posts/delete/${boardIdx}`, null);
+            const response = await fetchWithAuth(`/board/posts/delete/${boardIdx}`, { method: 'POST' });
             if (typeof response === 'string') {
                 console.error('Error deleting post:', response);
                 return;
             }
             if (response?.data?.code === 'SUCCESS') {
-                console.log('delete success!');
-            } else {
                 console.log('Post deleted successfully');
+            } else {
+                console.error('Error deleting post:', response?.data?.message || 'Unknown error');
             }
             // 추가적인 로직이 필요하다면 여기에 작성하세요.
         } catch (error) {
