@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useScrollFadeInLeft from "../../hooks/useScrollFadeIn_left";
 import useScrollFadeInRight from "../../hooks/useScrollFadeIn_right";
 
@@ -7,6 +7,7 @@ const Main = () => {
     const headerHeight = 80;
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const location = useLocation();
 
     const sections = useMemo(() => [
         { id: "part1", top: 0, bottom: windowHeight * 0.2 - headerHeight },
@@ -48,7 +49,14 @@ const Main = () => {
 
     useEffect(() => {
         const handleScroll = () => {
-            const current = sections.findIndex(section => window.scrollY >= section.top && window.scrollY < section.bottom);
+            const current = sections.findIndex(section => {
+                const sectionElement = document.getElementById(section.id);
+                if (sectionElement) {
+                    const rect = sectionElement.getBoundingClientRect();
+                    return rect.top <= headerHeight && rect.bottom > headerHeight;
+                }
+                return false;
+            });
             if (current !== -1 && current !== currentSection) {
                 setCurrentSection(current);
             }
@@ -73,11 +81,31 @@ const Main = () => {
         }
     }, [currentSection, sections]);
 
+    useEffect(() => {
+        const handleKeyPress = (event: KeyboardEvent) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                handleNext();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [handleNext]);
+
+    useEffect(() => {
+        if (location.state?.resetScroll) {
+            window.scrollTo(0, 0);
+        }
+        setCurrentSection(0);
+    }, [location.state]);
+
     const fadeInPropsList = sections.map((_, index) => {
         return index % 2 === 0 ? useScrollFadeInLeft : useScrollFadeInRight;
     });
 
-    return (
+    return ( 
         <div>
             {sections.map((section, index) => {
                 const FadeInComponent = fadeInPropsList[index];
