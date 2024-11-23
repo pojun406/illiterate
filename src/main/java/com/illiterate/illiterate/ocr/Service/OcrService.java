@@ -255,8 +255,8 @@ public class OcrService {
         OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
 
-        String ImagePath = ocr.getImage();
-        String imageName = Paths.get(ImagePath).getFileName().toString();
+        String imagePath = ocr.getImage();
+        String imageName = Paths.get(imagePath).getFileName().toString();
 
         boolean isDeleted = localFileUtil.deleteImage("ocr", imageName);
         

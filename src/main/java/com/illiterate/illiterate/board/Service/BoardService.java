@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,14 +75,13 @@ public class BoardService {
         Member member = memberRepository.findByIndex(userDetails.getId())
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER_ID));
 
-        Board board = boardRepository.findByMember(member)
+        Board board = boardRepository.findByBoardId(boardIdx)
                 .orElseThrow(() -> new BoardException(NOT_FOUND_WRITING));
 
         if (userDetails.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals(RolesType.ROLE_ADMIN.name())) && (board.getStatus().equals(WAIT))){
                 board.setStatus(StatusType.READ);
                 boardRepository.save(board);
-
         }
 
         return BoardResponseDto.builder()
@@ -151,6 +151,15 @@ public class BoardService {
             throw new MemberException(BAD_REQUEST);
         }
 
-        boardRepository.delete(board);
+        String imagePath = board.getRequestImg();
+        String imageName = Paths.get(imagePath).getFileName().toString();
+
+        boolean isDeleted = localFileUtil.deleteImage("board", imageName);
+
+        if(isDeleted){
+            boardRepository.delete(board);
+        } else {
+            log.debug("삭제 실패");
+        }
     }
 }
