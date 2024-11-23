@@ -63,7 +63,7 @@ public class MemberController {
     ) {
 
         memberService.resetPassword(userDetail, memberId, resetRequestDto);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "비밀번호 초기화 완료"));
     }
 
     //리셋 패스워드(패스워드 리셋을 위한 페이지)
