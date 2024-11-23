@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static com.illiterate.illiterate.board.enums.StatusType.DELETE;
 import static com.illiterate.illiterate.board.enums.StatusType.WAIT;
@@ -105,6 +106,10 @@ public class BoardService {
 
         if (requestImg != null && !requestImg.isEmpty()) {
             imagePath = localFileUtil.saveImage(requestImg, "board");
+        }
+
+        if(Objects.requireNonNull(requestImg).isEmpty()){
+            throw new BoardException(NOT_FOUND_IMG);
         }
 
         board.setMember(member);

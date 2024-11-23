@@ -59,9 +59,13 @@ public class BoardController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestPart("requestDto") BoardRequestDto requestDto,
             @RequestPart("image") MultipartFile requestImg) {
+        try{
+            boardService.createPost(userDetails, requestDto, requestImg);
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
+        } catch (BoardException e){
+            return errorResponseHandler.handleErrorResponse(e.getErrorCode());
+        }
 
-        boardService.createPost(userDetails, requestDto, requestImg);
-        return ResponseEntity.ok(new BfResponse<>(SUCCESS, "post success!"));
     }
 
     // 게시글 수정
