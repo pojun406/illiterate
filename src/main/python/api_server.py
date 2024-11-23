@@ -1,11 +1,20 @@
 from flask import Flask, request, Response, jsonify
 from ocr_processing import process_image
 from paper_info_processing import select_rois_with_descriptions
+import logging
+from pathlib import Path
 import os
 import multiprocessing
 import json
 import cv2
 import base64
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 app = Flask(__name__)
 
@@ -15,34 +24,34 @@ def ocr_api():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
+    # Java에서 전달된 경로 가져오기
     full_image_path = data.get('image_path')
     if not full_image_path:
         return jsonify({"error": "Image path not provided"}), 400
 
-    if ':' in full_image_path:
-        _, full_image_path = full_image_path.split(':', 1)
-        full_image_path = os.path.join('/', full_image_path.lstrip('/'))
-
-    full_image_path = os.path.normpath(full_image_path).replace('\\', '/')
-    if not os.path.isfile(full_image_path):
-        return jsonify({"error": f"Image file does not exist: {full_image_path}"}), 400
-    if not os.access(full_image_path, os.R_OK):
-        return jsonify({"error": f"No read permission for file: {full_image_path}"}), 400
-
     try:
-        result = process_image(full_image_path)
-        # JSON 직렬화를 위해 jsonify로 감싸서 반환
-        response = jsonify(result)
+        # 경로 정규화
+        full_image_path = Path(full_image_path).resolve(strict=False).as_posix()
 
-        # JSON 파일로 저장
-        with open('ocr_result.json', 'w', encoding='utf-8') as json_file:
-            json.dump(json.loads(result), json_file, ensure_ascii=False, indent=4)
-            
-        return response
+        # 파일 존재 여부 확인
+        if not os.path.isfile(full_image_path):
+            return jsonify({"error": f"Image file does not exist: {full_image_path}"}), 400
+        if not os.access(full_image_path, os.R_OK):
+            return jsonify({"error": f"No read permission for file: {full_image_path}"}), 400
+
+        # OCR 프로세싱 호출
+        logger.info(f"Starting OCR processing for image: {full_image_path}")
+        result = process_image(full_image_path)
+
+        # 결과를 반환
+        return jsonify(result)
+
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {str(e)}")
+        return jsonify({"error": f"File not found: {str(e)}"}), 400
     except Exception as e:
-        error_message = f"Error occurred: {str(e)}"
-        print(error_message)
-        return jsonify({"error": error_message}), 500
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 def crop_image(image_path, coordinates):
     """

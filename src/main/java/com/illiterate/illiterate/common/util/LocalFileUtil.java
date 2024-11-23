@@ -57,7 +57,7 @@ public class LocalFileUtil {
         }
 
         // 경로를 반환 (슬래시로 치환)
-        return relativePath.replace("\\", "/");
+        return savePath.replace("\\", "/");
     }
 
     /**
@@ -86,7 +86,7 @@ public class LocalFileUtil {
         }
 
         // 경로의 \를 /로 치환하여 반환
-        return relativePath.replace("\\", "/");
+        return savePath.replace("\\", "/");
     }
 
     public boolean deleteImage(String folderName, String fileName) {
