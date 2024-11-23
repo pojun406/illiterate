@@ -40,7 +40,7 @@ function Detail() {
 
     const handleDelete = async () => {
         try {
-            const response = await fetchWithAuth(`/board/posts/delete/${boardIdx}`, { method: 'POST' });
+            const response = await fetchWithAuth(`/board/posts/delete/${boardIdx}`);
             if (typeof response === 'string') {
                 console.error('Error deleting post:', response);
                 return;
