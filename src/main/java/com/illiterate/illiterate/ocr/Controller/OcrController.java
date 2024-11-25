@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.illiterate.illiterate.common.enums.GlobalSuccessCode.SUCCESS;
 import static com.illiterate.illiterate.common.enums.MemberErrorCode.NOT_FOUND_MEMBER_ID;
@@ -86,8 +87,14 @@ public class OcrController {
     }
 
     @PostMapping("/file")
-    public ResponseEntity<BfResponse<?>> getFile(@RequestBody String path) {
+    public ResponseEntity<BfResponse<?>> getFile(@RequestBody Map<String, String> request) {
         try {
+            // Map에서 "path" 키로 경로 추출
+            String path = request.get("path");
+            if (path == null || path.isEmpty()) {
+                throw new IllegalArgumentException("파일 경로가 비어있거나 잘못되었습니다.");
+            }
+
             // 파일 데이터를 가져옴
             byte[] fileData = localFileUtil.getFile(path);
 
@@ -98,6 +105,8 @@ public class OcrController {
 
             // 파일 데이터를 응답으로 반환
             return ResponseEntity.ok(new BfResponse<>(SUCCESS, fileData));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new BfResponse<>("잘못된 요청: " + e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new BfResponse<>("파일을 찾을 수 없습니다: " + e.getMessage()));
