@@ -41,7 +41,9 @@ const Login = () => {
             }
         } catch (error) {
             const errorMessage = axios.isAxiosError(error) && error.response
-                ? error.response.data.message
+                ? error.response.data.data==="Bad credentials"
+                    ? "아이디 또는 비밀번호가 일치하지 않습니다."
+                    : error.response.data.message
                 : "로그인 중 오류 발생";
             setMessage(errorMessage);
             alert(errorMessage);
