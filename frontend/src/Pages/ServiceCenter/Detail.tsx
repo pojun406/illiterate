@@ -88,7 +88,7 @@ function Detail() {
                     {post.imagePath && (
                         <div className="mb-6">
                             <img 
-                                src={post.imagePath.replace("/app", "/resources")}
+                                src={post.imagePath.replace("https://", "http://").replace("/app", "/resources")}
                                 alt="게시글 이미지" 
                                 className="max-w-full h-auto rounded-lg"
                             />
