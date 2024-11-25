@@ -41,24 +41,41 @@ public class LocalFileUtil {
         String relativePath = Paths.get(folderName, saveFileName).toString();
         String savePath = Paths.get(baseFilePath, relativePath).normalize().toString();
 
+        // 프로젝트 내부 resources/static/image 경로
+        String projectImagePath = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/image", folderName, saveFileName).normalize().toString();
+
         try {
-            // 디렉토리 생성
+            // 외부 경로 디렉토리 생성
             Path path = Paths.get(savePath).getParent();
             if (path != null && !Files.exists(path)) {
                 Files.createDirectories(path);
+                logger.debug("External directory created: {}", path);
             }
 
-            // 파일 저장
+            // 파일 저장 (외부 경로)
             Files.copy(file.getInputStream(), Paths.get(savePath));
-            logger.debug("File saved successfully at relative path: {}", relativePath);
+            logger.info("File saved successfully at external path: {}", savePath);
+
+            // 프로젝트 경로 디렉토리 생성
+            Path projectPath = Paths.get(projectImagePath).getParent();
+            if (projectPath != null && !Files.exists(projectPath)) {
+                Files.createDirectories(projectPath);
+                logger.debug("Project directory created: {}", projectPath);
+            }
+
+            // 파일 저장 (프로젝트 내부 경로)
+            Files.copy(file.getInputStream(), Paths.get(projectImagePath));
+            logger.info("File also saved in project path: {}", projectImagePath);
+
         } catch (IOException e) {
             logger.error("Error saving image: {}", e.getMessage());
             return null;
         }
 
-        // 경로를 반환 (슬래시로 치환)
+        // 반환 경로는 기본 저장 경로 기준
         return savePath.replace("\\", "/");
     }
+
 
     /**
      * Base64 문자열을 디코딩하여 이미지 파일로 저장하는 메서드
