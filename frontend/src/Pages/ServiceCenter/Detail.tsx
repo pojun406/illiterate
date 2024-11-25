@@ -88,7 +88,7 @@ function Detail() {
                     {post.imagePath && (
                         <div className="mb-6">
                             <img 
-                                src={post.imagePath.split("/app/image").pop()}
+                                src={post.imagePath.split("/app").pop()}
                                 alt="게시글 이미지" 
                                 className="max-w-full h-auto rounded-lg"
                             />
