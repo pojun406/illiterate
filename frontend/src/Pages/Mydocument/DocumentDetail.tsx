@@ -45,23 +45,7 @@ const DocumentDetail = () => {
             console.log("ocrId is null or undefined");
         }   
 
-        if (filename) {
-
-            fetchWithAuth(`/ocr/file`, { path: filename })
-                .then((response) => {
-                    if (response instanceof Blob) {
-                        const url = URL.createObjectURL(response);
-                        setFilePath1(url);
-                        console.log("파일 경로:", url);
-                    } else {
-                        console.error("파일 가져오기 오류: 응답이 Blob 형식이 아닙니다.");
-                    }
-                })
-                .catch((error) => {
-                    console.error("파일 가져오기 오류:", error);
-                });
-        }
-    }, [paramOcrId, filename]);
+    }, [paramOcrId]);
 
     const documentdelete = () => {
         if (window.confirm('문서를 삭제하시겠습니까?')) {
