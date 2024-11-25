@@ -9,7 +9,6 @@ interface DocumentData {
     modifyTime: string;
     ocrId: number;
     ocrResult: string;
-    documentImg: string;
     originalImg: string;
     title: string;
 }
@@ -21,49 +20,47 @@ const DocumentDetail = () => {
     const [ocrId, setOcrId] = useState<string | null>(null);
     const [ocrResult, setOcrResult] = useState<any>(null);
     const [documentData, setDocumentData] = useState<DocumentData | null>(null);
+    const [filename, setFilename] = useState<string | null>(null);
 
     useEffect(() => {
-        if (paramOcrId) {
-            setOcrId(paramOcrId);
-        }
-    }, [paramOcrId]);
-
-    useEffect(() => {
+        const ocrId = paramOcrId;
         if (ocrId) {
-            console.log("Sending request with ocrId:", ocrId);
-            fetchWithAuth(`/ocr/file`, {path: documentData?.originalImg})
-            .then((res) => {
-                console.log(res);
-            })
-            .catch((error) => {
-                console.error("파일 가져오기 오류:", error);
-            });
-
-            
             fetchWithAuth(`/ocr/posts/${ocrId}`)
                 .then((res) => {
                     if (typeof res === 'string') {
                         console.error("문서 가져오기 오류:", res);
                         return;
                     }
+                    console.log(res);
                     const data = res.data;
                     setDocumentData(data.data);
                     setOcrResult(JSON.parse(data.data.ocrResult));
-                    
-                    const parsedResult = JSON.parse(data.data.ocrResult);
-                    console.log("요청한 문서:", parsedResult.results.map((item: any) => ({
-                        label: item.label,
-                        text: item.text,
-                        vector: item.vector
-                    })));
+                    setFilename(data.data.originalImg);
+                    console.log("filename : " + filename);
                 })
                 .catch((error) => {
                     console.error("문서 가져오기 오류:", error);
                 });
-        } else {
+        } else {    
             console.log("ocrId is null or undefined");
+        }   
+
+        if (filename) {
+            fetchWithAuth(`/ocr/file`, { path: filename })
+                .then((response) => {
+                    if (response instanceof Blob) {
+                        const url = URL.createObjectURL(response);
+                        setFilePath1(url);
+                        console.log("파일 경로:", url);
+                    } else {
+                        console.error("파일 가져오기 오류: 응답이 Blob 형식이 아닙니다.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("파일 가져오기 오류:", error);
+                });
         }
-    }, [ocrId]);
+    }, [paramOcrId, filename]);
 
     const documentdelete = () => {
         if (window.confirm('문서를 삭제하시겠습니까?')) {
