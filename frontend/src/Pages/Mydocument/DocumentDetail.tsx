@@ -9,6 +9,7 @@ interface DocumentData {
     modifyTime: string;
     ocrId: number;
     ocrResult: string;
+    documentImg: string;
     originalImg: string;
     title: string;
 }
@@ -30,6 +31,15 @@ const DocumentDetail = () => {
     useEffect(() => {
         if (ocrId) {
             console.log("Sending request with ocrId:", ocrId);
+            fetchWithAuth(`/ocr/file`, {path: documentData?.originalImg})
+            .then((res) => {
+                console.log(res);
+            })
+            .catch((error) => {
+                console.error("파일 가져오기 오류:", error);
+            });
+
+            
             fetchWithAuth(`/ocr/posts/${ocrId}`)
                 .then((res) => {
                     if (typeof res === 'string') {
@@ -46,7 +56,6 @@ const DocumentDetail = () => {
                         text: item.text,
                         vector: item.vector
                     })));
-                    console.log(documentData?.originalImg.split("/app/image").pop());
                 })
                 .catch((error) => {
                     console.error("문서 가져오기 오류:", error);
