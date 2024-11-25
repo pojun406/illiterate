@@ -31,7 +31,7 @@ const DocumentType = () => {
     };
 
     return (
-        <div className="flex flex-col items-center p-6 w-[1260px] mx-auto">
+        <div className="flex flex-col items-center p-6 w-[1260px] mx-auto h-[77.9vh]">
             <h1 className="text-xl mb-4">문서 타입 등록 페이지</h1>
             {/* 문서 제목 입력 */}
             <input
