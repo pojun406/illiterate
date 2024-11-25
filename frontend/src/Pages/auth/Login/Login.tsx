@@ -19,7 +19,7 @@ const Login = () => {
     const handleBasicSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            console.log("로그인 요청:", { userid, password }); // 로그인 요청으로 보낸 값을 콘솔에 출력
+            console.log("로그인 요청:", { userid, password });
             const response = await axios.post("/public/login", { userid, password }, {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -44,7 +44,7 @@ const Login = () => {
                 ? error.response.data.message
                 : "로그인 중 오류 발생";
             setMessage(errorMessage);
-            alert("아이디/비밀번호를 다시 확인해주세요");
+            alert(errorMessage);
         }
     };
     const handleFetchProtectedResource = async () => {
