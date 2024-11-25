@@ -18,11 +18,10 @@ public class FileController {
 
     private final String basePath = "D:/"; // 파일 저장 경로
 
-    @GetMapping("/resources/image/ocr/{fileName}")
+    @GetMapping("/app/image/ocr/{fileName}")
     public ResponseEntity<?> getImage(@PathVariable String fileName) {
         try {
-
-
+            System.out.println("filename : " + fileName);
             // 파일 경로 구성
             String fullPath = Paths.get(basePath, extractFileName(fileName)).toAbsolutePath().toString();
             File file = new File(fullPath);

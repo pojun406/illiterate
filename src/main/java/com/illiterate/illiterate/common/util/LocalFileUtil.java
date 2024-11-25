@@ -127,6 +127,7 @@ public class LocalFileUtil {
         try {
             // 파일 경로를 구성
             String fullPath = Paths.get(basePath, relativePath).toAbsolutePath().toString();
+
             File file = new File(fullPath);
 
             // 파일 존재 여부 확인

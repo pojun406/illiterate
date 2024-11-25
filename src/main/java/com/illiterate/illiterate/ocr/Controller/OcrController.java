@@ -87,7 +87,7 @@ public class OcrController {
     }
 
     @PostMapping("/file")
-    public ResponseEntity<BfResponse<?>> getFile(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> getFile(@RequestBody Map<String, String> request) {
         try {
             // Map에서 "path" 키로 경로 추출
             String path = request.get("path");
@@ -100,7 +100,7 @@ public class OcrController {
             // 파일 데이터를 가져옴
             MultipartFile fileData = localFileUtil.getFile(path);
 
-            return ResponseEntity.ok(new BfResponse<>(SUCCESS, fileData));
+            return ResponseEntity.ok(fileData);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new BfResponse<>("잘못된 요청: " + e.getMessage()));
         } catch (RuntimeException e) {
