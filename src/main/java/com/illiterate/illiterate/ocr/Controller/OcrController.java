@@ -91,19 +91,15 @@ public class OcrController {
         try {
             // Map에서 "path" 키로 경로 추출
             String path = request.get("path");
+
+            System.out.println("path : " + path);
             if (path == null || path.isEmpty()) {
                 throw new IllegalArgumentException("파일 경로가 비어있거나 잘못되었습니다.");
             }
 
             // 파일 데이터를 가져옴
-            byte[] fileData = localFileUtil.getFile(path);
+            MultipartFile fileData = localFileUtil.getFile(path);
 
-            // 응답 헤더 설정
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("image", "file"); // 다운로드용 이름 설정
-
-            // 파일 데이터를 응답으로 반환
             return ResponseEntity.ok(new BfResponse<>(SUCCESS, fileData));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new BfResponse<>("잘못된 요청: " + e.getMessage()));

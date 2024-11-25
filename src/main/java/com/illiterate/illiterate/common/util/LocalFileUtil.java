@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -126,7 +123,7 @@ public class LocalFileUtil {
         return isDeleted;
     }
 
-    public byte[] getFile(String relativePath) {
+    public MultipartFile getFile(String relativePath) {
         try {
             // 파일 경로를 구성
             String fullPath = Paths.get(basePath, relativePath).toAbsolutePath().toString();
@@ -138,7 +135,54 @@ public class LocalFileUtil {
             }
 
             // 파일을 읽어 바이트 배열로 반환
-            return Files.readAllBytes(file.toPath());
+            byte[] content = Files.readAllBytes(file.toPath());
+
+            // MultipartFile 인터페이스를 구현한 익명 클래스 사용
+            return new MultipartFile() {
+                @Override
+                public String getName() {
+                    return "file";
+                }
+
+                @Override
+                public String getOriginalFilename() {
+                    return file.getName();
+                }
+
+                @Override
+                public String getContentType() {
+                    try {
+                        return Files.probeContentType(file.toPath());
+                    } catch (IOException e) {
+                        return "application/octet-stream";
+                    }
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return content.length == 0;
+                }
+
+                @Override
+                public long getSize() {
+                    return content.length;
+                }
+
+                @Override
+                public byte[] getBytes() throws IOException {
+                    return content;
+                }
+
+                @Override
+                public InputStream getInputStream() throws IOException {
+                    return new ByteArrayInputStream(content);
+                }
+
+                @Override
+                public void transferTo(File dest) throws IOException, IllegalStateException {
+                    Files.write(dest.toPath(), content);
+                }
+            };
         } catch (IOException e) {
             throw new RuntimeException("파일 읽기 중 오류 발생: " + relativePath, e);
         }
