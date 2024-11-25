@@ -1,6 +1,7 @@
 package com.illiterate.illiterate.member.Controller;
 
 
+import com.illiterate.illiterate.common.enums.BaseErrorCode;
 import com.illiterate.illiterate.common.enums.GlobalErrorCode;
 import com.illiterate.illiterate.common.response.BfResponse;
 import com.illiterate.illiterate.common.response.ErrorResponseHandler;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +50,7 @@ public class MemberController {
         } catch (MemberException e){
             return errorResponseHandler.handleErrorResponse(e.getErrorCode());
         } catch (Exception e){
-            return errorResponseHandler.handleErrorResponse(GlobalErrorCode.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.badRequest().body(new BfResponse<>(e.getMessage()));
         }
 
         //return userService.login(loginDto);
