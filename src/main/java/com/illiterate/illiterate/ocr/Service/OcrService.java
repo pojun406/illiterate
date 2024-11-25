@@ -243,7 +243,6 @@ public class OcrService {
                 .title(ocr.getTitle())
                 .infoTitle(ocr.getPaperInfo().getTitleText())
                 .ocrResult(ocr.getOcrData())
-                .documentImg(ocr.getImage())
                 .createTime(ocr.getCreatedAt())
                 .modifyTime(ocr.getModifyAt())
                 .originalImg(ocr.getImage())
