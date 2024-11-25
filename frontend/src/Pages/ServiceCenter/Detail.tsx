@@ -88,7 +88,7 @@ function Detail() {
                     {post.imagePath && (
                         <div className="mb-6">
                             <img 
-                                src={"http://localhost:8080" + post.imagePath} 
+                                src={post.imagePath}
                                 alt="게시글 이미지" 
                                 className="max-w-full h-auto rounded-lg"
                             />
