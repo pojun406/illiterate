@@ -58,7 +58,7 @@ const ServiceCenter = () => {
                 <h2 className="text-2xl font-bold mb-6">고객센터</h2>
                 <button className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4" onClick={() => navigate('/service')}>문의하기</button>
             </div>
-            <div className="space-y-4 min-h-[598px]">
+            <div className="space-y-4 min-h-[632px]">
                 <div className="hidden md:grid grid-cols-7 font-semibold bg-gray-100 p-3 rounded text-center mt-0 border border-gray-200">
                     <div>번호</div>
                     <div className='col-span-3'>제목</div>

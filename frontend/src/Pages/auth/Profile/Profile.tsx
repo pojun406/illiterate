@@ -169,7 +169,7 @@ function updateProfile() {
     }
 
   return (
-    <div className='flex flex-col w-[1260px] h-full mx-auto my-4'>
+    <div className='flex flex-col w-[1260px] h-full mx-auto my-4 min-h-[703.5px]'>
       <div className="flex flex-col md:flex-row">
         <nav className="md:w-1/4 mr-4 bg-white rounded-lg p-4">
           <ul className="list-none p-0">

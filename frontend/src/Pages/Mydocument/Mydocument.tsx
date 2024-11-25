@@ -64,15 +64,15 @@ const Mydocument = () => {
         <div className="flex flex-col p-6 w-[1260px] mx-auto">
             <h1 className="text-2xl font-bold mb-6">내 문서함</h1>
             {noDocumentsMessage ? (
-                <div className="flex justify-center items-center min-h-[600px]">
+                <div className="flex justify-center items-center min-h-[750px]">
                     <p className="text-center text-red-500">{noDocumentsMessage}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 gap-4 mb-6 min-h-[600px]">
+                <div className="grid grid-cols-2 gap-4 mb-6 min-h-[607.5px]">
                     {currentDocuments.map((doc) => (
                         <div 
                             key={doc.resultIdx} 
-                            className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer min-h-[90px]"
+                            className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer min-h-[83.5px]"
                             onClick={() => handleDocumentClick(doc.resultIdx)}
                         >
                             <div className="flex justify-between items-center mb-2">
@@ -87,7 +87,7 @@ const Mydocument = () => {
                     ))}
                     {/* 빈 공간을 채우기 위한 빈 div */}
                     {Array.from({ length: documentsPerPage - currentDocuments.length }).map((_, index) => (
-                        <div key={`empty-${index}`} className="border rounded-lg p-4 invisible min-h-[90px]"></div>
+                        <div key={`empty-${index}`} className="border rounded-lg p-4 invisible min-h-[83.5px]"></div>
                     ))}
                 </div>
             )}

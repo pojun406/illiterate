@@ -62,7 +62,7 @@ function Detail() {
     };
 
     return (
-        <div className="p-6 max-w-[1260px] mx-auto">
+        <div className="p-6 max-w-[1260px] mx-auto min-h-[736px]">
             <Link to="/servicecenter">
                 <h1 className="text-2xl font-bold mb-2">목록으로</h1>
             </Link>
