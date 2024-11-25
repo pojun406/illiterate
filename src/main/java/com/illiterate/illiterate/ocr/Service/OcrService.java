@@ -238,12 +238,12 @@ public class OcrService {
     public OcrResponseDto getPost(Long ocrIdx) {
         OCR ocr = ocrRepository.findByOcrIndex(ocrIdx)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_INFO));
-
         return OcrResponseDto.builder()
                 .ocrId(ocr.getOcrIndex())
                 .title(ocr.getTitle())
                 .infoTitle(ocr.getPaperInfo().getTitleText())
                 .ocrResult(ocr.getOcrData())
+                .documentImg(ocr.getImage())
                 .createTime(ocr.getCreatedAt())
                 .modifyTime(ocr.getModifyAt())
                 .originalImg(ocr.getImage())

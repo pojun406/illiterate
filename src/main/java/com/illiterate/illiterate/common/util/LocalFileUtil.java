@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +23,8 @@ public class LocalFileUtil {
 
     @Value("${file.path}")
     private String baseFilePath;
+
+    private final String basePath = "D:/"; // 기본 경로
 
     /**
      * MultipartFile 이미지를 상대 경로로 저장
@@ -121,5 +124,23 @@ public class LocalFileUtil {
         }
 
         return isDeleted;
+    }
+
+    public byte[] getFile(String relativePath) {
+        try {
+            // 파일 경로를 구성
+            String fullPath = Paths.get(basePath, relativePath).toAbsolutePath().toString();
+            File file = new File(fullPath);
+
+            // 파일 존재 여부 확인
+            if (!file.exists()) {
+                throw new RuntimeException("파일을 찾을 수 없습니다: " + fullPath);
+            }
+
+            // 파일을 읽어 바이트 배열로 반환
+            return Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("파일 읽기 중 오류 발생: " + relativePath, e);
+        }
     }
 }

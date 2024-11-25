@@ -13,6 +13,9 @@ import com.illiterate.illiterate.ocr.Repository.OcrRepository;
 import com.illiterate.illiterate.ocr.Service.OcrService;
 import com.illiterate.illiterate.security.Service.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -80,6 +83,25 @@ public class OcrController {
         OcrResponseDto post = ocrService.getPost(ocrIdx);
         BfResponse<OcrResponseDto> response = new BfResponse<>(post);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/file")
+    public ResponseEntity<BfResponse<?>> getFile(@RequestBody String path) {
+        try {
+            // 파일 데이터를 가져옴
+            byte[] fileData = localFileUtil.getFile(path);
+
+            // 응답 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("image", "file"); // 다운로드용 이름 설정
+
+            // 파일 데이터를 응답으로 반환
+            return ResponseEntity.ok(new BfResponse<>(SUCCESS, fileData));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new BfResponse<>("파일을 찾을 수 없습니다: " + e.getMessage()));
+        }
     }
 
     // 내용 업데이트

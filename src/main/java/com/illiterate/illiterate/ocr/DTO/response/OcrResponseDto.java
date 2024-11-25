@@ -16,6 +16,7 @@ public class OcrResponseDto {
     private String title;
     private String infoTitle;
     private String ocrResult;
+    private String documentImg;
     private LocalDateTime createTime;
     private LocalDateTime modifyTime;
     private String originalImg;
