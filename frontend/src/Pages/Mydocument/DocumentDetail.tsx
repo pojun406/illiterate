@@ -75,7 +75,7 @@ const DocumentDetail = () => {
                 <div className='flex flex-row items-center justify-between mt-4'>
                     <div>
                         <h2 className='text-2xl font-bold'>원본 이미지</h2>
-                        <img src={`http://localhost:8080/image/ocr/${documentData?.originalImg.split('\\').pop()}`} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
+                        <img src={`http://localhost:8080${documentData?.originalImg.split('\\').pop()}`} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
                     </div>
                     <div className='relative'>
                         <h2 className='text-2xl font-bold'>저장된 데이터</h2>
