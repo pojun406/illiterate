@@ -42,7 +42,7 @@ public class LocalFileUtil {
         String savePath = Paths.get(baseFilePath, relativePath).normalize().toString();
 
         // 프로젝트 내부 resources/static/image 경로
-        String projectImagePath = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/image", folderName, saveFileName).normalize().toString();
+        String projectImagePath = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/images", folderName, saveFileName).normalize().toString();
 
         try {
             // 외부 경로 디렉토리 생성
@@ -113,7 +113,7 @@ public class LocalFileUtil {
         String appImagePath = Paths.get(baseFilePath, folderName, fileName).toAbsolutePath().toString();
 
         // 프로젝트 내부 경로 (src/main/resources/static/image)
-        String projectImagePath = Paths.get("src/main/resources/image", folderName, fileName).toAbsolutePath().toString();
+        String projectImagePath = Paths.get("src/main/resources/static/images", folderName, fileName).toAbsolutePath().toString();
 
         try {
             // 첫 번째 경로의 파일 삭제
