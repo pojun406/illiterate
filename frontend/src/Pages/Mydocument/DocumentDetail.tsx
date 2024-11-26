@@ -21,6 +21,8 @@ const DocumentDetail = () => {
     const [ocrResult, setOcrResult] = useState<any>(null);
     const [documentData, setDocumentData] = useState<DocumentData | null>(null);
     const [filename, setFilename] = useState<string | null>(null);
+    const [image, setImage] = useState<string | null>(null);
+    const [newfilepath, setNewFilePath] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         const ocrId = paramOcrId;
@@ -37,6 +39,25 @@ const DocumentDetail = () => {
                     setOcrResult(JSON.parse(data.data.ocrResult));
                     setFilename(data.data.originalImg);
                     console.log("filename : " + filename);
+                    
+                const newPathParts = data.data.originalImg.split('/');
+                const newFolderName = newPathParts[newPathParts.length - 2];
+                const newFileName = newPathParts[newPathParts.length - 1];
+                setImage(`images/${newFolderName}/${newFileName}`);
+                console.log(image);
+
+                const fetchNewImage = async () => {
+                    try {
+                        const response = await fetch(`/images/${newFolderName}/${newFileName}`);
+                        const blob = await response.blob();
+                        const newImageUrl = URL.createObjectURL(blob);
+                        setNewFilePath(newImageUrl);
+                    } catch (error) {
+                        console.error('이미지 가져오기 오류:', error);
+                    }
+                };
+
+                fetchNewImage();
                 })
                 .catch((error) => {
                     console.error("문서 가져오기 오류:", error);
@@ -67,7 +88,7 @@ const DocumentDetail = () => {
                 <div className='flex flex-row items-center justify-between mt-4'>
                     <div>
                         <h2 className='text-2xl font-bold'>원본 이미지</h2>
-                        <img src={documentData?.originalImg.replace("/app", "")} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
+                        <img src={newfilepath || undefined} alt="원본 이미지" className='w-[620px] h-[877px] border-2 border-gray-300'/>
                     </div>
                     <div className='relative'>
                         <h2 className='text-2xl font-bold'>저장된 데이터</h2>

@@ -16,7 +16,8 @@ interface Post {
 function Detail() {
     const { boardIdx } = useParams();
     const [post, setPost] = useState<Post | null>(null);
-    const [imagePath, setImagePath] = useState<string | null>(null);
+    const [imagePath, setImagePath] = useState<string | undefined>(undefined);
+    const [filePath, setFilePath] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPost();
@@ -30,8 +31,27 @@ function Detail() {
             }
             if (response?.data?.data) {
                 setPost(response.data.data);
-                setImagePath(response.data.data.imagePath)
+                const imagePath = response.data.data.imagePath;
+                setImagePath(imagePath);
+                const pathParts = imagePath.split('/');
+                const folderName = pathParts[pathParts.length - 2];
+                const fileName = pathParts[pathParts.length - 1];
+                setFilePath(`images/${folderName}/${fileName}`);
+                console.log(filePath);
 
+                const fetchImage = async () => {
+                    try {
+                        const response = await axios.get(`/images/${folderName}/${fileName}`, {
+                            responseType: 'blob',
+                        });
+                        const imageUrl = URL.createObjectURL(response.data);
+                        setImagePath(imageUrl);
+                    } catch (error) {
+                        console.error('Error fetching image:', error);
+                    }
+                };
+
+                fetchImage();
             }
         } catch (error) {
             console.error('Error fetching post:', error);
@@ -88,9 +108,10 @@ function Detail() {
                     {post.imagePath && (
                         <div className="mb-6">
                             <img 
-                                src={post.imagePath.replace("/app", "")}
+                                src={imagePath}
                                 alt="게시글 이미지" 
                                 className="max-w-full h-auto rounded-lg"
+                                referrerPolicy='no-referrer'
                             />
                         </div>
                     )}
