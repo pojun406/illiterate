@@ -40,6 +40,8 @@ dependencies {
 	implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
 	implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
 	implementation 'org.apache.commons:commons-exec:1.4.0'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
 
 }
 
