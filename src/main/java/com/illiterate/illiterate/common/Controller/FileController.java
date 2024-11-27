@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 public class FileController {
 
     @GetMapping("/images/{folder}/{fileName}")
-    public ResponseEntity<Resource> serveFile(@PathVariable String folder, @PathVariable String fileName) {
+    public ResponseEntity<Resource> serveFile(@PathVariable("folder") String folder, @PathVariable("fileName") String fileName) {
         try {
             Path filePath = Paths.get("D://app/image", folder, fileName);
             Resource resource = new UrlResource(filePath.toUri());
