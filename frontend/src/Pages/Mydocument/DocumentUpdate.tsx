@@ -53,6 +53,7 @@ const DocumentUpdate = () => {
     useEffect(() => {
         if (paramOcrId) {
             setOcrId(paramOcrId);
+            console.log("ocrId:", ocrId);
         } else {
             console.error("ocrId가 null입니다. URL을 확인하세요.");
             // navigate('/error'); // 필요에 따라 오류 페이지로 이동
@@ -88,18 +89,28 @@ const DocumentUpdate = () => {
                     }
 
                     const originalImgPath = data.data.originalImg;
-                    const cleanedImgPath = 'http://localhost:8080/image/ocr/' + originalImgPath.replace('C:\\app\\image\\ocr\\', '');
-                    
-                    console.log("Cleaned Image Path:", cleanedImgPath);
-                    setFilePath1(cleanedImgPath);
 
-                    setTitle(data.data.title);
-                })
-                .catch((error) => {
-                    console.error("문서 가져오기 오류:", error);
+                    console.log("originalImgPath:", originalImgPath);
+                    const pathParts = originalImgPath.split('/');
+                    const folderName = pathParts[pathParts.length - 2];
+                    const fileName = pathParts[pathParts.length - 1];
+
+                    console.log("folderName:", folderName);
+                    console.log("fileName:", fileName);
+                    const fetchNewImage = async () => {
+                        try {
+                            const response = await fetch(`/images/${folderName}/${fileName}`);
+                            const blob = await response.blob();
+                            const newImageUrl = URL.createObjectURL(blob);
+                            setFilePath1(newImageUrl);
+                        } catch (error) {
+                            console.error('이미지 가져오기 오류:', error);
+                        }
+                    };
+    
+                    fetchNewImage();
                 });
-        }
-    }, [ocrId]);
+        }}, [ocrId]);
 
     useEffect(() => {
         if (ocrResult && Array.isArray(ocrResult.results)) {
