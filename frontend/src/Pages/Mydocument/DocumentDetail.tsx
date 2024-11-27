@@ -72,6 +72,7 @@ const DocumentDetail = () => {
         if (window.confirm('문서를 삭제하시겠습니까?')) {
             fetchWithAuth(`/ocr/posts/delete/${paramOcrId}`, { method: 'POST' })
                 .then((res) => {
+                    console.log(res);
                     alert('문서가 성공적으로 삭제되었습니다.');
                     navigate('/mydocument');
                 });
@@ -117,7 +118,7 @@ const DocumentDetail = () => {
             )}
             <div className='flex flex-row items-center justify-between mt-4'>
                 <button className='bg-red-400 text-white px-4 py-2 rounded-md hover:bg-red-500' onClick={() => navigate('/mydocument')}>돌아가기</button>
-                <button className='bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-500' onClick={() => navigate(`/mydocument/edit/${ocrId}`)}>수정하기</button>
+                <button className='bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-500' onClick={() => navigate(`/mydocument/edit/${paramOcrId}`)}>수정하기</button>
             </div>
         </div>
     );
