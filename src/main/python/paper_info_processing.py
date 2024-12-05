@@ -25,7 +25,7 @@ def select_rois_with_descriptions(image_path, output_file="roi_descriptions.json
 
     # Create a scrollable canvas
     canvas_frame = Toplevel(root)
-    canvas = Canvas(canvas_frame, width=1200, height=800)
+    canvas = Canvas(canvas_frame, width=1800, height=800)
     scrollbar_x = Scrollbar(canvas_frame, orient="horizontal", command=canvas.xview)
     scrollbar_y = Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
     canvas.configure(xscrollcommand=scrollbar_x.set, yscrollcommand=scrollbar_y.set)
