@@ -42,7 +42,7 @@
 
 ## 연락처
 - **이병준**: GitHub: [GitHub Profile](https://github.com/pojun406)
-- **이정무**:
+- **이정무**: GitHub: [GitHub Profile](https://github.com/asowjdan)
 - **김  건**:
 
 
